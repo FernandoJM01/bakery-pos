@@ -6,6 +6,7 @@ class Product {
   final String category;
   final String unit;
   final int priceCents;
+  final String? imageAsset;
   final bool isActive;
 
   const Product({
@@ -16,6 +17,7 @@ class Product {
     required this.category,
     this.unit = 'PIECE',
     required this.priceCents,
+    this.imageAsset,
     this.isActive = true,
   });
 

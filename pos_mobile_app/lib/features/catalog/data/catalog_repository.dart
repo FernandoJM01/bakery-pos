@@ -15,13 +15,12 @@ class CatalogRepositoryImpl implements CatalogRepository {
       : dbHelper = dbHelper ?? LocalDatabaseHelper.instance;
 
   static const List<Product> _defaultProducts = [
-    Product(id: 'c0000000-0000-0000-0000-000000000001', sku: 'BREAD-SOUR', name: 'Sourdough Loaf', category: 'Breads', priceCents: 650),
-    Product(id: 'c0000000-0000-0000-0000-000000000002', sku: 'BREAD-BAGU', name: 'Artisan Baguette', category: 'Breads', priceCents: 400),
-    Product(id: 'c0000000-0000-0000-0000-000000000003', sku: 'PAST-CROI', name: 'Butter Croissant', category: 'Pastries', priceCents: 325),
-    Product(id: 'c0000000-0000-0000-0000-000000000004', sku: 'PAST-CHOC', name: 'Pain au Chocolat', category: 'Pastries', priceCents: 375),
-    Product(id: 'c0000000-0000-0000-0000-000000000005', sku: 'PAST-CINN', name: 'Cinnamon Roll', category: 'Pastries', priceCents: 400),
-    Product(id: 'c0000000-0000-0000-0000-000000000006', sku: 'CAKE-ECLR', name: 'Chocolate Eclair', category: 'Cakes', priceCents: 450),
-    Product(id: 'c0000000-0000-0000-0000-000000000007', sku: 'BEV-COFF', name: 'Flat White Coffee', category: 'Beverages', priceCents: 500),
+    Product(id: 'c0000000-0000-0000-0000-000000000001', sku: 'BREAD-SOUR', name: 'Sourdough Country Loaf', category: 'Breads', priceCents: 650, imageAsset: 'assets/products/sourdough_loaf.jpg'),
+    Product(id: 'c0000000-0000-0000-0000-000000000002', sku: 'BREAD-BAGU', name: 'Artisan Baguette', category: 'Breads', priceCents: 400, imageAsset: 'assets/products/artisan_baguette.jpg'),
+    Product(id: 'c0000000-0000-0000-0000-000000000003', sku: 'PAST-CROI', name: 'Butter Croissant', category: 'Viennoiserie', priceCents: 325, imageAsset: 'assets/products/butter_croissant.jpg'),
+    Product(id: 'c0000000-0000-0000-0000-000000000004', sku: 'PAST-CHOC', name: 'Pain au Chocolat', category: 'Viennoiserie', priceCents: 375, imageAsset: 'assets/products/pain_au_chocolat.jpg'),
+    Product(id: 'c0000000-0000-0000-0000-000000000006', sku: 'CAKE-TART', name: 'Berry Patisserie Tart', category: 'Cakes', priceCents: 450, imageAsset: 'assets/products/berry_tart.jpg'),
+    Product(id: 'c0000000-0000-0000-0000-000000000007', sku: 'BEV-COFF', name: 'Flat White Coffee', category: 'Beverages', priceCents: 500, imageAsset: 'assets/products/flat_white_coffee.jpg'),
   ];
 
   @override
