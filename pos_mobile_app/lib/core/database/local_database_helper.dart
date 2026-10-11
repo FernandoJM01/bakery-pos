@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -19,6 +20,15 @@ class LocalDatabaseHelper {
   }
 
   Future<Database> _initDB(String filePath) async {
+    if (kIsWeb) {
+      return await databaseFactory.openDatabase(
+        filePath,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: _createDB,
+        ),
+      );
+    }
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 

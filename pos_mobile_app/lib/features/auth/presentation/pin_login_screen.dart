@@ -24,10 +24,37 @@ class PinLoginScreen extends ConsumerStatefulWidget {
 }
 
 class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
+  static const List<User> _defaultStaff = [
+    User(
+      id: 'b0000000-0000-0000-0000-000000000001',
+      branchId: 'a0000000-0000-0000-0000-000000000001',
+      username: 'cashier1',
+      pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
+      fullName: 'Maria Gonzalez',
+      role: UserRole.cashier,
+    ),
+    User(
+      id: 'b0000000-0000-0000-0000-000000000002',
+      branchId: 'a0000000-0000-0000-0000-000000000001',
+      username: 'baker1',
+      pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
+      fullName: 'Marco Rossi',
+      role: UserRole.localBaker,
+    ),
+    User(
+      id: 'b0000000-0000-0000-0000-000000000003',
+      branchId: 'a0000000-0000-0000-0000-000000000001',
+      username: 'manager1',
+      pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
+      fullName: 'Elena Rostova',
+      role: UserRole.branchManager,
+    ),
+  ];
+
   String _enteredPin = '';
-  List<User> _staffList = [];
-  User? _selectedUser;
-  bool _isLoading = true;
+  List<User> _staffList = _defaultStaff;
+  User? _selectedUser = _defaultStaff.first;
+  bool _isLoading = false;
   String? _errorMessage;
 
   @override
@@ -51,34 +78,8 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
 
       var staff = await authRepo.getAvailableUsers();
       if (staff.isEmpty) {
-        // Offline fallback seed
-        staff = [
-          const User(
-            id: 'b0000000-0000-0000-0000-000000000001',
-            branchId: 'a0000000-0000-0000-0000-000000000001',
-            username: 'cashier1',
-            pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
-            fullName: 'Maria Gonzalez',
-            role: UserRole.cashier,
-          ),
-          const User(
-            id: 'b0000000-0000-0000-0000-000000000002',
-            branchId: 'a0000000-0000-0000-0000-000000000001',
-            username: 'baker1',
-            pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
-            fullName: 'Marco Rossi',
-            role: UserRole.localBaker,
-          ),
-          const User(
-            id: 'b0000000-0000-0000-0000-000000000003',
-            branchId: 'a0000000-0000-0000-0000-000000000001',
-            username: 'manager1',
-            pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
-            fullName: 'Elena Rostova',
-            role: UserRole.branchManager,
-          ),
-        ];
-        await authRepo.cacheUsers(staff);
+        await authRepo.cacheUsers(_defaultStaff);
+        staff = _defaultStaff;
       }
 
       // Also verify catalog has fallback products if backend wasn't reachable
