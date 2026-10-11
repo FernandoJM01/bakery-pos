@@ -107,7 +107,7 @@ void main() {
     await tester.pump();
 
     expect(find.byType(PinLoginScreen), findsOneWidget);
-    expect(find.text('POS BAKERY'), findsOneWidget);
-    expect(find.text('STAFF QUICK LOGIN'), findsOneWidget);
+    expect(find.text('ARTISAN BAKERY'), findsOneWidget);
+    expect(find.text('On-Shift Bakery Staff'), findsOneWidget);
   });
 }
