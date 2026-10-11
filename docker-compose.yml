@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  pos_postgres:
+    image: postgres:16-alpine
+    container_name: pos_bakery_db
+    restart: always
+    environment:
+      POSTGRES_USER: pos_user
+      POSTGRES_PASSWORD: pos_secure_password_2026
+      POSTGRES_DB: pos_bakery
+    ports:
+      - "5433:5432"
+    volumes:
+      - pos_pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pos_user -d pos_bakery"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pos_backend:
+    build:
+      context: ./pos_backend
+      dockerfile: Dockerfile
+    container_name: pos_bakery_backend
+    restart: always
+    depends_on:
+      pos_postgres:
+        condition: service_healthy
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      NODE_ENV: production
+      DATABASE_HOST: pos_postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: pos_user
+      DATABASE_PASSWORD: pos_secure_password_2026
+      DATABASE_NAME: pos_bakery
+      JWT_SECRET: super_pos_bakery_secret_key_2026
+
+volumes:
+  pos_pgdata:

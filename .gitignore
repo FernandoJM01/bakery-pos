@@ -1,0 +1,23 @@
+# Git ignore for root
+.DS_Store
+*.log
+.idea/
+.vscode/
+
+# Docker volumes
+pos_pgdata/
+
+# Flutter
+pos_mobile_app/.dart_tool/
+pos_mobile_app/.flutter-plugins
+pos_mobile_app/.flutter-plugins-dependencies
+pos_mobile_app/.packages
+pos_mobile_app/build/
+pos_mobile_app/.idea/
+pos_mobile_app/*.iml
+
+# Backend
+pos_backend/node_modules/
+pos_backend/dist/
+pos_backend/coverage/
+pos_backend/*.log
