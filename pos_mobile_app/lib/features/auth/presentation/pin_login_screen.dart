@@ -37,65 +37,78 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
   }
 
   Future<void> _initializeLocalSeed() async {
-    final authRepo = ref.read(authRepositoryProvider);
-    final catalogRepo = ref.read(catalogRepositoryProvider);
-    final syncWorker = ref.read(syncWorkerProvider);
+    try {
+      final authRepo = ref.read(authRepositoryProvider);
+      final catalogRepo = ref.read(catalogRepositoryProvider);
+      final syncWorker = ref.read(syncWorkerProvider);
 
-    // Initial sync pull from local docker backend if available
-    await syncWorker.pullSnapshot('a0000000-0000-0000-0000-000000000001');
+      // Non-blocking try to pull snapshot
+      try {
+        await syncWorker.pullSnapshot('a0000000-0000-0000-0000-000000000001');
+      } catch (e) {
+        debugPrint('[Seed] Backend pull skipped or offline: $e');
+      }
 
-    var staff = await authRepo.getAvailableUsers();
-    if (staff.isEmpty) {
-      // Offline fallback seed
-      staff = [
-        const User(
-          id: 'b0000000-0000-0000-0000-000000000001',
-          branchId: 'a0000000-0000-0000-0000-000000000001',
-          username: 'cashier1',
-          pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
-          fullName: 'Maria Gonzalez',
-          role: UserRole.cashier,
-        ),
-        const User(
-          id: 'b0000000-0000-0000-0000-000000000002',
-          branchId: 'a0000000-0000-0000-0000-000000000001',
-          username: 'baker1',
-          pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
-          fullName: 'Marco Rossi',
-          role: UserRole.localBaker,
-        ),
-        const User(
-          id: 'b0000000-0000-0000-0000-000000000003',
-          branchId: 'a0000000-0000-0000-0000-000000000001',
-          username: 'manager1',
-          pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
-          fullName: 'Elena Rostova',
-          role: UserRole.branchManager,
-        ),
-      ];
-      await authRepo.cacheUsers(staff);
-    }
+      var staff = await authRepo.getAvailableUsers();
+      if (staff.isEmpty) {
+        // Offline fallback seed
+        staff = [
+          const User(
+            id: 'b0000000-0000-0000-0000-000000000001',
+            branchId: 'a0000000-0000-0000-0000-000000000001',
+            username: 'cashier1',
+            pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
+            fullName: 'Maria Gonzalez',
+            role: UserRole.cashier,
+          ),
+          const User(
+            id: 'b0000000-0000-0000-0000-000000000002',
+            branchId: 'a0000000-0000-0000-0000-000000000001',
+            username: 'baker1',
+            pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
+            fullName: 'Marco Rossi',
+            role: UserRole.localBaker,
+          ),
+          const User(
+            id: 'b0000000-0000-0000-0000-000000000003',
+            branchId: 'a0000000-0000-0000-0000-000000000001',
+            username: 'manager1',
+            pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
+            fullName: 'Elena Rostova',
+            role: UserRole.branchManager,
+          ),
+        ];
+        await authRepo.cacheUsers(staff);
+      }
 
-    // Also verify catalog has fallback products if backend wasn't reachable
-    final products = await catalogRepo.getProducts();
-    if (products.isEmpty) {
-      await catalogRepo.cacheProducts([
-        const Product(id: 'c0000000-0000-0000-0000-000000000001', sku: 'BREAD-SOUR', name: 'Sourdough Loaf', category: 'Breads', priceCents: 650),
-        const Product(id: 'c0000000-0000-0000-0000-000000000002', sku: 'BREAD-BAGU', name: 'Artisan Baguette', category: 'Breads', priceCents: 400),
-        const Product(id: 'c0000000-0000-0000-0000-000000000003', sku: 'PAST-CROI', name: 'Butter Croissant', category: 'Pastries', priceCents: 325),
-        const Product(id: 'c0000000-0000-0000-0000-000000000004', sku: 'PAST-CHOC', name: 'Pain au Chocolat', category: 'Pastries', priceCents: 375),
-        const Product(id: 'c0000000-0000-0000-0000-000000000005', sku: 'PAST-CINN', name: 'Cinnamon Roll', category: 'Pastries', priceCents: 400),
-        const Product(id: 'c0000000-0000-0000-0000-000000000006', sku: 'CAKE-ECLR', name: 'Chocolate Eclair', category: 'Cakes', priceCents: 450),
-        const Product(id: 'c0000000-0000-0000-0000-000000000007', sku: 'BEV-COFF', name: 'Flat White Coffee', category: 'Beverages', priceCents: 500),
-      ]);
-    }
+      // Also verify catalog has fallback products if backend wasn't reachable
+      final products = await catalogRepo.getProducts();
+      if (products.isEmpty) {
+        await catalogRepo.cacheProducts([
+          const Product(id: 'c0000000-0000-0000-0000-000000000001', sku: 'BREAD-SOUR', name: 'Sourdough Loaf', category: 'Breads', priceCents: 650),
+          const Product(id: 'c0000000-0000-0000-0000-000000000002', sku: 'BREAD-BAGU', name: 'Artisan Baguette', category: 'Breads', priceCents: 400),
+          const Product(id: 'c0000000-0000-0000-0000-000000000003', sku: 'PAST-CROI', name: 'Butter Croissant', category: 'Pastries', priceCents: 325),
+          const Product(id: 'c0000000-0000-0000-0000-000000000004', sku: 'PAST-CHOC', name: 'Pain au Chocolat', category: 'Pastries', priceCents: 375),
+          const Product(id: 'c0000000-0000-0000-0000-000000000005', sku: 'PAST-CINN', name: 'Cinnamon Roll', category: 'Pastries', priceCents: 400),
+          const Product(id: 'c0000000-0000-0000-0000-000000000006', sku: 'CAKE-ECLR', name: 'Chocolate Eclair', category: 'Cakes', priceCents: 450),
+          const Product(id: 'c0000000-0000-0000-0000-000000000007', sku: 'BEV-COFF', name: 'Flat White Coffee', category: 'Beverages', priceCents: 500),
+        ]);
+      }
 
-    if (mounted) {
-      setState(() {
-        _staffList = staff;
-        _selectedUser = staff.first;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _staffList = staff;
+          _selectedUser = staff.isNotEmpty ? staff.first : null;
+          _isLoading = false;
+        });
+      }
+    } catch (e, stack) {
+      debugPrint('[Seed] Error during local initialization: $e\n$stack');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
