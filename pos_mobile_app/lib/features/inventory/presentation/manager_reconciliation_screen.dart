@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_dimensions.dart';
+import '../../../core/localization/app_strings.dart';
 import '../../../core/hardware/printer/console_printer_service.dart';
 import '../../../core/hardware/printer/receipt_printer_service.dart';
 import '../../auth/domain/user.dart';
@@ -43,13 +45,11 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
   late Timer _clockTimer;
   DateTime _currentTime = DateTime.now();
 
-  // Shift & Cash Drawer Baseline
   static const int _openingFloatCents = 20000; // $200.00
   static const int _systemExpectedCashSalesCents = 74550; // $745.50
   static const int _systemExpectedCardSalesCents = 51225; // $512.25
   static const int _totalOrdersCount = 48;
 
-  // Touch Counters for Cash Drawer Denominations
   late final List<DenominationRowData> _denominations;
 
   bool _isLockingDrawer = false;
@@ -60,13 +60,13 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
   void initState() {
     super.initState();
     _denominations = [
-      DenominationRowData(label: '\$100 Bills', valueCents: 10000, count: 5), // $500.00
-      DenominationRowData(label: '\$50 Bills', valueCents: 5000, count: 4),   // $200.00
-      DenominationRowData(label: '\$20 Bills', valueCents: 2000, count: 8),   // $160.00
-      DenominationRowData(label: '\$10 Bills', valueCents: 1000, count: 6),   // $60.00
-      DenominationRowData(label: '\$5 Bills', valueCents: 500, count: 4),     // $20.00
-      DenominationRowData(label: '\$1 Coins/Bills', valueCents: 100, count: 5), // $5.00
-      DenominationRowData(label: 'Coins (Rolls & Change)', valueCents: 10, count: 5), // $0.50
+      DenominationRowData(label: 'Billetes \$100', valueCents: 10000, count: 5), // $500.00
+      DenominationRowData(label: 'Billetes \$50', valueCents: 5000, count: 4),   // $200.00
+      DenominationRowData(label: 'Billetes \$20', valueCents: 2000, count: 8),   // $160.00
+      DenominationRowData(label: 'Billetes \$10', valueCents: 1000, count: 6),   // $60.00
+      DenominationRowData(label: 'Billetes \$5', valueCents: 500, count: 4),     // $20.00
+      DenominationRowData(label: 'Monedas \$1', valueCents: 100, count: 5),     // $5.00
+      DenominationRowData(label: 'Monedas Cambio/Centavos', valueCents: 10, count: 5), // $0.50
     ];
 
     _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -100,7 +100,7 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
       for (final d in _denominations) {
         d.count = 0;
       }
-      _statusBannerMessage = 'Denominations reset to zero.';
+      _statusBannerMessage = 'Conteo de denominaciones reiniciado a cero.';
     });
   }
 
@@ -110,25 +110,25 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
 
     final lineItems = [
       ReceiptLineItem(
-        name: 'Morning Opening Float',
+        name: 'Fondo de Caja Inicial',
         quantity: 1,
         unitPriceCents: _openingFloatCents,
         totalPriceCents: _openingFloatCents,
       ),
       ReceiptLineItem(
-        name: 'Gross Cash Sales',
+        name: 'Ventas en Efectivo',
         quantity: 1,
         unitPriceCents: _systemExpectedCashSalesCents,
         totalPriceCents: _systemExpectedCashSalesCents,
       ),
       ReceiptLineItem(
-        name: 'Gross Card Payments',
+        name: 'Ventas con Tarjeta',
         quantity: 1,
         unitPriceCents: _systemExpectedCardSalesCents,
         totalPriceCents: _systemExpectedCardSalesCents,
       ),
       ReceiptLineItem(
-        name: 'Variance Cash Adjustment',
+        name: 'Ajuste de Diferencia en Caja',
         quantity: 1,
         unitPriceCents: _varianceCents,
         totalPriceCents: _varianceCents,
@@ -136,21 +136,21 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
     ];
 
     await printer.printReceipt(
-      branchName: 'ARTISAN BAKERY (Downtown BR-01)',
-      receiptNumber: 'Z-REPORT-${DateFormat('yyyyMMdd-HHmm').format(_currentTime)}',
+      branchName: AppStrings.branchDowntown,
+      receiptNumber: 'CORTE-Z-${DateFormat('yyyyMMdd-HHmm').format(_currentTime)}',
       cashierName: widget.manager?.fullName ?? 'Elena Rostova',
       timestamp: _currentTime,
       items: lineItems,
       subtotalCents: _expectedDrawerTotalCents,
       taxCents: (_expectedDrawerTotalCents * 0.08).round(),
       totalCents: _actualDrawerCountCents,
-      paymentMethod: 'DRAWER RECONCILIATION Z-CLOSE',
+      paymentMethod: 'ARQUEO DE CAJA CORTE Z',
     );
 
     if (mounted) {
       setState(() {
         _isZReportPrinted = true;
-        _statusBannerMessage = 'Z-Report printed successfully via ESC/POS to console & thermal receipt.';
+        _statusBannerMessage = 'Reporte Z impreso exitosamente via ESC/POS a consola e impresora térmica.';
       });
     }
   }
@@ -161,14 +161,13 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
     try {
       final invRepo = ref.read(inventoryRepositoryProvider);
 
-      // Record closing shift audit ledger event
       final auditEvent = LedgerEvent(
         clientEventId: 'audit-${DateTime.now().millisecondsSinceEpoch}',
         branchId: widget.manager?.branchId ?? 'a0000000-0000-0000-0000-000000000001',
         terminalId: 'REG-01',
         eventType: LedgerEventType.auditAdjustment,
         userId: widget.manager?.id ?? 'b0000000-0000-0000-0000-00000003',
-        productId: 'c0000000-0000-0000-0000-000000000001', // system audit target
+        productId: 'c0000000-0000-0000-0000-000000000001',
         quantityChange: 0,
         metadata: {
           'reason': 'SHIFT_CLOSE_RECONCILIATION',
@@ -188,7 +187,6 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
 
       if (!mounted) return;
 
-      // Pop to PIN Screen
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -199,11 +197,11 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
             children: const [
               Icon(Icons.lock_clock_rounded, color: AppColors.primaryAmber, size: 28),
               SizedBox(width: 12),
-              Text('Shift Closed & Drawer Locked', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('Turno Cerrado y Caja Bloqueada', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
             ],
           ),
           content: Text(
-            'Shift report saved locally and queued for Cloud Sync.\nActual drawer total: \$${(_actualDrawerCountCents / 100).toStringAsFixed(2)}\nVariance: \$${(_varianceCents / 100).toStringAsFixed(2)}',
+            'El reporte de turno se guardó localmente y se encoló para sincronización Cloud.\nTotal físico en caja: \$${(_actualDrawerCountCents / 100).toStringAsFixed(2)}\nDiferencia: \$${(_varianceCents / 100).toStringAsFixed(2)}',
             style: const TextStyle(color: AppColors.textMuted, fontSize: 14),
           ),
           actions: [
@@ -220,7 +218,7 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
                   MaterialPageRoute(builder: (_) => const PinLoginScreen()),
                 );
               },
-              child: const Text('Return to Staff Login', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('Volver al Login de Personal', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -229,30 +227,76 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
       if (mounted) {
         setState(() {
           _isLockingDrawer = false;
-          _statusBannerMessage = 'Failed to close shift: $e';
+          _statusBannerMessage = 'Error al cerrar el turno: $e';
         });
       }
     }
+  }
+
+  void _confirmLogout(BuildContext context, User? manager) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceCard,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: AppColors.surfaceHighlight),
+        ),
+        title: Row(
+          children: const [
+            Icon(Icons.logout_rounded, color: AppColors.primaryAmber, size: 24),
+            SizedBox(width: 10),
+            Text(AppStrings.confirmLogout, style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
+          ],
+        ),
+        content: Text(
+          '¿Deseas salir del panel gerencial y volver al acceso con PIN, ${manager?.fullName ?? "Elena Rostova"}?',
+          style: const TextStyle(color: AppColors.textMuted, fontSize: 14, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text(AppStrings.cancel, style: TextStyle(color: AppColors.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.alertRed,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const PinLoginScreen()),
+              );
+            },
+            child: const Text(AppStrings.logOut, style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final timeStr = DateFormat('hh:mm a').format(_currentTime);
     final managerName = widget.manager?.fullName ?? 'Elena Rostova';
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundDeep,
       body: SafeArea(
         child: Column(
           children: [
-            // 1. Top Enterprise POS Header Bar
-            _buildTopHeader(timeStr, managerName),
+            // Barra Superior
+            _buildTopHeader(timeStr, managerName, isMobile),
 
             if (_statusBannerMessage != null)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                color: AppColors.primaryAmber.withValues(alpha: 0.15),
+                color: AppColors.primaryAmber.withOpacity(0.15),
                 child: Row(
                   children: [
                     const Icon(Icons.info_outline_rounded, color: AppColors.primaryAmber, size: 18),
@@ -267,88 +311,63 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
                 ),
               ),
 
-            // 2. Main Content Split View (Left 50%: Cash Drawer Count / Right 50%: Shift Performance & Outbox)
+            // Contenido Principal Responsive
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 14.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Left 50% — Physical Drawer Cash Count
-                    Expanded(
-                      flex: 5,
-                      child: _buildCashDrawerReconciliationCard(),
-                    ),
-
-                    const SizedBox(width: 20),
-
-                    // Right 50% — Shift Summary & Outbox Status
-                    Expanded(
-                      flex: 5,
-                      child: _buildShiftPerformanceCard(),
-                    ),
-                  ],
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 14.0 : 24.0,
+                  vertical: 14.0,
                 ),
+                child: isMobile
+                    ? SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            _buildCashDrawerReconciliationCard(),
+                            const SizedBox(height: 20),
+                            _buildShiftSummaryAndOutboxCard(),
+                          ],
+                        ),
+                      )
+                    : Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Izquierda 50%: Conteo de Caja
+                          Expanded(
+                            flex: 5,
+                            child: _buildCashDrawerReconciliationCard(),
+                          ),
+                          const SizedBox(width: 20),
+                          // Derecha 50%: Resumen y Acciones
+                          Expanded(
+                            flex: 5,
+                            child: _buildShiftSummaryAndOutboxCard(),
+                          ),
+                        ],
+                      ),
               ),
             ),
-
-            // 3. Bottom Action Bar (Print Z-Report & Close Shift)
-            _buildBottomActionBar(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTopHeader(String timeStr, String managerName) {
+  Widget _buildTopHeader(String timeStr, String managerName, bool isMobile) {
     return Container(
-      height: 64,
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      height: 60,
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 14.0 : 24.0),
       decoration: const BoxDecoration(
         color: AppColors.surfaceCard,
-        border: Border(bottom: BorderSide(color: AppColors.surfaceHighlight, width: 1)),
+        border: Border(bottom: BorderSide(color: AppColors.surfaceHighlight)),
       ),
       child: Row(
         children: [
-          // Bakery Logo & Branch
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryAmber.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.admin_panel_settings_rounded, color: AppColors.primaryAmber, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Text(
-                    'MANAGER RECONCILIATION',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.1,
-                      fontSize: 14,
-                    ),
-                  ),
-                  Text(
-                    'Shift End & Drawer Audit (BR-01)',
-                    style: TextStyle(color: AppColors.textMuted, fontSize: 11),
-                  ),
-                ],
-              ),
-            ],
+          IconButton(
+            icon: const Icon(Icons.logout_rounded, color: AppColors.textPrimary),
+            tooltip: AppStrings.logOut,
+            onPressed: () => _confirmLogout(context, widget.manager),
           ),
-
-          const Spacer(),
-
-          // Manager Badge with Avatar
+          const SizedBox(width: 6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
@@ -362,150 +381,25 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
                   child: widget.manager?.avatarAsset != null
                       ? Image.asset(
                           widget.manager!.avatarAsset!,
-                          width: 26,
-                          height: 26,
+                          width: 24,
+                          height: 24,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.person_pin_rounded, color: AppColors.primaryAmber, size: 20),
+                          errorBuilder: (_, __, ___) => const Icon(Icons.badge_rounded, color: AppColors.primaryAmber, size: 18),
                         )
-                      : const Icon(Icons.person_pin_rounded, color: AppColors.primaryAmber, size: 20),
+                      : const Icon(Icons.badge_rounded, color: AppColors.primaryAmber, size: 18),
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  managerName,
+                  '$managerName (Gerencia)',
                   style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
-                const SizedBox(width: 6),
-                const Text(
-                  '• Store Manager',
-                  style: TextStyle(color: AppColors.textMuted, fontSize: 11),
-                ),
               ],
             ),
           ),
-
-          const SizedBox(width: 12),
-
-          // Live Clock
+          const Spacer(),
           Text(
             timeStr,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          // Edge Sync Status Pill
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.successGreenBg,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.successGreen.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: const BoxDecoration(
-                    color: AppColors.successGreen,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                const Text(
-                  'Local Edge Online',
-                  style: TextStyle(
-                    color: AppColors.successGreen,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          // Exit / Return Button with Confirmation
-          IconButton(
-            tooltip: 'Return to Staff PIN Pad',
-            icon: const Icon(Icons.logout_rounded, color: AppColors.textMuted),
-            onPressed: () => _confirmExit(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmExit(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surfaceCard,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: AppColors.surfaceHighlight),
-        ),
-        title: Row(
-          children: const [
-            Icon(Icons.logout_rounded, color: AppColors.primaryAmber, size: 24),
-            SizedBox(width: 10),
-            Text('Exit Reconciliation', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Are you sure you want to return to the Staff PIN terminal without closing this register shift, ${widget.manager?.fullName ?? "Elena"}?',
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 14, height: 1.4),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceElevated,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: const [
-                  Icon(Icons.info_outline_rounded, color: AppColors.primaryAmber, size: 18),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Shift data will remain open until you tap LOCK DRAWER & CLOSE SHIFT.',
-                      style: TextStyle(color: AppColors.textMuted, fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryAmber,
-              foregroundColor: AppColors.backgroundDeep,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const PinLoginScreen()),
-              );
-            },
-            child: const Text('Return to PIN Pad', style: TextStyle(fontWeight: FontWeight.bold)),
+            style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
           ),
         ],
       ),
@@ -513,123 +407,114 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
   }
 
   Widget _buildCashDrawerReconciliationCard() {
-    final variance = _varianceCents;
-    final isBalanced = variance == 0;
-    final isOver = variance > 0;
-
     return Container(
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.surfaceCard,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.surfaceHighlight),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Icon(Icons.point_of_sale_rounded, color: AppColors.primaryAmber, size: 22),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Text(
-                  'Physical Drawer Cash Count',
-                  style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis,
+              Expanded(
+                child: Row(
+                  children: const [
+                    Icon(Icons.point_of_sale_rounded, color: AppColors.primaryAmber, size: 22),
+                    SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'Conteo Físico de Efectivo',
+                        style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               TextButton.icon(
                 onPressed: _resetDrawerCounts,
-                icon: const Icon(Icons.refresh_rounded, size: 16, color: AppColors.textMuted),
-                label: const Text('Reset', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                icon: const Icon(Icons.refresh_rounded, size: 16, color: AppColors.alertRed),
+                label: const Text('Reiniciar', style: TextStyle(color: AppColors.alertRed, fontSize: 12)),
               ),
             ],
           ),
           const SizedBox(height: 12),
 
-          // Expected Drawer Overview Strip
+          // Total Actual Conteo
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.surfaceElevated,
-              borderRadius: BorderRadius.circular(14),
+              color: AppColors.backgroundDeep,
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.surfaceHighlight),
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(child: _buildMetricCol('OPENING FLOAT', '\$${(_openingFloatCents / 100).toStringAsFixed(2)}')),
-                Expanded(child: _buildMetricCol('CASH SALES', '\$${(_systemExpectedCashSalesCents / 100).toStringAsFixed(2)}')),
-                Expanded(child: _buildMetricCol('EXPECTED DRAWER', '\$${(_expectedDrawerTotalCents / 100).toStringAsFixed(2)}', highlight: true)),
+                const Text('Total Conteo Físico:', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+                Text(
+                  '\$${(_actualDrawerCountCents / 100).toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    color: AppColors.primaryAmber,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),
+          const SizedBox(height: 14),
 
-          const SizedBox(height: 12),
-
-          // Denomination Counters List
+          // Lista de Denominaciones
           Expanded(
             child: ListView.separated(
               itemCount: _denominations.length,
               separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemBuilder: (context, index) {
-                final item = _denominations[index];
+              itemBuilder: (context, idx) {
+                final d = _denominations[idx];
+
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceElevated.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.surfaceHighlight.withValues(alpha: 0.6)),
+                    color: AppColors.surfaceElevated,
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
                     children: [
-                      // Denomination Label
                       Expanded(
                         flex: 4,
                         child: Text(
-                          item.label,
-                          style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+                          d.label,
+                          style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600, fontSize: 13),
                         ),
                       ),
-
-                      // Stepper (-1, +1, +5)
+                      // Stepper [-] [Count] [+]
                       Row(
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          _buildStepperButton(Icons.remove, () => _incrementDenomination(item, -1)),
-                          Container(
-                            constraints: const BoxConstraints(minWidth: 38),
-                            alignment: Alignment.center,
-                            child: Text(
-                              '${item.count}',
-                              style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
-                            ),
+                          IconButton(
+                            icon: const Icon(Icons.remove_circle_outline_rounded, color: AppColors.textMuted, size: 20),
+                            onPressed: () => _incrementDenomination(d, -1),
                           ),
-                          _buildStepperButton(Icons.add, () => _incrementDenomination(item, 1)),
-                          const SizedBox(width: 6),
-                          InkWell(
-                            onTap: () => _incrementDenomination(item, 5),
-                            borderRadius: BorderRadius.circular(6),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: AppColors.surfaceHighlight,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Text('+5', style: TextStyle(color: AppColors.primaryAmber, fontSize: 11, fontWeight: FontWeight.bold)),
-                            ),
+                          Text(
+                            '${d.count}',
+                            style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primaryAmber, size: 20),
+                            onPressed: () => _incrementDenomination(d, 1),
                           ),
                         ],
                       ),
-
-                      const SizedBox(width: 14),
-
-                      // Line Total
-                      SizedBox(
-                        width: 75,
+                      Expanded(
+                        flex: 3,
                         child: Text(
-                          '\$${(item.totalCents / 100).toStringAsFixed(2)}',
+                          '\$${(d.totalCents / 100).toStringAsFixed(2)}',
                           textAlign: TextAlign.right,
-                          style: const TextStyle(color: AppColors.primaryAmber, fontWeight: FontWeight.bold, fontSize: 14),
+                          style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
                         ),
                       ),
                     ],
@@ -638,377 +523,151 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
               },
             ),
           ),
+        ],
+      ),
+    );
+  }
 
-          const SizedBox(height: 12),
+  Widget _buildShiftSummaryAndOutboxCard() {
+    final variance = _varianceCents;
+    final isSurplus = variance > 0;
+    final isBalanced = variance == 0;
+    final varianceColor = isBalanced
+        ? AppColors.successGreen
+        : (isSurplus ? AppColors.primaryAmber : AppColors.alertRed);
 
-          // Total Actual vs Variance Summary
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: isBalanced
-                  ? AppColors.successGreenBg
-                  : (isOver ? AppColors.surfaceElevated : AppColors.alertRedBg),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: isBalanced
-                    ? AppColors.successGreen.withValues(alpha: 0.4)
-                    : (isOver ? AppColors.primaryAmber.withValues(alpha: 0.4) : AppColors.alertRed.withValues(alpha: 0.4)),
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.surfaceHighlight),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.analytics_rounded, color: AppColors.primaryAmber, size: 22),
+              SizedBox(width: 8),
+              Text(
+                'Balance del Turno y Auditoría',
+                style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
               ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Resumen de Esperados
+          _buildSummaryRow(AppStrings.openingFloat, '\$${(_openingFloatCents / 100).toStringAsFixed(2)}'),
+          const SizedBox(height: 8),
+          _buildSummaryRow(AppStrings.expectedCash, '\$${(_systemExpectedCashSalesCents / 100).toStringAsFixed(2)}'),
+          const SizedBox(height: 8),
+          _buildSummaryRow(AppStrings.expectedCard, '\$${(_systemExpectedCardSalesCents / 100).toStringAsFixed(2)}'),
+          const SizedBox(height: 8),
+          _buildSummaryRow('Total Esperado en Caja:', '\$${(_expectedDrawerTotalCents / 100).toStringAsFixed(2)}', isBold: true),
+          const SizedBox(height: 14),
+          const Divider(height: 1, color: AppColors.surfaceHighlight),
+          const SizedBox(height: 14),
+
+          // Tarjeta de Diferencia
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: varianceColor.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: varianceColor.withOpacity(0.4)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('ACTUAL DRAWER COUNT', style: TextStyle(color: AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 2),
-                    Text(
-                      '\$${(_actualDrawerCountCents / 100).toStringAsFixed(2)}',
-                      style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w900, fontSize: 18),
-                    ),
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isBalanced
-                        ? AppColors.successGreen
-                        : (isOver ? AppColors.primaryAmber : AppColors.alertRed),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        isBalanced ? Icons.check_circle_rounded : (isOver ? Icons.arrow_upward_rounded : Icons.warning_rounded),
-                        color: Colors.black,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 6),
                       Text(
-                        isBalanced
-                            ? 'BALANCED (\$0.00)'
-                            : '${isOver ? "+ OVER" : "- SHORT"} \$${(variance.abs() / 100).toStringAsFixed(2)}',
-                        style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12),
+                        isBalanced ? 'Caja Cuadrada' : (isSurplus ? 'Sobrante en Caja' : 'Faltante en Caja'),
+                        style: TextStyle(color: varianceColor, fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Diferencia respecto a ventas',
+                        style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
+                Text(
+                  '${isSurplus ? '+' : ''}\$${(variance / 100).toStringAsFixed(2)}',
+                  style: TextStyle(color: varianceColor, fontSize: 24, fontWeight: FontWeight.bold),
+                ),
               ],
             ),
+          ),
+
+          const Spacer(),
+
+          // Acciones: Imprimir Corte Z y Cerrar Turno
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textPrimary,
+                    side: const BorderSide(color: AppColors.surfaceHighlight),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: _printZReport,
+                  icon: const Icon(Icons.print_rounded),
+                  label: const Text(AppStrings.printZReport, style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryAmber,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: _isLockingDrawer ? null : _lockDrawerAndCloseShift,
+                  icon: _isLockingDrawer
+                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                      : const Icon(Icons.lock_clock_rounded),
+                  label: const Text('CERRAR TURNO', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildShiftPerformanceCard() {
-    const totalSalesCents = _systemExpectedCashSalesCents + _systemExpectedCardSalesCents;
-    final cashPercent = (_systemExpectedCashSalesCents / totalSalesCents * 100).round();
-    final cardPercent = 100 - cashPercent;
-
-    return Container(
-      padding: const EdgeInsets.all(18.0),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.surfaceHighlight),
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: const [
-                Icon(Icons.analytics_rounded, color: AppColors.primaryAmber, size: 22),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Shift Performance & Outbox Ledger',
-                    style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-
-            // Key Metrics Grid
-            Row(
-              children: [
-                Expanded(
-                  child: _buildShiftMetricTile(
-                    icon: Icons.receipt_long_rounded,
-                    title: 'Total Shift Orders',
-                    value: '$_totalOrdersCount Orders',
-                    subtitle: 'Avg \$${((totalSalesCents / _totalOrdersCount) / 100).toStringAsFixed(2)}',
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildShiftMetricTile(
-                    icon: Icons.monetization_on_rounded,
-                    title: 'Net Shift Sales',
-                    value: '\$${(totalSalesCents / 100).toStringAsFixed(2)}',
-                    subtitle: 'Cash + Card Terminal',
-                    valueColor: AppColors.primaryAmber,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 14),
-
-            // Payment Distribution Visualizer
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceElevated,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.surfaceHighlight),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Payment Distribution',
-                          style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.bold),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Text('Cash $cashPercent% • Card $cardPercent%', style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: cashPercent,
-                          child: Container(height: 10, color: AppColors.primaryAmber),
-                        ),
-                        Expanded(
-                          flex: cardPercent,
-                          child: Container(height: 10, color: AppColors.surfaceHighlight),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text('Cash: \$${(_systemExpectedCashSalesCents / 100).toStringAsFixed(2)}', style: const TextStyle(color: AppColors.primaryAmber, fontSize: 11, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
-                      ),
-                      Expanded(
-                        child: Text('Card: \$${(_systemExpectedCardSalesCents / 100).toStringAsFixed(2)}', textAlign: TextAlign.right, style: const TextStyle(color: AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 14),
-
-            // Outbox Sync & Resilience Status Card
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceElevated,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.surfaceHighlight),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: const [
-                      Icon(Icons.sync_rounded, color: AppColors.successGreen, size: 18),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Offline-First Outbox Status',
-                          style: TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.bold),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Text('0 Pending', style: TextStyle(color: AppColors.successGreen, fontSize: 11, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'All order sales, batch restocks, and cash movements are stored in local SQLite ledger and synchronized upstream to Postgres via /sync/push idempotent batches.',
-                    style: TextStyle(color: AppColors.textMuted, fontSize: 11, height: 1.3),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 14),
-
-            // Manager Audit Sign-off Note
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceHighlight.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: const [
-                  Icon(Icons.verified_user_rounded, color: AppColors.primaryAmber, size: 18),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Submitting Z-Close logs an immutable AUDIT_ADJUSTMENT ledger entry tied to this manager session.',
-                      style: TextStyle(color: AppColors.textMuted, fontSize: 11),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildShiftMetricTile({
-    required IconData icon,
-    required String title,
-    required String value,
-    required String subtitle,
-    Color valueColor = AppColors.textPrimary,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.surfaceHighlight),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: AppColors.primaryAmber, size: 20),
-          const SizedBox(height: 10),
-          Text(title, style: const TextStyle(color: AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 4),
-          Text(value, style: TextStyle(color: valueColor, fontWeight: FontWeight.bold, fontSize: 16)),
-          const SizedBox(height: 2),
-          Text(subtitle, style: const TextStyle(color: AppColors.textMuted, fontSize: 10)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMetricCol(String label, String value, {bool highlight = false}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildSummaryRow(String label, String value, {bool isBold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: isBold ? AppColors.textPrimary : AppColors.textMuted,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            fontSize: 13,
+          ),
+        ),
         Text(
           value,
           style: TextStyle(
-            color: highlight ? AppColors.primaryAmber : AppColors.textPrimary,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
+            color: AppColors.textPrimary,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+            fontSize: isBold ? 15 : 13,
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildStepperButton(IconData icon, VoidCallback onTap) {
-    return SizedBox(
-      width: 32,
-      height: 32,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.surfaceHighlight,
-          foregroundColor: AppColors.textPrimary,
-          padding: EdgeInsets.zero,
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-        onPressed: onTap,
-        child: Icon(icon, size: 16),
-      ),
-    );
-  }
-
-  Widget _buildBottomActionBar() {
-    return Container(
-      height: 72,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      decoration: const BoxDecoration(
-        color: AppColors.surfaceCard,
-        border: Border(top: BorderSide(color: AppColors.surfaceHighlight, width: 1)),
-      ),
-      child: Row(
-        children: [
-          // Print Z-Report Button
-          SizedBox(
-            height: 52,
-            child: OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.textPrimary,
-                side: BorderSide(color: _isZReportPrinted ? AppColors.successGreen : AppColors.primaryAmber),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-              ),
-              onPressed: _printZReport,
-              icon: Icon(
-                _isZReportPrinted ? Icons.check_circle_rounded : Icons.print_rounded,
-                color: _isZReportPrinted ? AppColors.successGreen : AppColors.primaryAmber,
-                size: 20,
-              ),
-              label: Text(
-                _isZReportPrinted ? 'Z-REPORT PRINTED' : 'PRINT Z-REPORT',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                  color: _isZReportPrinted ? AppColors.successGreen : AppColors.textPrimary,
-                ),
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 16),
-
-          // Lock Drawer & Close Shift Button
-          Expanded(
-            child: SizedBox(
-              height: 52,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryAmber,
-                  foregroundColor: AppColors.backgroundDeep,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                onPressed: _isLockingDrawer ? null : _lockDrawerAndCloseShift,
-                icon: _isLockingDrawer
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(color: AppColors.backgroundDeep, strokeWidth: 2),
-                      )
-                    : const Icon(Icons.lock_rounded, size: 20),
-                label: Text(
-                  _isLockingDrawer ? 'CLOSING SHIFT...' : 'LOCK DRAWER & CLOSE SHIFT',
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: 0.8),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

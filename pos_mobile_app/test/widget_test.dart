@@ -108,6 +108,6 @@ void main() {
 
     expect(find.byType(PinLoginScreen), findsOneWidget);
     expect(find.text('ARTISAN BAKERY'), findsOneWidget);
-    expect(find.text('On-Shift Bakery Staff'), findsOneWidget);
+    expect(find.text('Personal en Turno'), findsOneWidget);
   });
 }

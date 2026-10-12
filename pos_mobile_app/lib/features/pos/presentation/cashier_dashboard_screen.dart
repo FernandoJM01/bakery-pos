@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
+import '../../../core/localization/app_strings.dart';
 import '../../auth/presentation/pin_login_screen.dart';
 import '../../auth/domain/user.dart';
 import '../../catalog/domain/product.dart';
@@ -11,6 +12,9 @@ import '../../catalog/data/catalog_repository.dart';
 import '../../inventory/presentation/stock_notifier.dart';
 import 'cart_notifier.dart';
 import 'checkout_notifier.dart';
+import 'held_tickets_notifier.dart';
+import 'held_tickets_dialog.dart';
+import 'receipt_preview_dialog.dart';
 import '../../../core/hardware/printer/console_printer_service.dart';
 import '../../../core/hardware/printer/receipt_printer_service.dart';
 
@@ -22,15 +26,24 @@ class CashierDashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen> {
-  String _selectedCategory = 'All';
+  String _selectedCategory = AppStrings.allCategories;
   List<Product> _allProducts = CatalogRepositoryImpl.defaultProducts;
-  List<String> _categories = ['All', 'Breads', 'Viennoiserie', 'Cakes', 'Beverages'];
+  final List<String> _categories = [
+    AppStrings.allCategories,
+    AppStrings.catBreads,
+    AppStrings.catViennoiserie,
+    AppStrings.catCakes,
+    AppStrings.catBeverages,
+  ];
   String _searchQuery = '';
-  String _orderType = 'Takeout'; // Takeout or Dine-in
+  String _orderType = AppStrings.takeout;
   bool _isLoading = false;
   late Timer _clockTimer;
   DateTime _currentTime = DateTime.now();
   final ReceiptPrinterService _printer = ConsolePrinterService();
+
+  // Para control responsive en móviles: 0 = Catálogo, 1 = Ticket/Carrito
+  int _mobileTab = 0;
 
   @override
   void initState() {
@@ -89,50 +102,147 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
     );
 
     if (result.isSuccess) {
-      // Print receipt via ESC/POS protocol
-      await _printer.printReceipt(
-        branchName: 'Downtown Bakery Oven #1',
-        receiptNumber: result.orderId,
+      final itemsSnapshot = List<CartItem>.from(cart.itemsList);
+      final subtotal = cart.subtotalCents;
+      final tax = cart.taxCents;
+      final total = cart.totalCents;
+
+      // Imprimir via protocolo ESC/POS
+      _printReceipt(
+        orderId: result.orderId,
         cashierName: cashier.fullName,
-        timestamp: DateTime.now(),
-        items: cart.itemsList
-            .map((i) => ReceiptLineItem(
-                  name: i.product.name,
-                  quantity: i.quantity,
-                  unitPriceCents: i.product.priceCents,
-                  totalPriceCents: i.itemTotalCents,
-                ))
-            .toList(),
-        subtotalCents: cart.subtotalCents,
-        taxCents: cart.taxCents,
-        totalCents: cart.totalCents,
-        paymentMethod: 'CASH',
-        cashTenderedCents: tenderedCents,
+        items: itemsSnapshot,
+        subtotal: subtotal,
+        tax: tax,
+        total: total,
+        tenderedCents: tenderedCents,
         changeDueCents: result.changeDueCents,
       );
 
-      // Background sync trigger
+      // Trigger background sync
       ref.read(syncWorkerProvider).syncPendingEvents();
 
       if (mounted) {
-        _showSuccessDialog(result.orderId, result.changeDueCents);
+        // Limpiar carrito para nueva venta
+        ref.read(cartNotifierProvider.notifier).clearCart();
+
+        // Mostrar Modal Interactivo de Recibo Digital
+        _showReceiptDialog(
+          orderId: result.orderId,
+          cashierName: cashier.fullName,
+          items: itemsSnapshot,
+          subtotal: subtotal,
+          tax: tax,
+          total: total,
+          tenderedCents: tenderedCents,
+          changeDueCents: result.changeDueCents,
+        );
       }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: AppColors.alertRed,
-            content: Text(result.errorMessage ?? 'Sale failed'),
+            content: Text(result.errorMessage ?? 'Error al procesar la venta'),
           ),
         );
       }
     }
   }
 
-  void _showSuccessDialog(String orderId, int changeDueCents) {
+  Future<void> _printReceipt({
+    required String orderId,
+    required String cashierName,
+    required List<CartItem> items,
+    required int subtotal,
+    required int tax,
+    required int total,
+    required int tenderedCents,
+    required int changeDueCents,
+  }) async {
+    await _printer.printReceipt(
+      branchName: AppStrings.branchDowntown,
+      receiptNumber: orderId,
+      cashierName: cashierName,
+      timestamp: DateTime.now(),
+      items: items
+          .map((i) => ReceiptLineItem(
+                name: i.product.name,
+                quantity: i.quantity,
+                unitPriceCents: i.product.priceCents,
+                totalPriceCents: i.itemTotalCents,
+              ))
+          .toList(),
+      subtotalCents: subtotal,
+      taxCents: tax,
+      totalCents: total,
+      paymentMethod: 'EFECTIVO',
+      cashTenderedCents: tenderedCents,
+      changeDueCents: changeDueCents,
+    );
+  }
+
+  void _showReceiptDialog({
+    required String orderId,
+    required String cashierName,
+    required List<CartItem> items,
+    required int subtotal,
+    required int tax,
+    required int total,
+    required int tenderedCents,
+    required int changeDueCents,
+  }) {
     showDialog(
       context: context,
       barrierDismissible: true,
+      builder: (ctx) => ReceiptPreviewDialog(
+        orderId: orderId,
+        cashierName: cashierName,
+        items: items,
+        subtotalCents: subtotal,
+        taxCents: tax,
+        totalCents: total,
+        cashTenderedCents: tenderedCents,
+        changeDueCents: changeDueCents,
+        onPrint: () {
+          _printReceipt(
+            orderId: orderId,
+            cashierName: cashierName,
+            items: items,
+            subtotal: subtotal,
+            tax: tax,
+            total: total,
+            tenderedCents: tenderedCents,
+            changeDueCents: changeDueCents,
+          );
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              backgroundColor: AppColors.successGreen,
+              content: Text('Ticket enviado a impresora térmica ESC/POS'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        },
+        onNewSale: () => Navigator.of(ctx).pop(),
+      ),
+    );
+  }
+
+  void _handleHoldOrder() {
+    final cart = ref.read(cartNotifierProvider);
+    if (cart.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: AppColors.primaryAmber,
+          content: Text('Agrega al menos un producto al ticket antes de pausar.'),
+        ),
+      );
+      return;
+    }
+
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surfaceCard,
         shape: RoundedRectangleBorder(
@@ -141,56 +251,95 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
         ),
         title: Row(
           children: const [
-            Icon(Icons.check_circle_rounded, color: AppColors.successGreen, size: 28),
+            Icon(Icons.pause_circle_filled_rounded, color: AppColors.primaryAmber, size: 24),
             SizedBox(width: 10),
-            Text(
-              'Sale Completed!',
-              style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
-            ),
+            Text(AppStrings.holdOrder, style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Order Reference: $orderId', style: const TextStyle(color: AppColors.textMuted)),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.backgroundDeep,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.surfaceHighlight),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Change Due:', style: TextStyle(color: AppColors.textMuted, fontSize: 16)),
-                  Text(
-                    '\$${(changeDueCents / 100).toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      color: AppColors.primaryAmber,
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+            const Text(
+              AppStrings.holdOrderPrompt,
+              style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              style: const TextStyle(color: AppColors.textPrimary),
+              decoration: InputDecoration(
+                hintText: 'ej. Cliente con prisa, Mesa 2',
+                hintStyle: const TextStyle(color: AppColors.textDisabled),
+                filled: true,
+                fillColor: AppColors.surfaceElevated,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
               ),
             ),
           ],
         ),
         actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text(AppStrings.cancel, style: TextStyle(color: AppColors.textMuted)),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryAmber,
               foregroundColor: Colors.black,
-              minimumSize: const Size(120, 48),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('NEW SALE', style: TextStyle(fontWeight: FontWeight.bold)),
+            onPressed: () {
+              final label = controller.text.trim();
+              final cashier = ref.read(currentUserProvider)?.fullName ?? 'Maria Gonzalez';
+              ref.read(heldTicketsNotifierProvider.notifier).parkCart(
+                    label: label.isEmpty ? 'Orden Pausada' : label,
+                    cashierName: cashier,
+                    items: cart.itemsList,
+                    totalCents: cart.totalCents,
+                  );
+              ref.read(cartNotifierProvider.notifier).clearCart();
+              Navigator.of(ctx).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  backgroundColor: AppColors.successGreen,
+                  content: Text(AppStrings.orderParkedSuccess),
+                ),
+              );
+            },
+            child: const Text(AppStrings.save, style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showHeldOrdersDialog() {
+    final heldTickets = ref.watch(heldTicketsNotifierProvider);
+    showDialog(
+      context: context,
+      builder: (ctx) => Consumer(
+        builder: (context, ref, _) {
+          final liveHeld = ref.watch(heldTicketsNotifierProvider);
+          return HeldTicketsDialog(
+            heldTickets: liveHeld,
+            onResume: (ticket) {
+              ref.read(heldTicketsNotifierProvider.notifier).resumeTicket(ticket.id);
+              ref.read(cartNotifierProvider.notifier).restoreItems(ticket.items);
+              Navigator.of(ctx).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  backgroundColor: AppColors.successGreen,
+                  content: Text(AppStrings.orderResumedSuccess),
+                ),
+              );
+            },
+            onDelete: (id) {
+              ref.read(heldTicketsNotifierProvider.notifier).deleteTicket(id);
+            },
+          );
+        },
       ),
     );
   }
@@ -208,7 +357,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
           children: const [
             Icon(Icons.logout_rounded, color: AppColors.primaryAmber, size: 24),
             SizedBox(width: 10),
-            Text('Confirm Logout', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(AppStrings.confirmLogout, style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
           ],
         ),
         content: Column(
@@ -216,7 +365,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Are you sure you want to end your current session and return to the PIN terminal, ${user?.fullName ?? "Maria"}?',
+              '${AppStrings.logoutPrompt} (${user?.fullName ?? "Maria Gonzalez"})',
               style: const TextStyle(color: AppColors.textMuted, fontSize: 14, height: 1.4),
             ),
             const SizedBox(height: 12),
@@ -232,7 +381,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Unfinished cart items will remain safe on Register 01.',
+                      AppStrings.itemsStaySafe,
                       style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                     ),
                   ),
@@ -244,7 +393,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
+            child: const Text(AppStrings.cancel, style: TextStyle(color: AppColors.textMuted)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -258,7 +407,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                 MaterialPageRoute(builder: (_) => const PinLoginScreen()),
               );
             },
-            child: const Text('Log Out', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(AppStrings.logOut, style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -270,10 +419,14 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
     final cashier = ref.watch(currentUserProvider);
     final stockMap = ref.watch(stockNotifierProvider);
     final cart = ref.watch(cartNotifierProvider);
+    final heldTickets = ref.watch(heldTicketsNotifierProvider);
     final timeStr = DateFormat('hh:mm a').format(_currentTime);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
 
     final filteredProducts = _allProducts.where((p) {
-      final matchesCategory = _selectedCategory == 'All' ||
+      final matchesCategory = _selectedCategory == AppStrings.allCategories ||
+          _selectedCategory == 'All' ||
           p.category.toLowerCase() == _selectedCategory.toLowerCase();
       final matchesSearch = _searchQuery.isEmpty ||
           p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
@@ -286,70 +439,138 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
       body: SafeArea(
         child: Column(
           children: [
-            // 1. Top POS Master Bar (Matching Screen 2 Render)
-            _buildTopBar(cashier, timeStr),
+            // Barra Superior Principal
+            _buildTopBar(cashier, timeStr, heldTickets.length, isMobile),
 
-            // 2. Main Content: Catalog Grid (60%) + Ticket Sidebar (40%)
+            // Contenido Principal Responsive
             Expanded(
-              child: Row(
-                children: [
-                  // Left Catalog Area
-                  Expanded(
-                    flex: 6,
-                    child: Column(
+              child: isMobile
+                  ? (_mobileTab == 0
+                      ? Column(
+                          children: [
+                            _buildCategoryBar(),
+                            Expanded(
+                              child: _isLoading
+                                  ? const Center(child: CircularProgressIndicator(color: AppColors.primaryAmber))
+                                  : _buildProductGrid(filteredProducts, stockMap, isMobile),
+                            ),
+                          ],
+                        )
+                      : _buildTicketSidebar(cart, isMobile))
+                  : Row(
                       children: [
-                        // Category Horizontal Bar
-                        _buildCategoryBar(),
-
-                        // Product Cards Grid
+                        // Panel Izquierdo: Catálogo de productos (60%)
                         Expanded(
-                          child: _isLoading
-                              ? const Center(
-                                  child: CircularProgressIndicator(color: AppColors.primaryAmber),
-                                )
-                              : _buildProductGrid(filteredProducts, stockMap),
+                          flex: 6,
+                          child: Column(
+                            children: [
+                              _buildCategoryBar(),
+                              Expanded(
+                                child: _isLoading
+                                    ? const Center(child: CircularProgressIndicator(color: AppColors.primaryAmber))
+                                    : _buildProductGrid(filteredProducts, stockMap, false),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Divisor Vertical
+                        Container(width: 1, color: AppColors.surfaceHighlight),
+
+                        // Panel Derecho: Sidebar del Ticket (40%)
+                        Expanded(
+                          flex: 4,
+                          child: _buildTicketSidebar(cart, false),
                         ),
                       ],
                     ),
-                  ),
-
-                  // Vertical Divider
-                  Container(width: 1, color: AppColors.surfaceHighlight),
-
-                  // Right Order Ticket Sidebar
-                  Expanded(
-                    flex: 4,
-                    child: _buildTicketSidebar(cart),
-                  ),
-                ],
-              ),
             ),
           ],
         ),
       ),
+      // Barra Inferior Móvil para alternar entre Catálogo y Ticket
+      bottomNavigationBar: isMobile
+          ? Container(
+              height: 60,
+              decoration: const BoxDecoration(
+                color: AppColors.surfaceCard,
+                border: Border(top: BorderSide(color: AppColors.surfaceHighlight)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => setState(() => _mobileTab = 0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.grid_view_rounded, color: _mobileTab == 0 ? AppColors.primaryAmber : AppColors.textMuted),
+                          const SizedBox(height: 2),
+                          Text(
+                            AppStrings.allCategories,
+                            style: TextStyle(
+                              color: _mobileTab == 0 ? AppColors.primaryAmber : AppColors.textMuted,
+                              fontSize: 11,
+                              fontWeight: _mobileTab == 0 ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => setState(() => _mobileTab = 1),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Badge(
+                            label: Text('${cart.itemCount}'),
+                            isLabelVisible: cart.itemCount > 0,
+                            backgroundColor: AppColors.primaryAmber,
+                            textColor: Colors.black,
+                            child: Icon(Icons.shopping_cart_rounded, color: _mobileTab == 1 ? AppColors.primaryAmber : AppColors.textMuted),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${AppStrings.currentOrder} (\$${(cart.totalCents / 100).toStringAsFixed(2)})',
+                            style: TextStyle(
+                              color: _mobileTab == 1 ? AppColors.primaryAmber : AppColors.textMuted,
+                              fontSize: 11,
+                              fontWeight: _mobileTab == 1 ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : null,
     );
   }
 
-  Widget _buildTopBar(User? cashier, String timeStr) {
+  Widget _buildTopBar(User? cashier, String timeStr, int heldCount, bool isMobile) {
     return Container(
       height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 14.0),
       decoration: const BoxDecoration(
         color: AppColors.surfaceCard,
         border: Border(bottom: BorderSide(color: AppColors.surfaceHighlight, width: 1)),
       ),
       child: Row(
         children: [
-          // Drawer / Logout Icon
+          // Botón de Cerrar Sesión
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: AppColors.textPrimary),
-            tooltip: 'Switch Staff / Logout',
+            tooltip: AppStrings.logOut,
             onPressed: () => _confirmLogout(context, cashier),
           ),
 
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
 
-          // Cashier Profile Pill with Avatar
+          // Avatar y Nombre de Cajero
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
@@ -373,7 +594,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '${cashier?.fullName ?? "Maria Gonzalez"} (Register 01)',
+                  '${cashier?.fullName ?? "Maria Gonzalez"}${isMobile ? "" : " (Caja 01)"}',
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
@@ -384,37 +605,94 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
             ),
           ),
 
-          const SizedBox(width: 14),
+          const SizedBox(width: 10),
 
-          // Order Type Toggle Chip [Takeout]
+          // Botón de Órdenes en Espera con Badge
           InkWell(
-            onTap: () {
-              setState(() {
-                _orderType = _orderType == 'Takeout' ? 'Dine-In' : 'Takeout';
-              });
-            },
-            borderRadius: BorderRadius.circular(6),
+            onTap: _showHeldOrdersDialog,
+            borderRadius: BorderRadius.circular(8),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.surfaceElevated,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: AppColors.primaryAmber.withValues(alpha: 0.6)),
-              ),
-              child: Text(
-                '[$_orderType]',
-                style: const TextStyle(
-                  color: AppColors.primaryAmber,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
+                color: heldCount > 0 ? AppColors.primaryAmber.withOpacity(0.18) : AppColors.surfaceElevated,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: heldCount > 0 ? AppColors.primaryAmber : AppColors.surfaceHighlight,
                 ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.pause_circle_outline_rounded,
+                    color: heldCount > 0 ? AppColors.primaryAmber : AppColors.textMuted,
+                    size: 18,
+                  ),
+                  if (!isMobile) ...[
+                    const SizedBox(width: 6),
+                    Text(
+                      AppStrings.heldOrders,
+                      style: TextStyle(
+                        color: heldCount > 0 ? AppColors.primaryAmber : AppColors.textMuted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                  if (heldCount > 0) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryAmber,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '$heldCount',
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ),
 
-          const SizedBox(width: 14),
+          const SizedBox(width: 10),
 
-          // Quick Search Input
+          // Selector de Tipo de Orden: Para Llevar / Mesa
+          if (!isMobile)
+            InkWell(
+              onTap: () {
+                setState(() {
+                  _orderType = _orderType == AppStrings.takeout ? AppStrings.dineIn : AppStrings.takeout;
+                });
+              },
+              borderRadius: BorderRadius.circular(6),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceElevated,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: AppColors.primaryAmber.withOpacity(0.6)),
+                ),
+                child: Text(
+                  '[$_orderType]',
+                  style: const TextStyle(
+                    color: AppColors.primaryAmber,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
+
+          const SizedBox(width: 10),
+
+          // Buscador Rápido
           Expanded(
             child: Container(
               height: 38,
@@ -431,9 +709,9 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                   Expanded(
                     child: TextField(
                       style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-                      decoration: const InputDecoration(
-                        hintText: 'Quick Search...',
-                        hintStyle: TextStyle(color: AppColors.textDisabled, fontSize: 13),
+                      decoration: InputDecoration(
+                        hintText: isMobile ? 'Buscar...' : AppStrings.searchPlaceholder,
+                        hintStyle: const TextStyle(color: AppColors.textDisabled, fontSize: 13),
                         border: InputBorder.none,
                         isDense: true,
                         contentPadding: EdgeInsets.zero,
@@ -451,51 +729,52 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
             ),
           ),
 
-          const SizedBox(width: 14),
-
-          // Edge Synced Badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.successGreenBg,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.successGreen.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    color: AppColors.successGreen,
-                    shape: BoxShape.circle,
+          if (!isMobile) ...[
+            const SizedBox(width: 14),
+            // Badge Edge Synced
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.successGreenBg,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.successGreen.withOpacity(0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(
+                      color: AppColors.successGreen,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 6),
-                const Text(
-                  'Edge Synced',
-                  style: TextStyle(
-                    color: AppColors.successGreen,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
+                  const SizedBox(width: 6),
+                  const Text(
+                    'Sincronizado',
+                    style: TextStyle(
+                      color: AppColors.successGreen,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          const SizedBox(width: 14),
+            const SizedBox(width: 14),
 
-          // Clock
-          Text(
-            timeStr,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
+            // Reloj
+            Text(
+              timeStr,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -545,25 +824,27 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
     );
   }
 
-  Widget _buildProductGrid(List<Product> products, Map<String, int> stockMap) {
+  Widget _buildProductGrid(List<Product> products, Map<String, int> stockMap, bool isMobile) {
     if (products.isEmpty) {
       return const Center(
-        child: Text('No bakery items match search', style: TextStyle(color: AppColors.textMuted)),
+        child: Text('No hay productos que coincidan', style: TextStyle(color: AppColors.textMuted)),
       );
     }
 
+    final crossAxisCount = isMobile ? 2 : (MediaQuery.of(context).size.width > 1200 ? 4 : 3);
+
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        childAspectRatio: 1.05,
-        crossAxisSpacing: 14,
-        mainAxisSpacing: 14,
+      padding: const EdgeInsets.all(14),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        childAspectRatio: isMobile ? 0.95 : 1.05,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
       ),
       itemCount: products.length,
       itemBuilder: (context, idx) {
         final product = products[idx];
-        final stock = stockMap[product.id] ?? 24; // Default initial stock
+        final stock = stockMap[product.id] ?? 24;
         final isSoldOut = stock <= 0;
         final isLowStock = stock > 0 && stock <= 5;
 
@@ -573,55 +854,70 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       backgroundColor: AppColors.alertRed,
-                      content: Text('${product.name} is currently SOLD OUT!'),
+                      content: Text('¡${product.name} está AGOTADO!'),
                       duration: const Duration(seconds: 1),
                     ),
                   );
                 }
-              : () {
-                  ref.read(cartNotifierProvider.notifier).addProduct(product);
-                },
-          borderRadius: BorderRadius.circular(14),
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.surfaceCard,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.surfaceHighlight),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(14),
+              : () => ref.read(cartNotifierProvider.notifier).addProduct(product),
+          borderRadius: BorderRadius.circular(12),
+          child: Opacity(
+            opacity: isSoldOut ? 0.55 : 1.0,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.surfaceCard,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSoldOut ? AppColors.alertRed.withOpacity(0.3) : AppColors.surfaceHighlight,
+                ),
+              ),
+              clipBehavior: Clip.antiAlias,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Product Image Asset or Placeholder
+                  // Imagen del Producto
                   Expanded(
                     flex: 6,
-                    child: Container(
-                      width: double.infinity,
-                      color: AppColors.surfaceElevated,
-                      child: product.imageAsset != null
-                          ? Image.asset(
-                              product.imageAsset!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(
-                                Icons.bakery_dining_rounded,
-                                color: AppColors.primaryAmber,
-                                size: 40,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        product.imageAsset != null
+                            ? Image.asset(
+                                product.imageAsset!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => _buildImagePlaceholder(product),
+                              )
+                            : _buildImagePlaceholder(product),
+                        if (isSoldOut)
+                          Container(
+                            color: Colors.black.withOpacity(0.55),
+                            alignment: Alignment.center,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.alertRed,
+                                borderRadius: BorderRadius.circular(4),
                               ),
-                            )
-                          : const Icon(
-                              Icons.bakery_dining_rounded,
-                              color: AppColors.primaryAmber,
-                              size: 40,
+                              child: const Text(
+                                'AGOTADO',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                  letterSpacing: 1,
+                                ),
+                              ),
                             ),
+                          ),
+                      ],
                     ),
                   ),
 
-                  // Product Details (Title, Amber Price, Stock Badge)
+                  // Info del producto: Nombre, Precio y Stock
                   Expanded(
-                    flex: 4,
+                    flex: 5,
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(10.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -647,7 +943,6 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                                   fontSize: 15,
                                 ),
                               ),
-                              // Stock pill
                               _buildStockPill(stock, isSoldOut, isLowStock),
                             ],
                           ),
@@ -664,6 +959,19 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
     );
   }
 
+  Widget _buildImagePlaceholder(Product product) {
+    return Container(
+      color: AppColors.surfaceElevated,
+      child: Center(
+        child: Icon(
+          product.category == AppStrings.catBeverages ? Icons.coffee_rounded : Icons.bakery_dining_rounded,
+          color: AppColors.primaryAmber,
+          size: 32,
+        ),
+      ),
+    );
+  }
+
   Widget _buildStockPill(int stock, bool isSoldOut, bool isLowStock) {
     Color bg;
     Color text;
@@ -672,15 +980,15 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
     if (isSoldOut) {
       bg = AppColors.alertRedBg;
       text = AppColors.alertRed;
-      label = '✕ Sold Out';
+      label = '✕ Agotado';
     } else if (isLowStock) {
-      bg = AppColors.primaryAmber.withValues(alpha: 0.18);
+      bg = AppColors.primaryAmber.withOpacity(0.18);
       text = AppColors.primaryAmber;
-      label = '● $stock left - Low';
+      label = '● $stock restan';
     } else {
       bg = AppColors.successGreenBg;
       text = AppColors.successGreen;
-      label = '● $stock in stock';
+      label = '● $stock pzas';
     }
 
     return Container(
@@ -700,12 +1008,12 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
     );
   }
 
-  Widget _buildTicketSidebar(CartState cart) {
+  Widget _buildTicketSidebar(CartState cart, bool isMobile) {
     return Container(
       color: AppColors.surfaceCard,
       child: Column(
         children: [
-          // Ticket Header
+          // Encabezado del Ticket
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
             child: Row(
@@ -714,7 +1022,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                 Row(
                   children: [
                     const Text(
-                      'Order #104',
+                      '${AppStrings.orderNumber}104',
                       style: TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 18,
@@ -723,23 +1031,34 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '(${cart.itemCount} items)',
+                      '(${cart.itemCount} art.)',
                       style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
                     ),
                   ],
                 ),
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert_rounded, color: AppColors.textMuted),
-                  color: AppColors.surfaceElevated,
-                  onSelected: (val) {
-                    if (val == 'clear') {
-                      ref.read(cartNotifierProvider.notifier).clearCart();
-                    }
-                  },
-                  itemBuilder: (_) => [
-                    const PopupMenuItem(
-                      value: 'clear',
-                      child: Text('Clear Ticket', style: TextStyle(color: AppColors.alertRed)),
+                Row(
+                  children: [
+                    // Botón de Pausar Orden
+                    IconButton(
+                      icon: const Icon(Icons.pause_circle_outline_rounded, color: AppColors.primaryAmber),
+                      tooltip: AppStrings.holdOrder,
+                      onPressed: cart.isEmpty ? null : _handleHoldOrder,
+                    ),
+                    // Menú de opciones
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert_rounded, color: AppColors.textMuted),
+                      color: AppColors.surfaceElevated,
+                      onSelected: (val) {
+                        if (val == 'clear') {
+                          ref.read(cartNotifierProvider.notifier).clearCart();
+                        }
+                      },
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(
+                          value: 'clear',
+                          child: Text(AppStrings.clear, style: TextStyle(color: AppColors.alertRed)),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -749,18 +1068,18 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
 
           const Divider(height: 1, color: AppColors.surfaceHighlight),
 
-          // Scrollable Line Items List
+          // Lista de Artículos
           Expanded(
             child: cart.isEmpty
-                ? const Center(
+                ? Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
-                      children: [
+                      children: const [
                         Icon(Icons.shopping_basket_outlined, color: AppColors.textDisabled, size: 48),
                         SizedBox(height: 12),
-                        Text('Ticket is Empty', style: TextStyle(color: AppColors.textMuted, fontSize: 15)),
+                        Text(AppStrings.emptyCartTitle, style: TextStyle(color: AppColors.textMuted, fontSize: 15)),
                         SizedBox(height: 4),
-                        Text('Tap bakery products to add', style: TextStyle(color: AppColors.textDisabled, fontSize: 12)),
+                        Text(AppStrings.emptyCartSubtitle, style: TextStyle(color: AppColors.textDisabled, fontSize: 12)),
                       ],
                     ),
                   )
@@ -775,7 +1094,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: Row(
                           children: [
-                            // Product Name
+                            // Nombre del Producto
                             Expanded(
                               child: Text(
                                 item.product.name,
@@ -789,7 +1108,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                               ),
                             ),
 
-                            // Stepper Controls [-] [Qty] [+]
+                            // Controles de Cantidad [-] [Qty] [+]
                             Container(
                               height: 34,
                               decoration: BoxDecoration(
@@ -831,9 +1150,9 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
 
                             const SizedBox(width: 14),
 
-                            // Item Price
+                            // Precio del Artículo
                             SizedBox(
-                              width: 58,
+                              width: 60,
                               child: Text(
                                 '\$${(item.itemTotalCents / 100).toStringAsFixed(2)}',
                                 textAlign: TextAlign.right,
@@ -853,7 +1172,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
 
           const Divider(height: 1, color: AppColors.surfaceHighlight),
 
-          // Order Totals Summary
+          // Resumen de Totales y Cobro
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -861,7 +1180,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Subtotal', style: TextStyle(color: AppColors.textMuted, fontSize: 14)),
+                    const Text(AppStrings.subtotal, style: TextStyle(color: AppColors.textMuted, fontSize: 14)),
                     Text(
                       '\$${(cart.subtotalCents / 100).toStringAsFixed(2)}',
                       style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
@@ -872,7 +1191,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('8% tax', style: TextStyle(color: AppColors.textMuted, fontSize: 14)),
+                    const Text(AppStrings.taxVat, style: TextStyle(color: AppColors.textMuted, fontSize: 14)),
                     Text(
                       '\$${(cart.taxCents / 100).toStringAsFixed(2)}',
                       style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
@@ -884,7 +1203,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Total due',
+                      AppStrings.total,
                       style: TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 18,
@@ -905,11 +1224,11 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
 
                 const SizedBox(height: 14),
 
-                // Quick 1-Tap Cash Tender Presets Bar
+                // Presets Rápidos de Efectivo
                 const Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Quick 1-tap cash tender',
+                    'Cobro rápido en efectivo:',
                     style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                   ),
                 ),
@@ -917,7 +1236,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
 
                 Row(
                   children: [
-                    _buildTenderChip('Exact \$${(cart.totalCents / 100).toStringAsFixed(2)}', cart.totalCents, cart),
+                    _buildTenderChip('${AppStrings.exactCash} \$${(cart.totalCents / 100).toStringAsFixed(2)}', cart.totalCents, cart),
                     const SizedBox(width: 6),
                     _buildTenderChip('\$25.00', 2500, cart),
                     const SizedBox(width: 6),
@@ -929,7 +1248,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
 
                 const SizedBox(height: 14),
 
-                // Massive Complete Cash Sale Button (Height: 60dp)
+                // Botón Principal de Cobro
                 SizedBox(
                   width: double.infinity,
                   height: 56,
@@ -944,7 +1263,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                     ),
                     onPressed: cart.isEmpty ? null : () => _processSale(cart.totalCents),
                     child: Text(
-                      'COMPLETE CASH SALE (\$${(cart.totalCents / 100).toStringAsFixed(2)})',
+                      '${AppStrings.tenderCash.toUpperCase()} (\$${(cart.totalCents / 100).toStringAsFixed(2)})',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
@@ -972,7 +1291,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
           height: 36,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isEnabled ? AppColors.surfaceElevated : AppColors.surfaceHighlight.withValues(alpha: 0.3),
+            color: isEnabled ? AppColors.surfaceElevated : AppColors.surfaceHighlight.withOpacity(0.3),
             borderRadius: BorderRadius.circular(6),
             border: Border.all(
               color: isEnabled ? AppColors.surfaceHighlight : Colors.transparent,

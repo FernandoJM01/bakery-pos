@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
+import '../../../core/localization/app_strings.dart';
 import '../../auth/domain/user.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../catalog/data/catalog_repository.dart';
@@ -52,7 +53,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
         role: UserRole.cashier,
         avatarAsset: 'assets/users/maria_gonzalez.jpg',
       ),
-      shiftName: 'Morning Register',
+      shiftName: AppStrings.morningRegister,
       shiftTime: '07:00 - 15:00',
       icon: Icons.point_of_sale_rounded,
     ),
@@ -66,7 +67,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
         role: UserRole.localBaker,
         avatarAsset: 'assets/users/marco_rossi.jpg',
       ),
-      shiftName: 'Deck Oven Bake',
+      shiftName: AppStrings.deckOvenShift,
       shiftTime: '05:00 - 13:00',
       icon: Icons.soup_kitchen_rounded,
     ),
@@ -80,8 +81,8 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
         role: UserRole.branchManager,
         avatarAsset: 'assets/users/elena_rostova.jpg',
       ),
-      shiftName: 'Store Management',
-      shiftTime: 'All Day',
+      shiftName: AppStrings.storeManagement,
+      shiftTime: 'Todo el día',
       icon: Icons.badge_rounded,
     ),
   ];
@@ -179,7 +180,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
         if (mounted) {
           setState(() {
             _isValidating = false;
-            _errorMessage = 'Incorrect PIN. Try 1234';
+            _errorMessage = AppStrings.pinIncorrect;
             _enteredPin = '';
           });
         }
@@ -188,7 +189,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
       if (mounted) {
         setState(() {
           _isValidating = false;
-          _errorMessage = 'Login error: $e';
+          _errorMessage = 'Error de inicio de sesión: $e';
           _enteredPin = '';
         });
       }
@@ -215,6 +216,8 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
   @override
   Widget build(BuildContext context) {
     final timeStr = DateFormat('hh:mm a').format(_currentTime);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
 
     return Focus(
       focusNode: _keyboardFocusNode,
@@ -225,31 +228,42 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              // 1. Top Enterprise POS Header Bar
-              _buildTopHeader(timeStr),
+              // Barra Superior
+              _buildTopHeader(timeStr, isMobile),
 
-              // 2. Main Content Split View
+              // Contenido Principal
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 16.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Left 50% — On-Shift Bakery Staff Directory
-                      Expanded(
-                        flex: 5,
-                        child: _buildStaffDirectory(),
-                      ),
-
-                      const SizedBox(width: 28),
-
-                      // Right 50% — High-Tactile PIN Pad Terminal Card
-                      Expanded(
-                        flex: 5,
-                        child: _buildPinTerminal(),
-                      ),
-                    ],
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 16.0 : 28.0,
+                    vertical: isMobile ? 12.0 : 16.0,
                   ),
+                  child: isMobile
+                      ? SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              _buildStaffDirectory(isMobile),
+                              const SizedBox(height: 16),
+                              _buildPinTerminal(isMobile),
+                            ],
+                          ),
+                        )
+                      : Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Izquierda: Directorio
+                            Expanded(
+                              flex: 5,
+                              child: _buildStaffDirectory(isMobile),
+                            ),
+                            const SizedBox(width: 28),
+                            // Derecha: Terminal de PIN con scroll interno por seguridad
+                            Expanded(
+                              flex: 5,
+                              child: _buildPinTerminal(isMobile),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             ],
@@ -259,59 +273,50 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
     );
   }
 
-  Widget _buildTopHeader(String timeStr) {
+  Widget _buildTopHeader(String timeStr, bool isMobile) {
     return Container(
       height: 64,
-      padding: const EdgeInsets.symmetric(horizontal: 28.0),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 16.0 : 28.0),
       decoration: const BoxDecoration(
         color: AppColors.surfaceCard,
         border: Border(bottom: BorderSide(color: AppColors.surfaceHighlight, width: 1)),
       ),
       child: Row(
         children: [
-          // Bakery Logo & Branch Name
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.primaryAmber.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.bakery_dining_rounded, color: AppColors.primaryAmber, size: 24),
+          ),
+          const SizedBox(width: 12),
           Expanded(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryAmber.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
+                const Text(
+                  'ARTISAN BAKERY',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.0,
+                    fontSize: 14,
                   ),
-                  child: const Icon(Icons.bakery_dining_rounded, color: AppColors.primaryAmber, size: 24),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(width: 12),
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Text(
-                        'ARTISAN BAKERY',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.2,
-                          fontSize: 14,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        'Downtown Oven #1 (BR-01)',
-                        style: TextStyle(color: AppColors.textMuted, fontSize: 11),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
+                Text(
+                  AppStrings.branchDowntown,
+                  style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
 
-          // Live Clock
           Text(
             timeStr,
             style: const TextStyle(
@@ -322,66 +327,64 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
             ),
           ),
 
-          const SizedBox(width: 12),
-
-          // Terminal Identifier
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceElevated,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: AppColors.surfaceHighlight),
+          if (!isMobile) ...[
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceElevated,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: AppColors.surfaceHighlight),
+              ),
+              child: const Text(
+                'REG-01',
+                style: TextStyle(color: AppColors.textMuted, fontWeight: FontWeight.bold, fontSize: 11),
+              ),
             ),
-            child: const Text(
-              'REG-01',
-              style: TextStyle(color: AppColors.textMuted, fontWeight: FontWeight.bold, fontSize: 11),
-            ),
-          ),
-
-          const SizedBox(width: 10),
-
-          // Edge Sync Status Pill
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.successGreenBg,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.successGreen.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: const BoxDecoration(
-                    color: AppColors.successGreen,
-                    shape: BoxShape.circle,
+            const SizedBox(width: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.successGreenBg,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.successGreen.withOpacity(0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: AppColors.successGreen,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 6),
-                const Text(
-                  'Local Edge Online',
-                  style: TextStyle(
-                    color: AppColors.successGreen,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
+                  const SizedBox(width: 6),
+                  const Text(
+                    'En Línea',
+                    style: TextStyle(
+                      color: AppColors.successGreen,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildStaffDirectory() {
+  Widget _buildStaffDirectory(bool isMobile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: isMobile ? MainAxisSize.min : MainAxisSize.max,
       children: [
         const Text(
-          'On-Shift Bakery Staff',
+          'Personal en Turno',
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 20,
@@ -391,136 +394,155 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
         ),
         const SizedBox(height: 6),
         const Text(
-          'Tap your profile card below to activate PIN login',
+          'Selecciona tu perfil para ingresar con PIN',
           style: TextStyle(color: AppColors.textMuted, fontSize: 13),
         ),
         const SizedBox(height: 16),
 
-        Expanded(
-          child: ListView.separated(
-            itemCount: _defaultStaffList.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final staff = _defaultStaffList[index];
-              final isSelected = _selectedStaff.user.id == staff.user.id;
-
-              return InkWell(
-                onTap: () {
-                  setState(() {
-                    _selectedStaff = staff;
-                    _enteredPin = '';
-                    _errorMessage = null;
-                  });
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppColors.surfaceElevated : AppColors.surfaceCard,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isSelected ? AppColors.primaryAmber : AppColors.surfaceHighlight,
-                      width: isSelected ? 2.0 : 1.0,
-                    ),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: AppColors.primaryAmber.withValues(alpha: 0.18),
-                              blurRadius: 16,
-                              offset: const Offset(0, 4),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Row(
-                    children: [
-                      // Avatar Image or Icon Circle
-                      Container(
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.primaryAmber.withValues(alpha: 0.2)
-                              : AppColors.surfaceHighlight,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isSelected ? AppColors.primaryAmber : Colors.transparent,
-                            width: 2,
-                          ),
-                        ),
-                        child: ClipOval(
-                          child: staff.user.avatarAsset != null
-                              ? Image.asset(
-                                  staff.user.avatarAsset!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Icon(
-                                    staff.icon,
-                                    color: isSelected ? AppColors.primaryAmber : AppColors.textMuted,
-                                    size: 26,
-                                  ),
-                                )
-                              : Icon(
-                                  staff.icon,
-                                  color: isSelected ? AppColors.primaryAmber : AppColors.textMuted,
-                                  size: 26,
-                                ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-
-                      // Name & Role
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              staff.user.fullName,
-                              style: TextStyle(
-                                color: isSelected ? AppColors.textPrimary : AppColors.textPrimary.withValues(alpha: 0.9),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${staff.user.role.value} • ${staff.shiftName}',
-                              style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Shift Duration Badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceHighlight.withValues(alpha: 0.6),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          staff.shiftTime,
-                          style: const TextStyle(
-                            color: AppColors.textMuted,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+        isMobile
+            ? Column(
+                children: _defaultStaffList.map((staff) => _buildStaffCard(staff)).toList(),
+              )
+            : Expanded(
+                child: ListView.separated(
+                  itemCount: _defaultStaffList.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final staff = _defaultStaffList[index];
+                    return _buildStaffCard(staff);
+                  },
                 ),
-              );
-            },
-          ),
-        ),
+              ),
       ],
     );
   }
 
-  Widget _buildPinTerminal() {
+  Widget _buildStaffCard(StaffMemberInfo staff) {
+    final isSelected = _selectedStaff.user.id == staff.user.id;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedStaff = staff;
+            _enteredPin = '';
+            _errorMessage = null;
+          });
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.surfaceElevated : AppColors.surfaceCard,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? AppColors.primaryAmber : AppColors.surfaceHighlight,
+              width: isSelected ? 2.0 : 1.0,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primaryAmber.withOpacity(0.18),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primaryAmber.withOpacity(0.2) : AppColors.surfaceHighlight,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? AppColors.primaryAmber : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+                child: ClipOval(
+                  child: staff.user.avatarAsset != null
+                      ? Image.asset(
+                          staff.user.avatarAsset!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(
+                            staff.icon,
+                            color: isSelected ? AppColors.primaryAmber : AppColors.textMuted,
+                            size: 26,
+                          ),
+                        )
+                      : Icon(
+                          staff.icon,
+                          color: isSelected ? AppColors.primaryAmber : AppColors.textMuted,
+                          size: 26,
+                        ),
+                ),
+              ),
+              const SizedBox(width: 16),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      staff.user.fullName,
+                      style: TextStyle(
+                        color: isSelected ? AppColors.textPrimary : AppColors.textPrimary.withOpacity(0.9),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${_roleLabel(staff.user.role)} • ${staff.shiftName}',
+                      style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceHighlight.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  staff.shiftTime,
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _roleLabel(UserRole role) {
+    switch (role) {
+      case UserRole.cashier:
+        return AppStrings.roleCashier;
+      case UserRole.localBaker:
+        return AppStrings.roleBaker;
+      case UserRole.branchManager:
+        return AppStrings.roleManager;
+      case UserRole.globalAdmin:
+        return AppStrings.roleAdmin;
+    }
+  }
+
+  Widget _buildPinTerminal(bool isMobile) {
     return Container(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(18.0),
       decoration: BoxDecoration(
         color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(24),
@@ -533,213 +555,247 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // Selected Staff Badge & Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryAmber.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.primaryAmber, width: 1.5),
-                ),
-                child: ClipOval(
-                  child: _selectedStaff.user.avatarAsset != null
-                      ? Image.asset(
-                          _selectedStaff.user.avatarAsset!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Icon(_selectedStaff.icon, color: AppColors.primaryAmber, size: 22),
-                        )
-                      : Icon(_selectedStaff.icon, color: AppColors.primaryAmber, size: 22),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _selectedStaff.user.fullName,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  Text(
-                    _selectedStaff.user.role.value,
-                    style: const TextStyle(
-                      color: AppColors.primaryAmber,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // PIN prompt label
-          const Text(
-            'ENTER 4-DIGIT PIN',
-            style: TextStyle(
-              color: AppColors.textMuted,
-              letterSpacing: 2.0,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 14),
-
-          // 4 Glowing PIN Dots
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(4, (index) {
-              final isFilled = index < _enteredPin.length;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                margin: const EdgeInsets.symmetric(horizontal: 10),
-                width: 18,
-                height: 18,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isFilled ? AppColors.primaryAmber : Colors.transparent,
-                  border: Border.all(
-                    color: isFilled ? AppColors.primaryAmber : AppColors.surfaceHighlight,
-                    width: 2.5,
-                  ),
-                  boxShadow: isFilled
-                      ? [
-                          BoxShadow(
-                            color: AppColors.primaryAmber.withValues(alpha: 0.5),
-                            blurRadius: 10,
-                            spreadRadius: 1,
-                          ),
-                        ]
-                      : null,
-                ),
-              );
-            }),
-          ),
-
-          if (_isValidating) ...[
-            const SizedBox(height: 10),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Perfil Seleccionado
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(color: AppColors.primaryAmber, strokeWidth: 2),
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryAmber.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.primaryAmber, width: 1.5),
+                  ),
+                  child: ClipOval(
+                    child: _selectedStaff.user.avatarAsset != null
+                        ? Image.asset(
+                            _selectedStaff.user.avatarAsset!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Icon(_selectedStaff.icon, color: AppColors.primaryAmber, size: 20),
+                          )
+                        : Icon(_selectedStaff.icon, color: AppColors.primaryAmber, size: 20),
+                  ),
                 ),
-                SizedBox(width: 8),
-                Text(
-                  'Verifying PIN...',
-                  style: TextStyle(color: AppColors.primaryAmber, fontSize: 12, fontWeight: FontWeight.bold),
+                const SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _selectedStaff.user.fullName,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      _roleLabel(_selectedStaff.user.role),
+                      style: const TextStyle(
+                        color: AppColors.primaryAmber,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ] else if (_errorMessage != null) ...[
+
             const SizedBox(height: 10),
-            Text(
-              _errorMessage!,
-              style: const TextStyle(
-                color: AppColors.alertRed,
+
+            const Text(
+              'INGRESA TU PIN DE 4 DÍGITOS',
+              style: TextStyle(
+                color: AppColors.textMuted,
+                letterSpacing: 1.5,
+                fontSize: 11,
                 fontWeight: FontWeight.bold,
-                fontSize: 13,
               ),
             ),
-          ] else
-            const SizedBox(height: 24),
 
-          const Spacer(),
+            const SizedBox(height: 10),
 
-          // Tactile Numeric Keypad
-          _buildKeypad(),
+            // Puntos de PIN
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(4, (index) {
+                final isFilled = index < _enteredPin.length;
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: isFilled ? AppColors.primaryAmber : Colors.transparent,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isFilled ? AppColors.primaryAmber : AppColors.surfaceHighlight,
+                      width: 2,
+                    ),
+                    boxShadow: isFilled
+                        ? [
+                            BoxShadow(
+                              color: AppColors.primaryAmber.withOpacity(0.5),
+                              blurRadius: 8,
+                            ),
+                          ]
+                        : null,
+                  ),
+                );
+              }),
+            ),
 
-          const Spacer(),
+            if (_isValidating) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(color: AppColors.primaryAmber, strokeWidth: 2),
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    AppStrings.verifyingPin,
+                    style: TextStyle(color: AppColors.primaryAmber, fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ] else if (_errorMessage != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _errorMessage!,
+                style: const TextStyle(color: AppColors.alertRed, fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+            ] else ...[
+              const SizedBox(height: 16),
+            ],
+
+            const SizedBox(height: 8),
+
+            // Teclado Numérico Táctil
+            _buildNumericKeypad(),
+
+            const SizedBox(height: 10),
+
+            const Text(
+              AppStrings.keyboardSupported,
+              style: TextStyle(color: AppColors.textDisabled, fontSize: 10),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNumericKeypad() {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 280),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              _buildKeypadButton('1'),
+              const SizedBox(width: 10),
+              _buildKeypadButton('2'),
+              const SizedBox(width: 10),
+              _buildKeypadButton('3'),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _buildKeypadButton('4'),
+              const SizedBox(width: 10),
+              _buildKeypadButton('5'),
+              const SizedBox(width: 10),
+              _buildKeypadButton('6'),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _buildKeypadButton('7'),
+              const SizedBox(width: 10),
+              _buildKeypadButton('8'),
+              const SizedBox(width: 10),
+              _buildKeypadButton('9'),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _buildSpecialKeypadButton(
+                label: 'C',
+                onTap: _onClear,
+                color: AppColors.alertRed,
+              ),
+              const SizedBox(width: 10),
+              _buildKeypadButton('0'),
+              const SizedBox(width: 10),
+              _buildSpecialKeypadButton(
+                icon: Icons.backspace_rounded,
+                onTap: _onBackspace,
+                color: AppColors.textMuted,
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildKeypad() {
-    return Column(
-      children: [
-        _buildKeyRow(['1', '2', '3']),
-        const SizedBox(height: 12),
-        _buildKeyRow(['4', '5', '6']),
-        const SizedBox(height: 12),
-        _buildKeyRow(['7', '8', '9']),
-        const SizedBox(height: 12),
-        _buildKeyRow(['CLEAR', '0', '⌫']),
-      ],
+  Widget _buildKeypadButton(String digit) {
+    return Expanded(
+      child: AspectRatio(
+        aspectRatio: 1.3,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.surfaceElevated,
+            foregroundColor: AppColors.textPrimary,
+            elevation: 0,
+            padding: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: AppColors.surfaceHighlight),
+            ),
+          ),
+          onPressed: () => _onKeypadTap(digit),
+          child: Text(
+            digit,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildKeyRow(List<String> keys) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: keys.map((key) {
-        final isClear = key == 'CLEAR';
-        final isBackspace = key == '⌫';
-
-        Color bgColor = AppColors.surfaceElevated;
-        Color textColor = AppColors.textPrimary;
-        Border? border = Border.all(color: AppColors.surfaceHighlight, width: 1.2);
-
-        if (isClear) {
-          bgColor = AppColors.alertRed.withValues(alpha: 0.85);
-          textColor = Colors.white;
-          border = null;
-        } else if (isBackspace) {
-          bgColor = AppColors.surfaceHighlight;
-          textColor = AppColors.primaryAmber;
-        }
-
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 6),
-          width: 84,
-          height: 64, // Touch target >= 64dp
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: bgColor,
-              foregroundColor: textColor,
-              elevation: 0,
-              padding: EdgeInsets.zero,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: border != null ? border.top : BorderSide.none,
-              ),
+  Widget _buildSpecialKeypadButton({String? label, IconData? icon, required VoidCallback onTap, required Color color}) {
+    return Expanded(
+      child: AspectRatio(
+        aspectRatio: 1.3,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.surfaceElevated,
+            foregroundColor: color,
+            elevation: 0,
+            padding: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: AppColors.surfaceHighlight),
             ),
-            onPressed: () {
-              if (isClear) {
-                _onClear();
-              } else if (isBackspace) {
-                _onBackspace();
-              } else {
-                _onKeypadTap(key);
-              }
-            },
-            child: isBackspace
-                ? const Icon(Icons.backspace_rounded, size: 24)
-                : Text(
-                    key,
-                    style: TextStyle(
-                      fontSize: isClear ? 13 : 24,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: isClear ? 1.0 : 0.0,
-                    ),
-                  ),
           ),
-        );
-      }).toList(),
+          onPressed: onTap,
+          child: label != null
+              ? Text(label, style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: color))
+              : Icon(icon, size: 18, color: color),
+        ),
+      ),
     );
   }
 }

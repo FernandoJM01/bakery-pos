@@ -70,6 +70,14 @@ class CartNotifier extends StateNotifier<CartState> {
   void clearCart() {
     state = const CartState();
   }
+
+  void restoreItems(List<CartItem> items) {
+    final updatedMap = <String, CartItem>{};
+    for (final item in items) {
+      updatedMap[item.product.id] = item;
+    }
+    state = CartState(items: updatedMap);
+  }
 }
 
 final cartNotifierProvider = StateNotifierProvider<CartNotifier, CartState>((ref) {

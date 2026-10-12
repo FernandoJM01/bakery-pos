@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
+import '../../../core/localization/app_strings.dart';
 import '../../auth/presentation/pin_login_screen.dart';
 import '../../auth/domain/user.dart';
 import '../../catalog/domain/product.dart';
@@ -23,20 +24,19 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
   static const _uuid = Uuid();
   List<Product> _products = CatalogRepositoryImpl.defaultProducts;
   Product? _selectedProduct = CatalogRepositoryImpl.defaultProducts.first;
-  int _batchQuantity = 24; // Default +2 trays of 12
+  int _batchQuantity = 24; // Default +2 charolas de 12
   bool _isLoading = false;
   final TextEditingController _notesController = TextEditingController();
   late Timer _clockTimer;
   DateTime _currentTime = DateTime.now();
 
-  // Standard target daily stock levels per product
   static const Map<String, int> _targetStockMap = {
-    'c0000000-0000-0000-0000-000000000001': 48, // Sourdough
+    'c0000000-0000-0000-0000-000000000001': 48, // Hogaza Campesina
     'c0000000-0000-0000-0000-000000000002': 48, // Baguette
     'c0000000-0000-0000-0000-000000000003': 48, // Croissant
-    'c0000000-0000-0000-0000-000000000004': 48, // Pain au Choc
-    'c0000000-0000-0000-0000-000000000006': 38, // Berry Tart
-    'c0000000-0000-0000-0000-000000000007': 60, // Coffee
+    'c0000000-0000-0000-0000-000000000004': 48, // Pain au Chocolat
+    'c0000000-0000-0000-0000-000000000006': 38, // Tarta de Frutos
+    'c0000000-0000-0000-0000-000000000007': 60, // Café Flat White
   };
 
   @override
@@ -92,12 +92,12 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
         );
 
     final todayStr = DateFormat('yyyyMMdd').format(DateTime.now());
-    final batchCode = 'BATCH-$todayStr-01';
+    final batchCode = 'HORNADA-$todayStr-01';
 
     final event = LedgerEvent(
       clientEventId: _uuid.v4(),
       branchId: baker.branchId,
-      terminalId: 'DECK-OVEN-01',
+      terminalId: 'HORNO-PISO-01',
       eventType: LedgerEventType.bakeBatchProduced,
       userId: baker.id,
       productId: _selectedProduct!.id,
@@ -106,15 +106,12 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
       referenceId: batchCode,
       metadata: {
         'notes': _notesController.text.trim(),
-        'station': 'Deck Oven 01',
+        'station': 'Horno de Piso 01',
       },
       clientTimestamp: DateTime.now(),
     );
 
-    // 1. Optimistic immediate state update and local SQLite persistent write
     await ref.read(stockNotifierProvider.notifier).recordEvent(event);
-
-    // 2. Trigger background sync to NestJS cloud
     ref.read(syncWorkerProvider).syncPendingEvents();
 
     if (mounted) {
@@ -122,7 +119,7 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
         SnackBar(
           backgroundColor: AppColors.successGreen,
           content: Text(
-            '✓ Recorded +$_batchQuantity ${_selectedProduct!.name} (Batch: $batchCode) to shelf!',
+            '✓ Se ingresaron +$_batchQuantity ${_selectedProduct!.name} ($batchCode) a vitrina.',
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
           duration: const Duration(seconds: 3),
@@ -148,7 +145,7 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
           children: const [
             Icon(Icons.logout_rounded, color: AppColors.primaryAmber, size: 24),
             SizedBox(width: 10),
-            Text('Exit Kitchen Console', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text('Salir de Cocina / Horno', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
           ],
         ),
         content: Column(
@@ -156,7 +153,7 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Do you want to leave the oven production station and return to the PIN terminal, ${user?.fullName ?? "Marco"}?',
+              '¿Deseas cerrar tu sesión de horneado y regresar al acceso con PIN, ${user?.fullName ?? "Marco"}?',
               style: const TextStyle(color: AppColors.textMuted, fontSize: 14, height: 1.4),
             ),
             const SizedBox(height: 12),
@@ -172,7 +169,7 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'All previously recorded batches remain saved in SQLite ledger.',
+                      'Todas las hornadas registradas están guardadas en SQLite local.',
                       style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                     ),
                   ),
@@ -184,7 +181,7 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
+            child: const Text(AppStrings.cancel, style: TextStyle(color: AppColors.textMuted)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -198,7 +195,7 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
                 MaterialPageRoute(builder: (_) => const PinLoginScreen()),
               );
             },
-            child: const Text('Exit to PIN Pad', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text('Salir al PIN Pad', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -210,6 +207,8 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
     final baker = ref.watch(currentUserProvider);
     final stockMap = ref.watch(stockNotifierProvider);
     final timeStr = DateFormat('hh:mm a').format(_currentTime);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
 
     final currentShelfStock = _selectedProduct != null
         ? (stockMap[_selectedProduct!.id] ?? 24)
@@ -221,21 +220,24 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // 1. Top Kitchen Status Bar
-            _buildTopKitchenBar(baker, timeStr),
+            // Barra de Estado de Cocina
+            _buildTopKitchenBar(baker, timeStr, isMobile),
 
-            // 2. Main Content
+            // Contenido Principal Responsive
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator(color: AppColors.primaryAmber))
-                  : Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                  : SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isMobile ? 16.0 : 24.0,
+                        vertical: 16.0,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Section 1: Select Baked Product to Restock
+                          // Sección 1: Selección de Producto Horneado
                           const Text(
-                            'Select Baked Product to Restock',
+                            AppStrings.selectProductToBake,
                             style: TextStyle(
                               color: AppColors.textPrimary,
                               fontSize: 18,
@@ -245,7 +247,7 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
                           ),
                           const SizedBox(height: 12),
 
-                          // Horizontal Product Touch Tiles
+                          // Tarjetas Horizontales de Productos
                           SizedBox(
                             height: 160,
                             child: ListView.separated(
@@ -274,7 +276,7 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
                                       boxShadow: isSelected
                                           ? [
                                               BoxShadow(
-                                                color: AppColors.successGreen.withValues(alpha: 0.25),
+                                                color: AppColors.successGreen.withOpacity(0.25),
                                                 blurRadius: 14,
                                                 offset: const Offset(0, 4),
                                               ),
@@ -286,7 +288,7 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          // Product Thumbnail
+                                          // Miniatura
                                           Expanded(
                                             flex: 6,
                                             child: Container(
@@ -310,7 +312,7 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
                                             ),
                                           ),
 
-                                          // Product Title & Shelf vs Target
+                                          // Título y Vitrina vs Meta
                                           Expanded(
                                             flex: 4,
                                             child: Padding(
@@ -334,19 +336,19 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [
                                                       Text(
-                                                        'Shelf\n$shelfStock',
+                                                        'Vitrina\n$shelfStock pzas',
                                                         style: const TextStyle(
                                                           color: AppColors.textMuted,
-                                                          fontSize: 11,
+                                                          fontSize: 10,
                                                           height: 1.1,
                                                         ),
                                                       ),
                                                       Text(
-                                                        'Target\n$targetStock',
+                                                        'Meta\n$targetStock pzas',
                                                         textAlign: TextAlign.right,
                                                         style: const TextStyle(
                                                           color: AppColors.textDisabled,
-                                                          fontSize: 11,
+                                                          fontSize: 10,
                                                           height: 1.1,
                                                         ),
                                                       ),
@@ -367,12 +369,12 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
 
                           const SizedBox(height: 24),
 
-                          // Section 2: Batch Production Entry
+                          // Sección 2: Registro de Hornada
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text(
-                                'Batch Production Entry',
+                                AppStrings.batchUnits,
                                 style: TextStyle(
                                   color: AppColors.textPrimary,
                                   fontSize: 18,
@@ -381,10 +383,10 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
                                 ),
                               ),
                               Text(
-                                'Total: +$_batchQuantity pcs (New Stock: $newProjectedStock)',
+                                'Total: +$_batchQuantity pzas (Nueva Vitrina: $newProjectedStock)',
                                 style: const TextStyle(
                                   color: AppColors.successGreen,
-                                  fontSize: 16,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -392,24 +394,22 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
                           ),
                           const SizedBox(height: 12),
 
-                          // Tactile Preset Increment Pills
-                          Row(
+                          // Botones de incremento táctil
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
                             children: [
-                              _buildTrayPill('+1 Half Tray', 6, isHighlighted: _batchQuantity == 6),
-                              const SizedBox(width: 10),
-                              _buildTrayPill('+1 Full Tray', 12, isHighlighted: _batchQuantity == 12),
-                              const SizedBox(width: 10),
-                              _buildTrayPill('+2 Trays', 24, isHighlighted: _batchQuantity == 24),
-                              const SizedBox(width: 10),
-                              _buildTrayPill('+1 Deck Oven', 48, isHighlighted: _batchQuantity == 48),
-                              const SizedBox(width: 10),
+                              _buildTrayPill(AppStrings.halfTray, 6, isHighlighted: _batchQuantity == 6),
+                              _buildTrayPill(AppStrings.fullTray, 12, isHighlighted: _batchQuantity == 12),
+                              _buildTrayPill(AppStrings.doubleTray, 24, isHighlighted: _batchQuantity == 24),
+                              _buildTrayPill(AppStrings.fullOven, 48, isHighlighted: _batchQuantity == 48),
                               _buildResetPill(),
                             ],
                           ),
 
                           const SizedBox(height: 16),
 
-                          // Lot Code & Oven Notes Inputs
+                          // Notas y Código de Lote
                           Row(
                             children: [
                               Container(
@@ -421,9 +421,9 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
                                 ),
                                 child: Row(
                                   children: const [
-                                    Text('Lot code: ', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+                                    Text('Código Lote: ', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
                                     Text(
-                                      'BATCH-20261011-01',
+                                      'HORNADA-01',
                                       style: TextStyle(
                                         color: AppColors.primaryAmber,
                                         fontWeight: FontWeight.bold,
@@ -447,7 +447,7 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
                                     controller: _notesController,
                                     style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
                                     decoration: const InputDecoration(
-                                      hintText: 'Oven notes (optional, e.g. Deck 2 golden bake)...',
+                                      hintText: 'Notas de horneado (ej. Piso 2 dorado óptimo)...',
                                       hintStyle: TextStyle(color: AppColors.textDisabled, fontSize: 13),
                                       border: InputBorder.none,
                                     ),
@@ -457,36 +457,33 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
                             ],
                           ),
 
-                          const Spacer(),
+                          const SizedBox(height: 24),
 
-                          // 72dp Massive Confirmation Bar
+                          // Botón Masivo de Confirmación
                           SizedBox(
                             width: double.infinity,
-                            height: 64, // Touch target >= 64dp
+                            height: 64,
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.successGreen,
                                 foregroundColor: Colors.black,
-                                elevation: 3,
+                                elevation: 4,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
                               ),
-                              icon: const Icon(Icons.check_circle_rounded, size: 26),
+                              onPressed: _recordBatch,
+                              icon: const Icon(Icons.check_circle_rounded, size: 28),
                               label: Text(
-                                '✓ CONFIRM & RECORD BATCH TO SHELF (+$_batchQuantity ${_selectedProduct?.name ?? ""})',
+                                '${AppStrings.recordBatch.toUpperCase()} (+$_batchQuantity PZAS)',
                                 style: const TextStyle(
-                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
+                                  fontSize: 16,
+                                  letterSpacing: 0.8,
                                 ),
                               ),
-                              onPressed: (_selectedProduct == null || _batchQuantity <= 0)
-                                  ? null
-                                  : _recordBatch,
                             ),
                           ),
-                          const SizedBox(height: 8),
                         ],
                       ),
                     ),
@@ -497,31 +494,30 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
     );
   }
 
-  Widget _buildTopKitchenBar(User? baker, String timeStr) {
+  Widget _buildTopKitchenBar(User? baker, String timeStr, bool isMobile) {
     return Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      height: 60,
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24),
       decoration: const BoxDecoration(
         color: AppColors.surfaceCard,
-        border: Border(bottom: BorderSide(color: AppColors.surfaceHighlight, width: 1)),
+        border: Border(bottom: BorderSide(color: AppColors.surfaceHighlight)),
       ),
       child: Row(
         children: [
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: AppColors.textPrimary),
-            tooltip: 'Back to PIN Terminal',
             onPressed: () => _confirmExit(context, baker),
+            tooltip: 'Salir',
           ),
           const SizedBox(width: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(
               color: AppColors.surfaceElevated,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: AppColors.surfaceHighlight),
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
                 ClipOval(
                   child: baker?.avatarAsset != null
@@ -530,139 +526,48 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
                           width: 26,
                           height: 26,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.soup_kitchen_rounded, size: 18, color: AppColors.primaryAmber),
+                          errorBuilder: (_, __, ___) => const Icon(Icons.soup_kitchen_rounded, color: AppColors.primaryAmber, size: 20),
                         )
-                      : const Icon(Icons.soup_kitchen_rounded, size: 18, color: AppColors.primaryAmber),
+                      : const Icon(Icons.soup_kitchen_rounded, color: AppColors.primaryAmber, size: 20),
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '${baker?.fullName ?? "Marco Rossi"} (Deck Oven 01)',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
+                  '${baker?.fullName ?? "Marco Rossi"} (Horno)',
+                  style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 14),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceElevated,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: AppColors.surfaceHighlight),
-            ),
-            child: const Text(
-              'Shift: Morning Deck Bake',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
-            ),
-          ),
-
           const Spacer(),
-
-          // Clock
-          Row(
-            children: [
-              const Icon(Icons.access_time_rounded, color: AppColors.textMuted, size: 16),
-              const SizedBox(width: 6),
-              Text(
-                timeStr,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(width: 18),
-
-          // Edge Local Online Pill
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.successGreenBg,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.successGreen.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    color: AppColors.successGreen,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                const Text(
-                  'Edge Local Online',
-                  style: TextStyle(
-                    color: AppColors.successGreen,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
+          Text(
+            timeStr,
+            style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTrayPill(String label, int amount, {bool isHighlighted = false}) {
+  Widget _buildTrayPill(String label, int qty, {required bool isHighlighted}) {
     return InkWell(
-      onTap: () => setState(() => _batchQuantity = amount),
+      onTap: () => setState(() => _batchQuantity = qty),
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        height: 48,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isHighlighted
-              ? AppColors.primaryAmber
-              : AppColors.surfaceElevated,
+          color: isHighlighted ? AppColors.successGreen : AppColors.surfaceElevated,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isHighlighted ? AppColors.primaryAmber : AppColors.surfaceHighlight,
+            color: isHighlighted ? AppColors.successGreen : AppColors.surfaceHighlight,
           ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: isHighlighted ? Colors.black : AppColors.textPrimary,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: isHighlighted
-                    ? Colors.black.withValues(alpha: 0.2)
-                    : AppColors.surfaceHighlight,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '$amount',
-                style: TextStyle(
-                  color: isHighlighted ? Colors.black : AppColors.textMuted,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 11,
-                ),
-              ),
-            ),
-          ],
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isHighlighted ? Colors.black : AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
         ),
       ),
     );
@@ -673,21 +578,15 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
       onTap: () => setState(() => _batchQuantity = 0),
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        height: 48,
-        padding: const EdgeInsets.symmetric(horizontal: 18),
-        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.surfaceElevated,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.surfaceHighlight),
+          border: Border.all(color: AppColors.alertRed.withOpacity(0.5)),
         ),
         child: const Text(
-          'Reset',
-          style: TextStyle(
-            color: AppColors.alertRed,
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-          ),
+          'Limpiar (0)',
+          style: TextStyle(color: AppColors.alertRed, fontWeight: FontWeight.bold, fontSize: 13),
         ),
       ),
     );
