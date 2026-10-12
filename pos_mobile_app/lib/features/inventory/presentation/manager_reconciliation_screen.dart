@@ -11,6 +11,7 @@ import '../../auth/domain/user.dart';
 import '../../auth/presentation/pin_login_screen.dart';
 import '../../inventory/domain/ledger_event.dart';
 import '../../inventory/data/inventory_repository.dart';
+import '../../admin_dashboard/presentation/admin_dashboard_screen.dart';
 
 final receiptPrinterProvider = Provider<ReceiptPrinterService>((ref) => ConsolePrinterService());
 final inventoryRepositoryProvider = Provider<InventoryRepository>((ref) => InventoryRepositoryImpl());
@@ -397,6 +398,23 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
             ),
           ),
           const Spacer(),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryAmber,
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size.zero,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => AdminDashboardScreen(admin: widget.manager)),
+              );
+            },
+            icon: const Icon(Icons.dashboard_customize_rounded, size: 16),
+            label: const Text('Backoffice Ejecutivo', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+          ),
+          const SizedBox(width: 14),
           Text(
             timeStr,
             style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),

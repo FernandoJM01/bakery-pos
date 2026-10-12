@@ -15,6 +15,8 @@ import 'checkout_notifier.dart';
 import 'held_tickets_notifier.dart';
 import 'held_tickets_dialog.dart';
 import 'receipt_preview_dialog.dart';
+import '../../promotions/presentation/promotions_dialog.dart';
+import '../../promotions/presentation/promotions_notifier.dart';
 import '../../../core/hardware/printer/console_printer_service.dart';
 import '../../../core/hardware/printer/receipt_printer_service.dart';
 
@@ -1198,6 +1200,32 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                       style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
                     ),
                   ],
+                ),
+                const SizedBox(height: 6),
+                // Botón de Promociones y Descuentos
+                InkWell(
+                  onTap: () => showDialog(context: context, builder: (_) => const PromotionsDialog()),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceElevated,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.primaryAmber.withOpacity(0.5)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Row(
+                          children: [
+                            Icon(Icons.local_offer_rounded, color: AppColors.primaryAmber, size: 16),
+                            SizedBox(width: 8),
+                            Text('Aplicar Combo o Descuento', style: TextStyle(color: AppColors.primaryAmber, fontSize: 12, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        Icon(Icons.chevron_right_rounded, color: AppColors.primaryAmber, size: 18),
+                      ],
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Row(
