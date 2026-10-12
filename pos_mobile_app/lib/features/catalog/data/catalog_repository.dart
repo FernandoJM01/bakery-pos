@@ -14,7 +14,7 @@ class CatalogRepositoryImpl implements CatalogRepository {
   CatalogRepositoryImpl({LocalDatabaseHelper? dbHelper})
       : dbHelper = dbHelper ?? LocalDatabaseHelper.instance;
 
-  static const List<Product> _defaultProducts = [
+  static const List<Product> defaultProducts = [
     Product(id: 'c0000000-0000-0000-0000-000000000001', sku: 'BREAD-SOUR', name: 'Sourdough Country Loaf', category: 'Breads', priceCents: 650, imageAsset: 'assets/products/sourdough_loaf.jpg'),
     Product(id: 'c0000000-0000-0000-0000-000000000002', sku: 'BREAD-BAGU', name: 'Artisan Baguette', category: 'Breads', priceCents: 400, imageAsset: 'assets/products/artisan_baguette.jpg'),
     Product(id: 'c0000000-0000-0000-0000-000000000003', sku: 'PAST-CROI', name: 'Butter Croissant', category: 'Viennoiserie', priceCents: 325, imageAsset: 'assets/products/butter_croissant.jpg'),
@@ -26,41 +26,41 @@ class CatalogRepositoryImpl implements CatalogRepository {
   @override
   Future<List<Product>> getProducts({String? category}) async {
     try {
-      final db = await dbHelper.database;
+      final db = await dbHelper.database.timeout(const Duration(milliseconds: 1000));
       final List<Map<String, dynamic>> res;
-      if (category == null || category == 'ALL') {
-        res = await db.query('cached_products', where: 'is_active = 1', orderBy: 'category, name ASC');
+      if (category == null || category.toUpperCase() == 'ALL') {
+        res = await db.query('cached_products', where: 'is_active = 1', orderBy: 'category, name ASC').timeout(const Duration(milliseconds: 1000));
       } else {
         res = await db.query(
           'cached_products',
-          where: 'is_active = 1 AND category = ?',
-          whereArgs: [category],
+          where: 'is_active = 1 AND LOWER(category) = ?',
+          whereArgs: [category.toLowerCase()],
           orderBy: 'name ASC',
-        );
+        ).timeout(const Duration(milliseconds: 1000));
       }
       if (res.isNotEmpty) {
         return res.map((m) => Product.fromMap(m)).toList();
       }
     } catch (_) {}
 
-    if (category == null || category == 'ALL') {
-      return _defaultProducts;
+    if (category == null || category.toUpperCase() == 'ALL') {
+      return defaultProducts;
     }
-    return _defaultProducts.where((p) => p.category == category).toList();
+    return defaultProducts.where((p) => p.category.toLowerCase() == category.toLowerCase()).toList();
   }
 
   @override
   Future<List<String>> getCategories() async {
     try {
-      final db = await dbHelper.database;
-      final res = await db.rawQuery('SELECT DISTINCT category FROM cached_products WHERE is_active = 1 ORDER BY category');
+      final db = await dbHelper.database.timeout(const Duration(milliseconds: 1000));
+      final res = await db.rawQuery('SELECT DISTINCT category FROM cached_products WHERE is_active = 1 ORDER BY category').timeout(const Duration(milliseconds: 1000));
       final cats = res.map((m) => m['category'] as String).toList();
       if (cats.isNotEmpty) {
-        return ['ALL', ...cats];
+        return ['All', ...cats];
       }
     } catch (_) {}
 
-    return ['ALL', 'Breads', 'Pastries', 'Cakes', 'Beverages'];
+    return ['All', 'Breads', 'Viennoiserie', 'Cakes', 'Beverages'];
   }
 
   @override

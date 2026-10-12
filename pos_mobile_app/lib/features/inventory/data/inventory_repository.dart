@@ -15,7 +15,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   InventoryRepositoryImpl({LocalDatabaseHelper? dbHelper})
       : dbHelper = dbHelper ?? LocalDatabaseHelper.instance;
 
-  static final Map<String, int> _fallbackBalances = {
+  static final Map<String, int> fallbackBalances = {
     'c0000000-0000-0000-0000-000000000001': 24,
     'c0000000-0000-0000-0000-000000000002': 15,
     'c0000000-0000-0000-0000-000000000003': 18,
@@ -28,24 +28,24 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<int> getStock(String productId) async {
     try {
-      final db = await dbHelper.database;
+      final db = await dbHelper.database.timeout(const Duration(milliseconds: 1000));
       final res = await db.query(
         'local_inventory_balances',
         where: 'product_id = ?',
         whereArgs: [productId],
-      );
+      ).timeout(const Duration(milliseconds: 1000));
       if (res.isNotEmpty) {
         return (res.first['current_stock'] as int?) ?? 0;
       }
     } catch (_) {}
-    return _fallbackBalances[productId] ?? 0;
+    return fallbackBalances[productId] ?? 0;
   }
 
   @override
   Future<Map<String, int>> getAllBalances() async {
     try {
-      final db = await dbHelper.database;
-      final res = await db.query('local_inventory_balances');
+      final db = await dbHelper.database.timeout(const Duration(milliseconds: 1000));
+      final res = await db.query('local_inventory_balances').timeout(const Duration(milliseconds: 1000));
       if (res.isNotEmpty) {
         final map = <String, int>{};
         for (final row in res) {
@@ -54,7 +54,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
         return map;
       }
     } catch (_) {}
-    return Map<String, int>.from(_fallbackBalances);
+    return Map<String, int>.from(fallbackBalances);
   }
 
   @override

@@ -7,6 +7,7 @@ import '../../../core/constants/app_dimensions.dart';
 import '../../auth/presentation/pin_login_screen.dart';
 import '../../auth/domain/user.dart';
 import '../../catalog/domain/product.dart';
+import '../../catalog/data/catalog_repository.dart';
 import '../../inventory/presentation/stock_notifier.dart';
 import 'cart_notifier.dart';
 import 'checkout_notifier.dart';
@@ -22,11 +23,11 @@ class CashierDashboardScreen extends ConsumerStatefulWidget {
 
 class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen> {
   String _selectedCategory = 'All';
-  List<Product> _allProducts = [];
+  List<Product> _allProducts = CatalogRepositoryImpl.defaultProducts;
   List<String> _categories = ['All', 'Breads', 'Viennoiserie', 'Cakes', 'Beverages'];
   String _searchQuery = '';
   String _orderType = 'Takeout'; // Takeout or Dine-in
-  bool _isLoading = true;
+  bool _isLoading = false;
   late Timer _clockTimer;
   DateTime _currentTime = DateTime.now();
   final ReceiptPrinterService _printer = ConsolePrinterService();
@@ -47,14 +48,22 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
   }
 
   Future<void> _loadCatalog() async {
-    final catalogRepo = ref.read(catalogRepositoryProvider);
-    final products = await catalogRepo.getProducts();
+    try {
+      final catalogRepo = ref.read(catalogRepositoryProvider);
+      final products = await catalogRepo.getProducts();
 
-    if (mounted) {
-      setState(() {
-        _allProducts = products;
-        _isLoading = false;
-      });
+      if (mounted && products.isNotEmpty) {
+        setState(() {
+          _allProducts = products;
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

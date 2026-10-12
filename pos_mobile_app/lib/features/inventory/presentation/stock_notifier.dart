@@ -9,7 +9,7 @@ final inventoryRepositoryProvider = Provider<InventoryRepository>((ref) {
 class StockNotifier extends StateNotifier<Map<String, int>> {
   final InventoryRepository _repo;
 
-  StockNotifier(this._repo) : super({}) {
+  StockNotifier(this._repo) : super(InventoryRepositoryImpl.fallbackBalances) {
     loadStock();
   }
 

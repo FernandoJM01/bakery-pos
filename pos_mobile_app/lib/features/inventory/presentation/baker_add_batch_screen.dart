@@ -8,6 +8,7 @@ import '../../../core/constants/app_dimensions.dart';
 import '../../auth/presentation/pin_login_screen.dart';
 import '../../auth/domain/user.dart';
 import '../../catalog/domain/product.dart';
+import '../../catalog/data/catalog_repository.dart';
 import '../../inventory/domain/ledger_event.dart';
 import '../../inventory/presentation/stock_notifier.dart';
 
@@ -20,10 +21,10 @@ class BakerAddBatchScreen extends ConsumerStatefulWidget {
 
 class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
   static const _uuid = Uuid();
-  List<Product> _products = [];
-  Product? _selectedProduct;
+  List<Product> _products = CatalogRepositoryImpl.defaultProducts;
+  Product? _selectedProduct = CatalogRepositoryImpl.defaultProducts.first;
   int _batchQuantity = 24; // Default +2 trays of 12
-  bool _isLoading = true;
+  bool _isLoading = false;
   final TextEditingController _notesController = TextEditingController();
   late Timer _clockTimer;
   DateTime _currentTime = DateTime.now();
@@ -55,15 +56,25 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
   }
 
   Future<void> _loadProducts() async {
-    final catalogRepo = ref.read(catalogRepositoryProvider);
-    final prods = await catalogRepo.getProducts();
+    try {
+      final catalogRepo = ref.read(catalogRepositoryProvider);
+      final prods = await catalogRepo.getProducts();
 
-    if (mounted) {
-      setState(() {
-        _products = prods;
-        _selectedProduct = prods.isNotEmpty ? prods.first : null;
-        _isLoading = false;
-      });
+      if (mounted && prods.isNotEmpty) {
+        setState(() {
+          _products = prods;
+          if (_selectedProduct == null || !prods.any((p) => p.id == _selectedProduct!.id)) {
+            _selectedProduct = prods.first;
+          }
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
