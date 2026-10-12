@@ -33,14 +33,30 @@ class Product {
     'synced_at': DateTime.now().millisecondsSinceEpoch,
   };
 
-  factory Product.fromMap(Map<String, dynamic> map) => Product(
-    id: map['id'] as String,
-    sku: map['sku'] as String,
-    barcode: map['barcode'] as String?,
-    name: map['name'] as String,
-    category: map['category'] as String,
-    unit: (map['unit'] ?? 'PIECE') as String,
-    priceCents: map['price_cents'] as int,
-    isActive: (map['is_active'] as int) == 1,
-  );
+  static const Map<String, String> _skuToImageAsset = {
+    'BREAD-SOUR': 'assets/products/sourdough_loaf.jpg',
+    'BREAD-BAGU': 'assets/products/artisan_baguette.jpg',
+    'PAST-CROI': 'assets/products/butter_croissant.jpg',
+    'PAST-CHOC': 'assets/products/pain_au_chocolat.jpg',
+    'PAST-CINN': 'assets/products/pain_au_chocolat.jpg',
+    'CAKE-ECLR': 'assets/products/berry_tart.jpg',
+    'CAKE-TART': 'assets/products/berry_tart.jpg',
+    'BEV-COFF': 'assets/products/flat_white_coffee.jpg',
+  };
+
+  factory Product.fromMap(Map<String, dynamic> map) {
+    final sku = map['sku'] as String;
+    final explicitImage = map['image_asset'] as String?;
+    return Product(
+      id: map['id'] as String,
+      sku: sku,
+      barcode: map['barcode'] as String?,
+      name: map['name'] as String,
+      category: map['category'] as String,
+      unit: (map['unit'] ?? 'PIECE') as String,
+      priceCents: map['price_cents'] as int,
+      imageAsset: explicitImage ?? _skuToImageAsset[sku],
+      isActive: (map['is_active'] as int) == 1,
+    );
+  }
 }

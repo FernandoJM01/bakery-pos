@@ -186,6 +186,76 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
     );
   }
 
+  void _confirmLogout(BuildContext context, User? user) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceCard,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: AppColors.surfaceHighlight),
+        ),
+        title: Row(
+          children: const [
+            Icon(Icons.logout_rounded, color: AppColors.primaryAmber, size: 24),
+            SizedBox(width: 10),
+            Text('Confirm Logout', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Are you sure you want to end your current session and return to the PIN terminal, ${user?.fullName ?? "Maria"}?',
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 14, height: 1.4),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceElevated,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: const [
+                  Icon(Icons.info_outline_rounded, color: AppColors.primaryAmber, size: 18),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Unfinished cart items will remain safe on Register 01.',
+                      style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.alertRed,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const PinLoginScreen()),
+              );
+            },
+            child: const Text('Log Out', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cashier = ref.watch(currentUserProvider);
@@ -263,24 +333,45 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
         children: [
           // Drawer / Logout Icon
           IconButton(
-            icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
+            icon: const Icon(Icons.logout_rounded, color: AppColors.textPrimary),
             tooltip: 'Switch Staff / Logout',
-            onPressed: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const PinLoginScreen()),
-              );
-            },
+            onPressed: () => _confirmLogout(context, cashier),
           ),
 
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
 
-          // Cashier Profile Pill
-          Text(
-            'Cashier: ${cashier?.fullName ?? "Maria Gonzalez"} (Register 01)',
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
+          // Cashier Profile Pill with Avatar
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceElevated,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.surfaceHighlight),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipOval(
+                  child: cashier?.avatarAsset != null
+                      ? Image.asset(
+                          cashier!.avatarAsset!,
+                          width: 26,
+                          height: 26,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Icon(Icons.person_rounded, size: 20, color: AppColors.primaryAmber),
+                        )
+                      : const Icon(Icons.person_rounded, size: 20, color: AppColors.primaryAmber),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '${cashier?.fullName ?? "Maria Gonzalez"} (Register 01)',
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
             ),
           ),
 

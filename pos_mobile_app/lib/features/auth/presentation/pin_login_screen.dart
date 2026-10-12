@@ -50,6 +50,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
         pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
         fullName: 'Maria Gonzalez',
         role: UserRole.cashier,
+        avatarAsset: 'assets/users/maria_gonzalez.jpg',
       ),
       shiftName: 'Morning Register',
       shiftTime: '07:00 - 15:00',
@@ -63,6 +64,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
         pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
         fullName: 'Marco Rossi',
         role: UserRole.localBaker,
+        avatarAsset: 'assets/users/marco_rossi.jpg',
       ),
       shiftName: 'Deck Oven Bake',
       shiftTime: '05:00 - 13:00',
@@ -76,6 +78,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
         pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
         fullName: 'Elena Rostova',
         role: UserRole.branchManager,
+        avatarAsset: 'assets/users/elena_rostova.jpg',
       ),
       shiftName: 'Store Management',
       shiftTime: 'All Day',
@@ -86,6 +89,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
   String _enteredPin = '';
   late StaffMemberInfo _selectedStaff;
   String? _errorMessage;
+  bool _isValidating = false;
   late Timer _clockTimer;
   DateTime _currentTime = DateTime.now();
   final FocusNode _keyboardFocusNode = FocusNode();
@@ -107,6 +111,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
   }
 
   void _onKeypadTap(String val) {
+    if (_isValidating) return;
     if (_enteredPin.length < 4) {
       setState(() {
         _enteredPin += val;
@@ -119,6 +124,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
   }
 
   void _onBackspace() {
+    if (_isValidating) return;
     if (_enteredPin.isNotEmpty) {
       setState(() {
         _enteredPin = _enteredPin.substring(0, _enteredPin.length - 1);
@@ -128,6 +134,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
   }
 
   void _onClear() {
+    if (_isValidating) return;
     setState(() {
       _enteredPin = '';
       _errorMessage = null;
@@ -135,33 +142,47 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
   }
 
   Future<void> _validatePin() async {
-    final authRepo = ref.read(authRepositoryProvider);
-    final user = await authRepo.verifyPin(
-      username: _selectedStaff.user.username,
-      pin: _enteredPin,
-    );
+    if (_isValidating) return;
+    setState(() => _isValidating = true);
 
-    if (user != null) {
-      ref.read(currentUserProvider.notifier).state = user;
-      if (!mounted) return;
+    try {
+      final authRepo = ref.read(authRepositoryProvider);
+      final user = await authRepo.verifyPin(
+        username: _selectedStaff.user.username,
+        pin: _enteredPin,
+      );
 
-      if (user.role == UserRole.localBaker) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const BakerAddBatchScreen()),
-        );
-      } else if (user.role == UserRole.branchManager) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => ManagerReconciliationScreen(manager: user)),
-        );
+      if (user != null) {
+        ref.read(currentUserProvider.notifier).state = user;
+        if (!mounted) return;
+
+        if (user.role == UserRole.localBaker) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const BakerAddBatchScreen()),
+          );
+        } else if (user.role == UserRole.branchManager) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => ManagerReconciliationScreen(manager: user)),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const CashierDashboardScreen()),
+          );
+        }
       } else {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const CashierDashboardScreen()),
-        );
+        if (mounted) {
+          setState(() {
+            _isValidating = false;
+            _errorMessage = 'Incorrect PIN. Try 1234';
+            _enteredPin = '';
+          });
+        }
       }
-    } else {
+    } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'Incorrect PIN. Try 1234';
+          _isValidating = false;
+          _errorMessage = 'Login error: $e';
           _enteredPin = '';
         });
       }
@@ -408,7 +429,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
                   ),
                   child: Row(
                     children: [
-                      // Avatar Icon Circle
+                      // Avatar Image or Icon Circle
                       Container(
                         width: 52,
                         height: 52,
@@ -417,11 +438,27 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
                               ? AppColors.primaryAmber.withValues(alpha: 0.2)
                               : AppColors.surfaceHighlight,
                           shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isSelected ? AppColors.primaryAmber : Colors.transparent,
+                            width: 2,
+                          ),
                         ),
-                        child: Icon(
-                          staff.icon,
-                          color: isSelected ? AppColors.primaryAmber : AppColors.textMuted,
-                          size: 26,
+                        child: ClipOval(
+                          child: staff.user.avatarAsset != null
+                              ? Image.asset(
+                                  staff.user.avatarAsset!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Icon(
+                                    staff.icon,
+                                    color: isSelected ? AppColors.primaryAmber : AppColors.textMuted,
+                                    size: 26,
+                                  ),
+                                )
+                              : Icon(
+                                  staff.icon,
+                                  color: isSelected ? AppColors.primaryAmber : AppColors.textMuted,
+                                  size: 26,
+                                ),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -497,13 +534,22 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   color: AppColors.primaryAmber.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.primaryAmber, width: 1.5),
                 ),
-                child: Icon(_selectedStaff.icon, color: AppColors.primaryAmber, size: 20),
+                child: ClipOval(
+                  child: _selectedStaff.user.avatarAsset != null
+                      ? Image.asset(
+                          _selectedStaff.user.avatarAsset!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(_selectedStaff.icon, color: AppColors.primaryAmber, size: 22),
+                        )
+                      : Icon(_selectedStaff.icon, color: AppColors.primaryAmber, size: 22),
+                ),
               ),
               const SizedBox(width: 12),
               Column(
@@ -576,7 +622,24 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
             }),
           ),
 
-          if (_errorMessage != null) ...[
+          if (_isValidating) ...[
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(color: AppColors.primaryAmber, strokeWidth: 2),
+                ),
+                SizedBox(width: 8),
+                Text(
+                  'Verifying PIN...',
+                  style: TextStyle(color: AppColors.primaryAmber, fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ] else if (_errorMessage != null) ...[
             const SizedBox(height: 10),
             Text(
               _errorMessage!,

@@ -124,6 +124,76 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
     }
   }
 
+  void _confirmExit(BuildContext context, User? user) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceCard,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: AppColors.surfaceHighlight),
+        ),
+        title: Row(
+          children: const [
+            Icon(Icons.logout_rounded, color: AppColors.primaryAmber, size: 24),
+            SizedBox(width: 10),
+            Text('Exit Kitchen Console', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Do you want to leave the oven production station and return to the PIN terminal, ${user?.fullName ?? "Marco"}?',
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 14, height: 1.4),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceElevated,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: const [
+                  Icon(Icons.soup_kitchen_rounded, color: AppColors.primaryAmber, size: 18),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'All previously recorded batches remain saved in SQLite ledger.',
+                      style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryAmber,
+              foregroundColor: AppColors.backgroundDeep,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const PinLoginScreen()),
+              );
+            },
+            child: const Text('Exit to PIN Pad', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final baker = ref.watch(currentUserProvider);
@@ -427,24 +497,45 @@ class _BakerAddBatchScreenState extends ConsumerState<BakerAddBatchScreen> {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+            icon: const Icon(Icons.logout_rounded, color: AppColors.textPrimary),
             tooltip: 'Back to PIN Terminal',
-            onPressed: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const PinLoginScreen()),
-              );
-            },
+            onPressed: () => _confirmExit(context, baker),
           ),
-          const SizedBox(width: 6),
-          Text(
-            'Kitchen Station: ${baker?.fullName ?? "Marco Rossi"} (Deck Oven 01)',
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceElevated,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.surfaceHighlight),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipOval(
+                  child: baker?.avatarAsset != null
+                      ? Image.asset(
+                          baker!.avatarAsset!,
+                          width: 26,
+                          height: 26,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Icon(Icons.soup_kitchen_rounded, size: 18, color: AppColors.primaryAmber),
+                        )
+                      : const Icon(Icons.soup_kitchen_rounded, size: 18, color: AppColors.primaryAmber),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '${baker?.fullName ?? "Marco Rossi"} (Deck Oven 01)',
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 18),
+          const SizedBox(width: 14),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(

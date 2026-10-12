@@ -348,21 +348,31 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
 
           const Spacer(),
 
-          // Manager Badge
+          // Manager Badge with Avatar
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: AppColors.surfaceElevated,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(color: AppColors.surfaceHighlight),
             ),
             child: Row(
               children: [
-                const Icon(Icons.person_pin_rounded, color: AppColors.primaryAmber, size: 18),
+                ClipOval(
+                  child: widget.manager?.avatarAsset != null
+                      ? Image.asset(
+                          widget.manager!.avatarAsset!,
+                          width: 26,
+                          height: 26,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Icon(Icons.person_pin_rounded, color: AppColors.primaryAmber, size: 20),
+                        )
+                      : const Icon(Icons.person_pin_rounded, color: AppColors.primaryAmber, size: 20),
+                ),
                 const SizedBox(width: 8),
                 Text(
                   managerName,
-                  style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 12),
+                  style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
                 const SizedBox(width: 6),
                 const Text(
@@ -421,15 +431,81 @@ class _ManagerReconciliationScreenState extends ConsumerState<ManagerReconciliat
 
           const SizedBox(width: 12),
 
-          // Exit / Return Button
+          // Exit / Return Button with Confirmation
           IconButton(
             tooltip: 'Return to Staff PIN Pad',
-            icon: const Icon(Icons.exit_to_app_rounded, color: AppColors.textMuted),
+            icon: const Icon(Icons.logout_rounded, color: AppColors.textMuted),
+            onPressed: () => _confirmExit(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmExit(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceCard,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: AppColors.surfaceHighlight),
+        ),
+        title: Row(
+          children: const [
+            Icon(Icons.logout_rounded, color: AppColors.primaryAmber, size: 24),
+            SizedBox(width: 10),
+            Text('Exit Reconciliation', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Are you sure you want to return to the Staff PIN terminal without closing this register shift, ${widget.manager?.fullName ?? "Elena"}?',
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 14, height: 1.4),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceElevated,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: const [
+                  Icon(Icons.info_outline_rounded, color: AppColors.primaryAmber, size: 18),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Shift data will remain open until you tap LOCK DRAWER & CLOSE SHIFT.',
+                      style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryAmber,
+              foregroundColor: AppColors.backgroundDeep,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
             onPressed: () {
+              Navigator.of(ctx).pop();
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(builder: (_) => const PinLoginScreen()),
               );
             },
+            child: const Text('Return to PIN Pad', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

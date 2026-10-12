@@ -49,6 +49,7 @@ class AuthRepositoryImpl implements AuthRepository {
         pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
         fullName: 'Maria Gonzalez',
         role: UserRole.cashier,
+        avatarAsset: 'assets/users/maria_gonzalez.jpg',
       ),
       User(
         id: 'b0000000-0000-0000-0000-000000000002',
@@ -57,6 +58,7 @@ class AuthRepositoryImpl implements AuthRepository {
         pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
         fullName: 'Marco Rossi',
         role: UserRole.localBaker,
+        avatarAsset: 'assets/users/marco_rossi.jpg',
       ),
       User(
         id: 'b0000000-0000-0000-0000-000000000003',
@@ -65,6 +67,7 @@ class AuthRepositoryImpl implements AuthRepository {
         pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', // 1234
         fullName: 'Elena Rostova',
         role: UserRole.branchManager,
+        avatarAsset: 'assets/users/elena_rostova.jpg',
       ),
     ];
 
