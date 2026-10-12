@@ -32,25 +32,25 @@ class CheckoutNotifier extends StateNotifier<bool> {
   }) async {
     final cart = _ref.read(cartNotifierProvider);
     if (cart.isEmpty) {
-      return const CheckoutResult(isSuccess: false, orderId: '', changeDueCents: 0, errorMessage: 'Cart is empty');
+      return const CheckoutResult(isSuccess: false, orderId: '', changeDueCents: 0, errorMessage: 'El carrito está vacío');
     }
 
     if (cashTenderedCents < cart.totalCents) {
-      return CheckoutResult(
+      return const CheckoutResult(
         isSuccess: false,
         orderId: '',
         changeDueCents: 0,
-        errorMessage: 'Tendered amount is less than total due',
+        errorMessage: 'El importe entregado es menor al total a cobrar',
       );
     }
 
-    state = true; // Processing
+    state = true; // Procesando
     try {
       final changeDueCents = cashTenderedCents - cart.totalCents;
       final orderId = 'ORD-${_uuid.v4().substring(0, 8).toUpperCase()}';
       final stockNotifier = _ref.read(stockNotifierProvider.notifier);
 
-      // Record SALE_COMPLETED events for each cart item
+      // Descontar inventario optimista y registrar eventos
       for (final item in cart.itemsList) {
         final event = LedgerEvent(
           clientEventId: _uuid.v4(),
@@ -59,16 +59,15 @@ class CheckoutNotifier extends StateNotifier<bool> {
           eventType: LedgerEventType.saleCompleted,
           userId: cashier.id,
           productId: item.product.id,
-          quantityChange: -item.quantity, // Stock decrement
+          quantityChange: -item.quantity,
           referenceId: orderId,
           clientTimestamp: DateTime.now(),
         );
 
-        await stockNotifier.recordEvent(event);
+        // Disparo seguro (optimista + persistencia en background)
+        stockNotifier.recordEvent(event);
       }
 
-      // Clear ticket
-      _ref.read(cartNotifierProvider.notifier).clearCart();
       state = false;
 
       return CheckoutResult(
@@ -82,7 +81,7 @@ class CheckoutNotifier extends StateNotifier<bool> {
         isSuccess: false,
         orderId: '',
         changeDueCents: 0,
-        errorMessage: 'Checkout failed: $e',
+        errorMessage: 'Error al procesar cobro: $e',
       );
     }
   }

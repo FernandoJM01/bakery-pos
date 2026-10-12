@@ -84,6 +84,12 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
     final cart = ref.read(cartNotifierProvider);
     if (cart.isEmpty) return;
 
+    // Tomar snapshot inmediato de los productos y montos para el recibo
+    final itemsSnapshot = List<CartItem>.from(cart.itemsList);
+    final subtotal = cart.subtotalCents;
+    final tax = cart.taxCents;
+    final total = cart.totalCents;
+
     final cashier = ref.read(currentUserProvider) ??
         const User(
           id: 'b0000000-0000-0000-0000-000000000001',
@@ -102,12 +108,10 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
     );
 
     if (result.isSuccess) {
-      final itemsSnapshot = List<CartItem>.from(cart.itemsList);
-      final subtotal = cart.subtotalCents;
-      final tax = cart.taxCents;
-      final total = cart.totalCents;
+      // Limpiar ticket de forma inmediata para el siguiente cliente
+      ref.read(cartNotifierProvider.notifier).clearCart();
 
-      // Imprimir via protocolo ESC/POS
+      // Imprimir via protocolo ESC/POS en background
       _printReceipt(
         orderId: result.orderId,
         cashierName: cashier.fullName,
@@ -123,9 +127,6 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
       ref.read(syncWorkerProvider).syncPendingEvents();
 
       if (mounted) {
-        // Limpiar carrito para nueva venta
-        ref.read(cartNotifierProvider.notifier).clearCart();
-
         // Mostrar Modal Interactivo de Recibo Digital
         _showReceiptDialog(
           orderId: result.orderId,

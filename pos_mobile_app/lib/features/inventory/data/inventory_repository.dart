@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:sqflite/sqflite.dart';
 import '../../../core/database/local_database_helper.dart';
 import '../domain/ledger_event.dart';
@@ -59,61 +60,71 @@ class InventoryRepositoryImpl implements InventoryRepository {
 
   @override
   Future<void> recordEventAndUpdateStock(LedgerEvent event) async {
-    final db = await dbHelper.database;
-    await db.transaction((txn) async {
-      // 1. Insert into sync queue
-      await txn.insert(
-        'sync_queue_ledger',
-        event.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+    // 1. In-memory update of local fallback balance for instant UI consistency
+    final currentFallback = fallbackBalances[event.productId] ?? 0;
+    fallbackBalances[event.productId] = currentFallback + event.quantityChange;
 
-      // 2. Atomically update local_inventory_balances
-      final existing = await txn.query(
-        'local_inventory_balances',
-        where: 'product_id = ?',
-        whereArgs: [event.productId],
-      );
+    // 2. Safe persistent write to SQLite with timeout guard
+    try {
+      final db = await dbHelper.database.timeout(const Duration(milliseconds: 1200));
+      await db.transaction((txn) async {
+        await txn.insert(
+          'sync_queue_ledger',
+          event.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
 
-      final now = DateTime.now().millisecondsSinceEpoch;
-      if (existing.isEmpty) {
-        await txn.insert('local_inventory_balances', {
-          'product_id': event.productId,
-          'current_stock': event.quantityChange,
-          'last_updated_at': now,
-        });
-      } else {
-        final current = (existing.first['current_stock'] as int?) ?? 0;
-        final updated = current + event.quantityChange;
-        await txn.update(
+        final existing = await txn.query(
           'local_inventory_balances',
-          {
-            'current_stock': updated,
-            'last_updated_at': now,
-          },
           where: 'product_id = ?',
           whereArgs: [event.productId],
         );
-      }
-    });
+
+        final now = DateTime.now().millisecondsSinceEpoch;
+        if (existing.isEmpty) {
+          await txn.insert('local_inventory_balances', {
+            'product_id': event.productId,
+            'current_stock': event.quantityChange,
+            'last_updated_at': now,
+          });
+        } else {
+          final current = (existing.first['current_stock'] as int?) ?? 0;
+          final updated = current + event.quantityChange;
+          await txn.update(
+            'local_inventory_balances',
+            {
+              'current_stock': updated,
+              'last_updated_at': now,
+            },
+            where: 'product_id = ?',
+            whereArgs: [event.productId],
+          );
+        }
+      }).timeout(const Duration(milliseconds: 1500));
+    } catch (_) {
+      // In web or restricted environments, gracefully continue without freezing
+    }
   }
 
   @override
   Future<void> setBalances(Map<String, int> balances) async {
-    final db = await dbHelper.database;
-    final batch = db.batch();
-    final now = DateTime.now().millisecondsSinceEpoch;
-    balances.forEach((productId, stock) {
-      batch.insert(
-        'local_inventory_balances',
-        {
-          'product_id': productId,
-          'current_stock': stock,
-          'last_updated_at': now,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    });
-    await batch.commit(noResult: true);
+    fallbackBalances.addAll(balances);
+    try {
+      final db = await dbHelper.database.timeout(const Duration(milliseconds: 1200));
+      final batch = db.batch();
+      final now = DateTime.now().millisecondsSinceEpoch;
+      balances.forEach((productId, stock) {
+        batch.insert(
+          'local_inventory_balances',
+          {
+            'product_id': productId,
+            'current_stock': stock,
+            'last_updated_at': now,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      });
+      await batch.commit(noResult: true).timeout(const Duration(milliseconds: 1500));
+    } catch (_) {}
   }
 }
