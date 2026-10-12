@@ -153,6 +153,12 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
       );
 
       if (user != null) {
+        if (mounted) {
+          setState(() {
+            _isValidating = false;
+            _enteredPin = '';
+          });
+        }
         ref.read(currentUserProvider.notifier).state = user;
         if (!mounted) return;
 
