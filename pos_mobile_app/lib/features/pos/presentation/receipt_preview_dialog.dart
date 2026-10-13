@@ -166,7 +166,7 @@ class ReceiptPreviewDialog extends StatelessWidget {
                               Expanded(
                                 flex: 5,
                                 child: Text(
-                                  item.product.name,
+                                  item.displayName,
                                   style: const TextStyle(fontFamily: 'Courier', fontSize: 12, color: Colors.black87),
                                 ),
                               ),

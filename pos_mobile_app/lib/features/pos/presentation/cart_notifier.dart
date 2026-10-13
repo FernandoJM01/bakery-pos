@@ -3,25 +3,34 @@ import '../../catalog/domain/product.dart';
 
 class CartItem {
   final Product product;
+  final ProductVariant? selectedVariant;
   final int quantity;
 
   const CartItem({
     required this.product,
+    this.selectedVariant,
     required this.quantity,
   });
 
-  int get itemTotalCents => product.priceCents * quantity;
+  String get cartKey => selectedVariant == null ? product.id : '${product.id}_${selectedVariant!.id}';
 
-  CartItem copyWith({int? quantity}) {
+  int get unitPriceCents => product.priceCents + (selectedVariant?.priceDeltaCents ?? 0);
+
+  int get itemTotalCents => unitPriceCents * quantity;
+
+  String get displayName => selectedVariant == null ? product.name : '${product.name} (${selectedVariant!.name})';
+
+  CartItem copyWith({int? quantity, ProductVariant? selectedVariant}) {
     return CartItem(
       product: product,
+      selectedVariant: selectedVariant ?? this.selectedVariant,
       quantity: quantity ?? this.quantity,
     );
   }
 }
 
 class CartState {
-  final Map<String, CartItem> items; // Key: productId
+  final Map<String, CartItem> items; // Key: cartKey
 
   const CartState({this.items = const {}});
 
@@ -37,33 +46,38 @@ class CartState {
 class CartNotifier extends StateNotifier<CartState> {
   CartNotifier() : super(const CartState());
 
-  void addProduct(Product product) {
-    final existing = state.items[product.id];
+  void addProduct(Product product, {ProductVariant? variant}) {
+    final itemKey = variant == null ? product.id : '${product.id}_${variant.id}';
+    final existing = state.items[itemKey];
     final updatedMap = Map<String, CartItem>.from(state.items);
 
     if (existing != null) {
-      updatedMap[product.id] = existing.copyWith(quantity: existing.quantity + 1);
+      updatedMap[itemKey] = existing.copyWith(quantity: existing.quantity + 1);
     } else {
-      updatedMap[product.id] = CartItem(product: product, quantity: 1);
+      updatedMap[itemKey] = CartItem(
+        product: product,
+        selectedVariant: variant,
+        quantity: 1,
+      );
     }
     state = CartState(items: updatedMap);
   }
 
-  void removeProduct(String productId) {
-    final existing = state.items[productId];
+  void removeProduct(String itemKey) {
+    final existing = state.items[itemKey];
     if (existing == null) return;
 
     final updatedMap = Map<String, CartItem>.from(state.items);
     if (existing.quantity > 1) {
-      updatedMap[productId] = existing.copyWith(quantity: existing.quantity - 1);
+      updatedMap[itemKey] = existing.copyWith(quantity: existing.quantity - 1);
     } else {
-      updatedMap.remove(productId);
+      updatedMap.remove(itemKey);
     }
     state = CartState(items: updatedMap);
   }
 
-  void deleteItem(String productId) {
-    final updatedMap = Map<String, CartItem>.from(state.items)..remove(productId);
+  void deleteItem(String itemKey) {
+    final updatedMap = Map<String, CartItem>.from(state.items)..remove(itemKey);
     state = CartState(items: updatedMap);
   }
 
@@ -74,7 +88,7 @@ class CartNotifier extends StateNotifier<CartState> {
   void restoreItems(List<CartItem> items) {
     final updatedMap = <String, CartItem>{};
     for (final item in items) {
-      updatedMap[item.product.id] = item;
+      updatedMap[item.cartKey] = item;
     }
     state = CartState(items: updatedMap);
   }

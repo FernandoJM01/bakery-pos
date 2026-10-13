@@ -43,7 +43,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Nuevo Producto'), findsOneWidget);
-    expect(find.text('Sourdough Country Loaf'), findsOneWidget);
+    expect(find.text('Concha Tradicional'), findsOneWidget);
 
     // Tap Nuevo Producto to open modal
     await tester.tap(find.text('Nuevo Producto'));

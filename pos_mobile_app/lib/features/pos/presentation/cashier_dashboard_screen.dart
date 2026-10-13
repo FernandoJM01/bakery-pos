@@ -15,6 +15,7 @@ import 'checkout_notifier.dart';
 import 'held_tickets_notifier.dart';
 import 'held_tickets_dialog.dart';
 import 'receipt_preview_dialog.dart';
+import 'widgets/variant_selector_dialog.dart';
 import '../../promotions/presentation/promotions_dialog.dart';
 import '../../promotions/presentation/promotions_notifier.dart';
 import '../../../core/hardware/printer/console_printer_service.dart';
@@ -229,6 +230,22 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
         onNewSale: () => Navigator.of(ctx).pop(),
       ),
     );
+  }
+
+  void _onProductTap(Product product) {
+    if (product.hasVariants) {
+      showDialog(
+        context: context,
+        builder: (_) => VariantSelectorDialog(
+          product: product,
+          onSelectVariant: (variant) {
+            ref.read(cartNotifierProvider.notifier).addProduct(product, variant: variant);
+          },
+        ),
+      );
+    } else {
+      ref.read(cartNotifierProvider.notifier).addProduct(product);
+    }
   }
 
   void _handleHoldOrder() {
@@ -862,7 +879,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                     ),
                   );
                 }
-              : () => ref.read(cartNotifierProvider.notifier).addProduct(product),
+              : () => _onProductTap(product),
           borderRadius: BorderRadius.circular(12),
           child: Opacity(
             opacity: isSoldOut ? 0.55 : 1.0,
@@ -891,6 +908,34 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                                 errorBuilder: (_, __, ___) => _buildImagePlaceholder(product),
                               )
                             : _buildImagePlaceholder(product),
+                        if (product.hasVariants)
+                          Positioned(
+                            bottom: 6,
+                            left: 6,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.75),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: AppColors.primaryAmber.withOpacity(0.5), width: 0.5),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.tune_rounded, color: AppColors.primaryAmber, size: 10),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${product.variants.length} Sabores',
+                                    style: const TextStyle(
+                                      color: AppColors.primaryAmber,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         if (isSoldOut)
                           Container(
                             color: Colors.black.withOpacity(0.55),
@@ -1097,17 +1142,37 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: Row(
                           children: [
-                            // Nombre del Producto
+                            // Nombre del Producto y Variante
                             Expanded(
-                              child: Text(
-                                item.product.name,
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    item.product.name,
+                                    style: const TextStyle(
+                                      color: AppColors.textPrimary,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (item.selectedVariant != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 2.0),
+                                      child: Text(
+                                        '• ${item.selectedVariant!.name}',
+                                        style: const TextStyle(
+                                          color: AppColors.primaryAmber,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
 
@@ -1124,7 +1189,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                                   InkWell(
                                     onTap: () => ref
                                         .read(cartNotifierProvider.notifier)
-                                        .removeProduct(item.product.id),
+                                        .removeProduct(item.cartKey),
                                     child: const Padding(
                                       padding: EdgeInsets.symmetric(horizontal: 8),
                                       child: Icon(Icons.remove_rounded, color: AppColors.textMuted, size: 16),
@@ -1141,7 +1206,7 @@ class _CashierDashboardScreenState extends ConsumerState<CashierDashboardScreen>
                                   InkWell(
                                     onTap: () => ref
                                         .read(cartNotifierProvider.notifier)
-                                        .addProduct(item.product),
+                                        .addProduct(item.product, variant: item.selectedVariant),
                                     child: const Padding(
                                       padding: EdgeInsets.symmetric(horizontal: 8),
                                       child: Icon(Icons.add_rounded, color: AppColors.primaryAmber, size: 16),

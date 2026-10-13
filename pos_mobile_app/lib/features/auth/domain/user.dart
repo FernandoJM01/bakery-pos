@@ -36,6 +36,41 @@ class User {
     this.avatarAsset,
   });
 
+  String get roleDisplayName {
+    switch (role) {
+      case UserRole.globalAdmin:
+        return 'Administrador General';
+      case UserRole.branchManager:
+        return 'Gerente de Sucursal';
+      case UserRole.localBaker:
+        return 'Maestro Panadero';
+      case UserRole.cashier:
+        return 'Cajero / Mostrador';
+    }
+  }
+
+  User copyWith({
+    String? id,
+    String? branchId,
+    String? username,
+    String? pinHash,
+    String? fullName,
+    UserRole? role,
+    bool? isActive,
+    String? avatarAsset,
+  }) {
+    return User(
+      id: id ?? this.id,
+      branchId: branchId ?? this.branchId,
+      username: username ?? this.username,
+      pinHash: pinHash ?? this.pinHash,
+      fullName: fullName ?? this.fullName,
+      role: role ?? this.role,
+      isActive: isActive ?? this.isActive,
+      avatarAsset: avatarAsset ?? this.avatarAsset,
+    );
+  }
+
   Map<String, dynamic> toMap() => {
     'id': id,
     'branch_id': branchId,

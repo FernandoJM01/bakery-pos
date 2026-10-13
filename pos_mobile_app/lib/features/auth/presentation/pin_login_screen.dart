@@ -13,6 +13,7 @@ import '../../sync/data/background_sync_worker.dart';
 import '../../pos/presentation/cashier_dashboard_screen.dart';
 import '../../inventory/presentation/baker_add_batch_screen.dart';
 import '../../inventory/presentation/manager_reconciliation_screen.dart';
+import '../../shell/presentation/enterprise_shell_screen.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) => AuthRepositoryImpl());
 final catalogRepositoryProvider = Provider<CatalogRepository>((ref) => CatalogRepositoryImpl());
@@ -163,19 +164,15 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
         ref.read(currentUserProvider.notifier).state = user;
         if (!mounted) return;
 
-        if (user.role == UserRole.localBaker) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const BakerAddBatchScreen()),
-          );
-        } else if (user.role == UserRole.branchManager) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => ManagerReconciliationScreen(manager: user)),
-          );
-        } else {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const CashierDashboardScreen()),
-          );
-        }
+        final initialIdx = user.role == UserRole.localBaker
+            ? 3
+            : (user.role == UserRole.cashier ? 1 : 0);
+
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => EnterpriseShellScreen(user: user, initialIndex: initialIdx),
+          ),
+        );
       } else {
         if (mounted) {
           setState(() {

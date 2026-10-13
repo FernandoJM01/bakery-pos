@@ -15,10 +15,12 @@ import '../../admin_catalog/presentation/admin_product_form_dialog.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   final User? admin;
+  final int initialTab;
 
   const AdminDashboardScreen({
     super.key,
     this.admin,
+    this.initialTab = 0,
   });
 
   @override
@@ -30,7 +32,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   DateTime _currentTime = DateTime.now();
 
   // Pestaña activa: 0 = Resumen Ejecutivo, 1 = Catálogo & Precios, 2 = Reportes de Ventas
-  int _activeTab = 0;
+  late int _activeTab;
 
   // Catálogo reactivo administrable localmente
   List<Product> _catalogProducts = List.from(CatalogRepositoryImpl.defaultProducts);
@@ -38,6 +40,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   @override
   void initState() {
     super.initState();
+    _activeTab = widget.initialTab;
     _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() => _currentTime = DateTime.now());
     });
@@ -263,27 +266,30 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         color: AppColors.surfaceElevated,
         border: Border(bottom: BorderSide(color: AppColors.surfaceHighlight)),
       ),
-      child: Row(
-        children: [
-          _buildTabItem(0, 'Panel General', Icons.dashboard_rounded),
-          const SizedBox(width: 16),
-          _buildTabItem(1, 'Catálogo y Precios', Icons.inventory_2_rounded),
-          const SizedBox(width: 16),
-          _buildTabItem(2, 'Reportes y Auditoría', Icons.analytics_rounded),
-          const Spacer(),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryAmber,
-              foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              minimumSize: Size.zero,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _buildTabItem(0, 'Panel General', Icons.dashboard_rounded),
+            const SizedBox(width: 16),
+            _buildTabItem(1, 'Catálogo y Precios', Icons.inventory_2_rounded),
+            const SizedBox(width: 16),
+            _buildTabItem(2, 'Reportes y Auditoría', Icons.analytics_rounded),
+            const SizedBox(width: 24),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryAmber,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                minimumSize: Size.zero,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: _openPromotionsDialog,
+              icon: const Icon(Icons.local_offer_rounded, size: 16),
+              label: const Text('Combos y Promociones', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
             ),
-            onPressed: _openPromotionsDialog,
-            icon: const Icon(Icons.local_offer_rounded, size: 16),
-            label: const Text('Combos y Promociones', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
