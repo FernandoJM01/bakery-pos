@@ -1,29 +1,61 @@
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
+import { AppModule } from '../src/app.module';
+import { validateResponseAgainstContract } from './contract-validator';
 
-describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+describe('Health & Foundation (e2e)', () => {
+  let app: INestApplication;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
+    process.env.DATABASE_URL =
+      process.env.DATABASE_URL ??
+      'postgres://pos:pos_dev_only@127.0.0.1:5432/pos_dev';
+    process.env.JWT_SECRET =
+      process.env.JWT_SECRET ?? 'ci-only-jwt-secret-not-for-production';
+    process.env.DEVICE_TOKEN_PEPPER =
+      process.env.DEVICE_TOKEN_PEPPER ?? 'ci-only-pepper-not-for-production';
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
     await app.init();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  afterAll(async () => {
+    if (app) {
+      await app.close();
+    }
   });
 
-  afterEach(async () => {
-    await app.close();
+  it('/health (GET) satisfies OpenAPI contract', async () => {
+    const server = app.getHttpServer() as Server;
+    const response = await request(server).get('/health');
+
+    // Health returns 200 when healthy, or 503 if database is not reachable
+    expect([200, 503]).toContain(response.status);
+
+    const validation = validateResponseAgainstContract({
+      path: '/health',
+      method: 'get',
+      status: response.status,
+      body: response.body,
+    });
+
+    expect(validation.errors).toBeUndefined();
+    expect(validation.valid).toBe(true);
+    expect(response.body).toHaveProperty('version');
+    expect(response.body).toHaveProperty('status');
+    expect(response.body).toHaveProperty('database');
   });
 });
