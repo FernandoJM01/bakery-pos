@@ -1,9 +1,13 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import type { Server } from 'http';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { validateResponseAgainstContract } from './contract-validator';
+import { configureApp } from '../src/app.setup';
+import {
+  getContractAjv,
+  validateResponseAgainstContract,
+} from './contract-validator';
 
 describe('Health & Foundation (e2e)', () => {
   let app: INestApplication;
@@ -22,13 +26,7 @@ describe('Health & Foundation (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-      }),
-    );
+    configureApp(app);
     await app.init();
   });
 
@@ -57,5 +55,18 @@ describe('Health & Foundation (e2e)', () => {
     expect(response.body).toHaveProperty('version');
     expect(response.body).toHaveProperty('status');
     expect(response.body).toHaveProperty('database');
+  });
+
+  it('serves API routes under /v1 and keeps /health unprefixed', async () => {
+    const server = app.getHttpServer() as Server;
+
+    const prefixed = await request(server).get('/v1/health');
+    expect(prefixed.status).toBe(404);
+
+    const { ajv } = getContractAjv();
+    const validateError = ajv.getSchema('#/components/schemas/Error');
+    expect(validateError).toBeDefined();
+    expect(validateError!(prefixed.body)).toBe(true);
+    expect(prefixed.body).toMatchObject({ code: 'NOT_FOUND' });
   });
 });

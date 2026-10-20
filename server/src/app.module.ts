@@ -19,6 +19,8 @@ import { PrismaModule } from './prisma/prisma.module';
         redact: {
           paths: [
             'req.headers.authorization',
+            'req.headers.cookie',
+            'res.headers["set-cookie"]',
             'req.headers["x-device-token"]',
             'req.headers["x-approval-token"]',
             'req.body.pin',
@@ -35,9 +37,10 @@ import { PrismaModule } from './prisma/prisma.module';
           process.env.NODE_ENV === 'test'
             ? 'silent'
             : (process.env.LOG_LEVEL ?? 'info'),
+        // JSON logs everywhere except explicit local development; pino-pretty
+        // is a devDependency and is not installed in staging or production.
         transport:
-          process.env.NODE_ENV !== 'production' &&
-          process.env.NODE_ENV !== 'test'
+          process.env.NODE_ENV === 'development'
             ? { target: 'pino-pretty', options: { colorize: true } }
             : undefined,
       },

@@ -8,6 +8,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { PERMISSIONS_KEY } from '../decorators/require-permission.decorator';
+import { AUTHENTICATED, RoutePermission } from '../permissions';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
@@ -23,10 +24,9 @@ export class PermissionsGuard implements CanActivate {
       return true;
     }
 
-    const requiredPermissions = this.reflector.getAllAndOverride<string[]>(
-      PERMISSIONS_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredPermissions = this.reflector.getAllAndOverride<
+      RoutePermission[]
+    >(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
 
     // Reject any route that lacks both @Public() and @RequirePermission()
     if (!requiredPermissions || requiredPermissions.length === 0) {
@@ -48,12 +48,12 @@ export class PermissionsGuard implements CanActivate {
       });
     }
 
-    // Special key 'authenticated' matches any valid authenticated session
-    if (requiredPermissions.includes('authenticated')) {
+    // AUTHENTICATED matches any valid authenticated session
+    if (requiredPermissions.includes(AUTHENTICATED)) {
       return true;
     }
 
-    const userPermissions = user.permissions ?? [];
+    const userPermissions: string[] = user.permissions ?? [];
     const hasPermission = requiredPermissions.every((perm) =>
       userPermissions.includes(perm),
     );
