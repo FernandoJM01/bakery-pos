@@ -1,83 +1,28 @@
-# 🥖 POS Bakery — Enterprise Offline-First Point of Sale
+# Bakery POS
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.47.5-blue.svg)](https://flutter.dev)
-[![NestJS](https://img.shields.io/badge/NestJS-10.3-red.svg)](https://nestjs.com)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)](https://postgresql.org)
-[![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED.svg)](https://docker.com)
-[![Clean Architecture](https://img.shields.io/badge/Architecture-Clean%20%26%20Offline--First-success.svg)]()
+Point of sale for a Mexican bakery with 2 branches: offline-first Flutter tills, a Flutter web back office, and a NestJS + PostgreSQL server.
 
-Enterprise-grade, offline-first Point of Sale (POS) system designed for multi-branch artisan bakeries. Ensures uninterrupted cashier and baking operations with zero network dependency, seamless background syncing, and conflict-free event sourcing.
+| Folder | What it is | Owner |
+| --- | --- | --- |
+| `contracts/openapi.yaml` | API contract both sides build against | Architect |
+| `server/` | NestJS API and database migrations | Server developer |
+| `app/` | Flutter till (`lib/main_till.dart`) and back office (`lib/main_backoffice.dart`) | App developer |
+| `docs/` | Milestone briefs, architecture notes, wireframes | Architect |
+| `legacy/` | The original template, kept for reference only. Do not build on it. | — |
 
----
+Current milestone: [M1 brief](docs/milestones/M1-brief.md).
 
-## 🚀 Quick Start (Dockerized Backend)
-
-### 1. Prerequisites
-- [Docker & Docker Compose](https://www.docker.com/) (Installed and running)
-- [Flutter SDK](https://flutter.dev/) (For running the mobile/tablet client)
-- **Note**: No local `node` or `npm` required. All NestJS dependencies and compilation are encapsulated in Docker.
-
-### 2. Start Cloud Backend & PostgreSQL
-```bash
-docker compose up -d --build
-```
-This automatically initializes:
-- **PostgreSQL 16** with extensions and seed data on port `5433` (internal `5432`)
-- **NestJS Cloud Backend** on `http://localhost:3001`
-- Seed branch: `Downtown Bakery Oven #1 (BR-01)`
-- Seed users: PIN `1234` for Cashier (`cashier1`), Baker (`baker1`), Manager (`manager1`), and Admin (`admin`).
-
-To verify health:
-```bash
-curl http://localhost:3001/products
-```
-
-To run backend tests inside Docker:
-```bash
-docker compose exec pos_backend npm test
-```
-
----
-
-## 📱 Running the Flutter POS Client
+## Local setup
 
 ```bash
-cd pos_mobile_app
-flutter pub get
-flutter run -d macos # or -d chrome, -d ipad / android
+docker compose -f docker-compose.dev.yml up -d   # PostgreSQL on 127.0.0.1:5432
+cd server && cp .env.example .env && npm install && npm run start:dev
+cd app && flutter pub get && flutter run -t lib/main_till.dart        # till
+cd app && flutter run -d chrome -t lib/main_backoffice.dart           # back office
 ```
 
-To run all Flutter unit and widget tests:
-```bash
-flutter test
-```
+## Rules
 
----
-
-## 🏛️ Architecture Highlights
-
-### 1. Clean Architecture Layers
-- **Presentation**: Touch-optimized Flutter UI widgets (`PinLoginScreen`, `CashierDashboardScreen`, `BakerAddBatchScreen`) with touch targets >= 56dp, dark-mode retail palette, and Riverpod Notifiers (`StockNotifier`, `CartNotifier`, `CheckoutNotifier`).
-- **Domain**: Pure business entities (`Product`, `User`, `LedgerEvent`, `CartItem`) and hardware interfaces (`PaymentGatewayPlugin`, `ReceiptPrinterService`).
-- **Data**: SQLite repositories (`InventoryRepositoryImpl`, `CatalogRepositoryImpl`, `AuthRepositoryImpl`) and `BackgroundSyncWorker`.
-
-### 2. Event Sourcing & Offline-First Guarantees
-- Local SQLite database writes return instantaneously (<16ms) to keep 60fps responsiveness.
-- Background worker pushes batched JSON arrays to `/sync/push`.
-- PostgreSQL processes events inside atomic transactions using `ON CONFLICT (branch_id, client_event_id) DO NOTHING` for idempotency and arithmetic balance UPSERTs.
-
----
-
-## 📚 Documentation
-- [System Architecture Overview](docs/architecture/system_overview.md)
-- [Offline Sync & Event Sourcing Protocol](docs/sync/sync_protocol.md)
-
----
-
-## 👥 Roles
-| Role | Identifier | Capabilities |
-| :--- | :--- | :--- |
-| **Global Admin** | `GLOBAL_ADMIN` | Full multi-branch access, master catalogs, user roles |
-| **Branch Manager** | `BRANCH_MANAGER` | Branch management, shift reconciliations, inventory audits |
-| **Cashier** | `CASHIER` | High-speed POS ticket management, cash payments, change calculation |
-| **Local Baker** | `LOCAL_BAKER` | Touch-optimized batch production entry (`+1 Tray`, `+2 Trays`, `+1 Oven`) |
+- Work on a branch, open a pull request to `main`, keep it under ~600 changed lines.
+- CI must be green and the architect must approve before merge.
+- Never edit `contracts/openapi.yaml` in a feature PR; open an issue labelled `contract`.

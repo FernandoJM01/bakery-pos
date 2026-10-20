@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    name: Contract lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npx -y @redocly/cli@1.25.11 lint contracts/openapi.yaml
+
+  server:
+    name: Server
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: pos
+          POSTGRES_PASSWORD: pos_ci_only
+          POSTGRES_DB: pos_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U pos -d pos_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://pos:pos_ci_only@localhost:5432/pos_test
+      JWT_SECRET: ci-only-jwt-secret-not-for-production
+      DEVICE_TOKEN_PEPPER: ci-only-pepper-not-for-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+      - run: npm run lint -- --max-warnings=0
+      - run: npx tsc --noEmit
+      - run: npm test -- --coverage
+      - run: npm run test:e2e
+      - run: npm audit --audit-level=high
+
+  app:
+    name: App
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed lib test
+      - run: flutter analyze --fatal-infos
+      - run: flutter test --coverage
+      - run: flutter build web --release --target lib/main_backoffice.dart
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: flutter build apk --debug --target lib/main_till.dart

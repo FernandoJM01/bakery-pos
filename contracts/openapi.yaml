@@ -1,0 +1,931 @@
+openapi: 3.1.0
+info:
+  title: Bakery POS API
+  version: 0.1.0-m1
+  description: |
+    Contract for Milestone 1 (foundation, access, roles, devices).
+    Owned by the architect. Developers must not edit this file; open an issue labelled `contract` instead.
+
+    Conventions:
+    - IDs are UUID v7 strings.
+    - Timestamps are UTC ISO 8601 (`date-time`).
+    - Every operation declares `x-permission` (a permission key) or `x-public: true`.
+      Operations that need an enrolled till also declare `x-device: required`.
+    - Errors always use the `Error` schema with a stable `code`.
+servers:
+  - url: http://localhost:3000
+    description: Local development
+  - url: https://staging.example.invalid
+    description: Staging (URL to be set when deployed)
+security:
+  - bearerAuth: []
+tags:
+  - name: system
+  - name: devices
+  - name: auth
+  - name: branches
+  - name: staff
+  - name: audit
+
+paths:
+  /health:
+    get:
+      tags: [system]
+      operationId: getHealth
+      summary: Liveness and database connectivity
+      security: []
+      x-public: true
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Health' }
+        '503':
+          description: Database unreachable
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Health' }
+
+  /v1/devices/activate:
+    post:
+      tags: [devices]
+      operationId: activateDevice
+      summary: Exchange a one-time enrollment code for a device token
+      security: []
+      x-public: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DeviceActivateRequest' }
+      responses:
+        '200':
+          description: Device activated. `deviceToken` is returned only here.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DeviceActivateResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '410':
+          description: Code already used or expired (`DEVICE_CODE_INVALID`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /v1/devices/me/staff:
+    get:
+      tags: [devices, staff]
+      operationId: getDeviceStaffBundle
+      summary: Active staff of the device's branch, with offline PIN verifiers
+      security:
+        - deviceToken: []
+      x-public: true
+      x-device: required
+      responses:
+        '200':
+          description: Staff bundle for offline login
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StaffBundle' }
+        '401': { $ref: '#/components/responses/DeviceRejected' }
+
+  /v1/auth/pin-login:
+    post:
+      tags: [auth]
+      operationId: pinLogin
+      summary: Staff PIN login on an enrolled device
+      security:
+        - deviceToken: []
+      x-public: true
+      x-device: required
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PinLoginRequest' }
+      responses:
+        '200':
+          description: Logged in
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401':
+          description: Wrong PIN (`AUTH_INVALID_PIN`), staff not in this branch or inactive (`AUTH_NOT_ALLOWED`), or device rejected (`DEVICE_UNKNOWN`, `DEVICE_REVOKED`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '423': { $ref: '#/components/responses/Locked' }
+
+  /v1/auth/password-login:
+    post:
+      tags: [auth]
+      operationId: passwordLogin
+      summary: Back office login with email and password
+      security: []
+      x-public: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PasswordLoginRequest' }
+      responses:
+        '200':
+          description: Logged in
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+        '401':
+          description: Wrong credentials (`AUTH_INVALID_CREDENTIALS`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '423': { $ref: '#/components/responses/Locked' }
+
+  /v1/auth/refresh:
+    post:
+      tags: [auth]
+      operationId: refreshToken
+      summary: Rotate a refresh token for a new token pair
+      security: []
+      x-public: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RefreshRequest' }
+      responses:
+        '200':
+          description: New tokens; the old refresh token is revoked
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenPair' }
+        '401':
+          description: Refresh token invalid, expired or reused (`AUTH_REFRESH_INVALID`). Reuse of a rotated token revokes the whole session.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /v1/auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: Revoke the current session
+      x-permission: authenticated
+      responses:
+        '204': { description: Logged out }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /v1/auth/approvals:
+    post:
+      tags: [auth]
+      operationId: createApproval
+      summary: A manager approves a sensitive action with their PIN
+      description: |
+        Returns a single-use token valid for 2 minutes. The endpoint that performs the action
+        receives it in the `X-Approval-Token` header (used from M3 onwards).
+        The approver must hold the permission named in `action` and work in the device's branch.
+      x-permission: authenticated
+      x-device: required
+      security:
+        - bearerAuth: []
+          deviceToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApprovalRequest' }
+      responses:
+        '201':
+          description: Approved
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApprovalResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Approver lacks the permission (`PERMISSION_DENIED`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '423': { $ref: '#/components/responses/Locked' }
+
+  /v1/me:
+    get:
+      tags: [auth]
+      operationId: getMe
+      summary: Current staff member, branches and permissions
+      x-permission: authenticated
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Me' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /v1/branches:
+    get:
+      tags: [branches]
+      operationId: listBranches
+      summary: List branches
+      x-permission: authenticated
+      description: Owners see all branches; others see the branches they work in.
+      responses:
+        '200':
+          description: Branches
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Branch' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [branches]
+      operationId: createBranch
+      summary: Create a branch
+      x-permission: branches.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BranchCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Branch' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/branches/{branchId}:
+    parameters:
+      - $ref: '#/components/parameters/BranchId'
+    patch:
+      tags: [branches]
+      operationId: updateBranch
+      summary: Update a branch
+      x-permission: branches.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BranchUpdate' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Branch' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/staff:
+    get:
+      tags: [staff]
+      operationId: listStaff
+      summary: List staff
+      x-permission: staff.manage
+      parameters:
+        - name: branchId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: role
+          in: query
+          schema: { $ref: '#/components/schemas/Role' }
+        - name: includeInactive
+          in: query
+          schema: { type: boolean, default: false }
+      responses:
+        '200':
+          description: Staff
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Staff' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [staff]
+      operationId: createStaff
+      summary: Create a staff member
+      x-permission: staff.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StaffCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Staff' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/staff/{staffId}:
+    parameters:
+      - $ref: '#/components/parameters/StaffId'
+    get:
+      tags: [staff]
+      operationId: getStaff
+      summary: Get a staff member
+      x-permission: staff.manage
+      responses:
+        '200':
+          description: Staff member
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Staff' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [staff]
+      operationId: updateStaff
+      summary: Update or deactivate a staff member
+      x-permission: staff.manage
+      description: Setting `isActive` to false revokes all of the staff member's sessions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StaffUpdate' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Staff' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/staff/{staffId}/pin:
+    parameters:
+      - $ref: '#/components/parameters/StaffId'
+    put:
+      tags: [staff]
+      operationId: setStaffPin
+      summary: Set a staff member's PIN
+      x-permission: staff.manage
+      description: Sets a new PIN, clears lockout and revokes the staff member's sessions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PinSet' }
+      responses:
+        '204': { description: PIN changed }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/devices:
+    get:
+      tags: [devices]
+      operationId: listDevices
+      summary: List devices
+      x-permission: devices.manage
+      parameters:
+        - name: branchId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Devices
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Device' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [devices]
+      operationId: createDevice
+      summary: Register a device and get an enrollment code
+      x-permission: devices.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DeviceCreate' }
+      responses:
+        '201':
+          description: Created in PENDING status; the enrollment code is shown only here
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DeviceEnrollment' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/devices/{deviceId}/enrollment-code:
+    parameters:
+      - $ref: '#/components/parameters/DeviceId'
+    post:
+      tags: [devices]
+      operationId: regenerateEnrollmentCode
+      summary: Issue a new enrollment code
+      x-permission: devices.manage
+      description: Issues a new code for a PENDING device; previous codes stop working.
+      responses:
+        '201':
+          description: New code
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DeviceEnrollment' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/devices/{deviceId}/revoke:
+    parameters:
+      - $ref: '#/components/parameters/DeviceId'
+    post:
+      tags: [devices]
+      operationId: revokeDevice
+      summary: Revoke a device
+      x-permission: devices.manage
+      responses:
+        '200':
+          description: Revoked; its token stops working immediately
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Device' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/audit-log:
+    get:
+      tags: [audit]
+      operationId: listAuditLog
+      summary: Search the audit log
+      x-permission: audit.view
+      parameters:
+        - name: from
+          in: query
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          schema: { type: string, format: date-time }
+        - name: branchId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: staffId
+          in: query
+          description: Matches actor or approver
+          schema: { type: string, format: uuid }
+        - name: action
+          in: query
+          schema: { $ref: '#/components/schemas/AuditAction' }
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+      responses:
+        '200':
+          description: Newest first
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuditPage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token, 15 minutes. Claims - sub (staff id), sid (session id), did (device id or absent), branchIds.
+    deviceToken:
+      type: apiKey
+      in: header
+      name: X-Device-Token
+      description: Opaque device token from activateDevice.
+
+  parameters:
+    BranchId:
+      name: branchId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    StaffId:
+      name: staffId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    DeviceId:
+      name: deviceId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  responses:
+    ValidationError:
+      description: Request body or parameters invalid (`VALIDATION_FAILED`)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Missing or invalid access token (`AUTH_REQUIRED`, `AUTH_TOKEN_EXPIRED`)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Authenticated but lacking the permission (`PERMISSION_DENIED`)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Not found (`NOT_FOUND`)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Unique value already used or state does not allow it (`CONFLICT`)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Locked:
+      description: Too many failed attempts (`AUTH_LOCKED`); `details.lockedUntil` says when to retry
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    RateLimited:
+      description: Too many requests (`RATE_LIMITED`)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    DeviceRejected:
+      description: Device token missing, unknown or revoked (`DEVICE_UNKNOWN`, `DEVICE_REVOKED`)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          examples: [AUTH_INVALID_PIN]
+        message:
+          type: string
+          description: English, for logs. The app maps `code` to Spanish text.
+        details:
+          type: object
+          additionalProperties: true
+
+    Health:
+      type: object
+      required: [status, database, version]
+      properties:
+        status: { type: string, enum: [ok, degraded] }
+        database: { type: string, enum: [ok, unreachable] }
+        version: { type: string }
+
+    Role:
+      type: string
+      enum: [OWNER, BRANCH_MANAGER, CASHIER, BAKER]
+
+    PermissionKey:
+      type: string
+      enum:
+        - sale.create
+        - sale.void_line_before_payment
+        - sale.void_after_payment
+        - sale.refund
+        - sale.discount_within_limit
+        - sale.discount_over_limit
+        - cash.open_shift
+        - cash.close_shift
+        - cash.movement
+        - cash.open_drawer_no_sale
+        - stock.production_entry
+        - stock.waste
+        - stock.count_adjust
+        - stock.transfer
+        - orders.manage
+        - orders.pickup
+        - oven.intake_pickup
+        - oven.board
+        - catalog.manage
+        - staff.manage
+        - devices.manage
+        - branches.manage
+        - reports.branch
+        - reports.all
+        - audit.view
+        - settings.manage
+
+    Pin:
+      type: string
+      pattern: '^[0-9]{4,6}$'
+      description: Never logged, never returned.
+
+    Branch:
+      type: object
+      required: [id, code, name, timezone, isActive, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string, pattern: '^[A-Z0-9]{2,10}$', examples: [SUC1] }
+        name: { type: string, maxLength: 120 }
+        address: { type: [string, 'null'], maxLength: 300 }
+        timezone: { type: string, default: America/Mexico_City }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    BranchCreate:
+      type: object
+      required: [code, name]
+      additionalProperties: false
+      properties:
+        code: { type: string, pattern: '^[A-Z0-9]{2,10}$' }
+        name: { type: string, minLength: 1, maxLength: 120 }
+        address: { type: string, maxLength: 300 }
+        timezone: { type: string, default: America/Mexico_City }
+    BranchUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        address: { type: [string, 'null'], maxLength: 300 }
+        timezone: { type: string }
+        isActive: { type: boolean }
+
+    Staff:
+      type: object
+      required: [id, fullName, displayName, role, branchIds, isActive, hasPassword, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        fullName: { type: string }
+        displayName: { type: string, description: Short name on tiles and receipts }
+        role: { $ref: '#/components/schemas/Role' }
+        email: { type: [string, 'null'], format: email }
+        branchIds:
+          type: array
+          items: { type: string, format: uuid }
+        isActive: { type: boolean }
+        hasPassword: { type: boolean }
+        lockedUntil: { type: [string, 'null'], format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    StaffCreate:
+      type: object
+      required: [fullName, displayName, role, branchIds, pin]
+      additionalProperties: false
+      properties:
+        fullName: { type: string, minLength: 1, maxLength: 120 }
+        displayName: { type: string, minLength: 1, maxLength: 30 }
+        role: { $ref: '#/components/schemas/Role' }
+        email: { type: string, format: email }
+        password:
+          type: string
+          minLength: 10
+          description: Required when role is OWNER; optional for BRANCH_MANAGER.
+        branchIds:
+          type: array
+          minItems: 1
+          items: { type: string, format: uuid }
+        pin: { $ref: '#/components/schemas/Pin' }
+    StaffUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        fullName: { type: string, minLength: 1, maxLength: 120 }
+        displayName: { type: string, minLength: 1, maxLength: 30 }
+        role: { $ref: '#/components/schemas/Role' }
+        email: { type: [string, 'null'], format: email }
+        password: { type: string, minLength: 10 }
+        branchIds:
+          type: array
+          minItems: 1
+          items: { type: string, format: uuid }
+        isActive: { type: boolean }
+    PinSet:
+      type: object
+      required: [pin]
+      additionalProperties: false
+      properties:
+        pin: { $ref: '#/components/schemas/Pin' }
+
+    StaffBundle:
+      type: object
+      required: [branchId, generatedAt, staff, roles]
+      properties:
+        branchId: { type: string, format: uuid }
+        generatedAt: { type: string, format: date-time }
+        staff:
+          type: array
+          items: { $ref: '#/components/schemas/StaffBundleEntry' }
+        roles:
+          type: object
+          description: Permission keys per role, so the till can check permissions offline.
+          additionalProperties:
+            type: array
+            items: { $ref: '#/components/schemas/PermissionKey' }
+    StaffBundleEntry:
+      type: object
+      required: [id, displayName, role, offlinePinVerifier, pinUpdatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        displayName: { type: string }
+        role: { $ref: '#/components/schemas/Role' }
+        offlinePinVerifier:
+          type: string
+          description: |
+            Argon2id encoded hash (PHC string format, m=65536, t=3, p=1) of the PIN with its own random salt,
+            computed when the PIN is set. It is NOT the server's `pin_hash`. Stored only in the till's
+            encrypted storage.
+          examples: ['$argon2id$v=19$m=65536,t=3,p=1$c2FsdHNhbHQ$aGFzaGhhc2hoYXNo']
+        pinUpdatedAt: { type: string, format: date-time }
+
+    DeviceType:
+      type: string
+      enum: [TILL, PRODUCTION]
+    DeviceStatus:
+      type: string
+      enum: [PENDING, ACTIVE, REVOKED]
+    Device:
+      type: object
+      required: [id, branchId, name, type, status, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        name: { type: string, examples: [Caja 1] }
+        type: { $ref: '#/components/schemas/DeviceType' }
+        status: { $ref: '#/components/schemas/DeviceStatus' }
+        lastSeenAt: { type: [string, 'null'], format: date-time }
+        appVersion: { type: [string, 'null'] }
+        createdAt: { type: string, format: date-time }
+        revokedAt: { type: [string, 'null'], format: date-time }
+    DeviceCreate:
+      type: object
+      required: [branchId, name, type]
+      additionalProperties: false
+      properties:
+        branchId: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 40 }
+        type: { $ref: '#/components/schemas/DeviceType' }
+    DeviceEnrollment:
+      type: object
+      required: [device, enrollmentCode, expiresAt]
+      properties:
+        device: { $ref: '#/components/schemas/Device' }
+        enrollmentCode:
+          type: string
+          pattern: '^[A-HJ-NP-Z2-9]{8}$'
+          description: Shown once. Valid 30 minutes, single use.
+        expiresAt: { type: string, format: date-time }
+    DeviceActivateRequest:
+      type: object
+      required: [enrollmentCode, appVersion]
+      additionalProperties: false
+      properties:
+        enrollmentCode: { type: string, pattern: '^[A-HJ-NP-Z2-9]{8}$' }
+        appVersion: { type: string, maxLength: 40 }
+    DeviceActivateResponse:
+      type: object
+      required: [device, deviceToken, branch]
+      properties:
+        device: { $ref: '#/components/schemas/Device' }
+        deviceToken:
+          type: string
+          description: Shown once. Store in secure storage; send as X-Device-Token.
+        branch: { $ref: '#/components/schemas/Branch' }
+
+    PinLoginRequest:
+      type: object
+      required: [staffId, pin]
+      additionalProperties: false
+      properties:
+        staffId: { type: string, format: uuid }
+        pin: { $ref: '#/components/schemas/Pin' }
+    PasswordLoginRequest:
+      type: object
+      required: [email, password]
+      additionalProperties: false
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 1, maxLength: 200 }
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      additionalProperties: false
+      properties:
+        refreshToken: { type: string }
+    TokenPair:
+      type: object
+      required: [accessToken, accessTokenExpiresAt, refreshToken, refreshTokenExpiresAt]
+      properties:
+        accessToken: { type: string }
+        accessTokenExpiresAt: { type: string, format: date-time }
+        refreshToken: { type: string }
+        refreshTokenExpiresAt:
+          type: string
+          format: date-time
+          description: Till sessions end at 04:00 branch local time the next day; back office sessions after 12 hours.
+    LoginResponse:
+      allOf:
+        - $ref: '#/components/schemas/TokenPair'
+        - type: object
+          required: [me]
+          properties:
+            me: { $ref: '#/components/schemas/Me' }
+    Me:
+      type: object
+      required: [staff, permissions]
+      properties:
+        staff: { $ref: '#/components/schemas/Staff' }
+        permissions:
+          type: array
+          items: { $ref: '#/components/schemas/PermissionKey' }
+        deviceId: { type: [string, 'null'], format: uuid }
+
+    ApprovalRequest:
+      type: object
+      required: [approverStaffId, pin, action]
+      additionalProperties: false
+      properties:
+        approverStaffId: { type: string, format: uuid }
+        pin: { $ref: '#/components/schemas/Pin' }
+        action:
+          $ref: '#/components/schemas/PermissionKey'
+        reference:
+          type: string
+          maxLength: 100
+          description: What is being approved, for example a sale folio.
+    ApprovalResponse:
+      type: object
+      required: [approvalToken, expiresAt, approverStaffId, action]
+      properties:
+        approvalToken: { type: string }
+        expiresAt: { type: string, format: date-time }
+        approverStaffId: { type: string, format: uuid }
+        action: { $ref: '#/components/schemas/PermissionKey' }
+
+    AuditAction:
+      type: string
+      enum:
+        - auth.login_success
+        - auth.login_failure
+        - auth.locked
+        - auth.logout
+        - auth.approval_granted
+        - auth.approval_denied
+        - staff.created
+        - staff.updated
+        - staff.deactivated
+        - staff.pin_changed
+        - device.created
+        - device.activated
+        - device.revoked
+        - branch.created
+        - branch.updated
+    AuditEntry:
+      type: object
+      required: [id, occurredAt, action]
+      properties:
+        id: { type: string, format: uuid }
+        occurredAt: { type: string, format: date-time }
+        branchId: { type: [string, 'null'], format: uuid }
+        deviceId: { type: [string, 'null'], format: uuid }
+        actorStaffId: { type: [string, 'null'], format: uuid }
+        approverStaffId: { type: [string, 'null'], format: uuid }
+        action: { $ref: '#/components/schemas/AuditAction' }
+        entityType: { type: [string, 'null'] }
+        entityId: { type: [string, 'null'] }
+        data:
+          type: object
+          additionalProperties: true
+          description: Never contains PINs, passwords or tokens.
+    AuditPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/AuditEntry' }
+        nextCursor: { type: [string, 'null'] }
