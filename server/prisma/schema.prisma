@@ -1,0 +1,14 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Minimal model so Prisma Client generates in PR 1 foundation.
+// Full 8 tables and migrations are delivered in PR 2 (m1/server-schema).
+model SystemHealth {
+  id String @id
+}
