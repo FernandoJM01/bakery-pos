@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app.dart';
+import '../../features/enrollment/presentation/enrollment_screen.dart';
+import '../storage/secure_storage.dart';
 
 class AppRoutes {
   static const String tillEnrollment = '/enrollment';
@@ -12,20 +15,43 @@ class AppRoutes {
   static const String backofficeDashboard = '/backoffice/dashboard';
 }
 
-GoRouter createAppRouter(AppMode mode) {
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
+GoRouter createAppRouter(AppMode mode, {SecureStorageService? secureStorage}) {
   final initialLocation = mode == AppMode.till
       ? AppRoutes.tillLogin
       : AppRoutes.backofficeLogin;
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: initialLocation,
+    redirect: (context, state) async {
+      if (mode == AppMode.till) {
+        final storage =
+            secureStorage ??
+            SecureStorageService(
+              const FlutterSecureStorage(aOptions: AndroidOptions()),
+            );
+        final token = await storage.getDeviceToken();
+        final hasToken = token != null && token.isNotEmpty;
+        final isEnrollment = state.matchedLocation == AppRoutes.tillEnrollment;
+
+        if (!hasToken && !isEnrollment) {
+          return AppRoutes.tillEnrollment;
+        }
+        if (hasToken && isEnrollment) {
+          return AppRoutes.tillLogin;
+        }
+      }
+      return null;
+    },
     routes: [
       GoRoute(
         path: AppRoutes.tillEnrollment,
-        builder: (context, state) => const _RoutePlaceholder(
-          titleKey: 'enrollmentTitle',
-          routeName: 'enrollment',
-        ),
+        builder: (context, state) {
+          final isRevoked = state.uri.queryParameters['revoked'] == 'true';
+          return EnrollmentScreen(isRevoked: isRevoked);
+        },
       ),
       GoRoute(
         path: AppRoutes.tillLogin,

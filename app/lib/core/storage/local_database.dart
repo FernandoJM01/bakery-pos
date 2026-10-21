@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import 'secure_storage.dart';
+
 part 'local_database.g.dart';
 
 class StaffEntries extends Table {
@@ -37,7 +39,10 @@ class SessionStateEntries extends Table {
 
 @DriftDatabase(tables: [StaffEntries, RolePermissions, SessionStateEntries])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
+  AppDatabase([
+    QueryExecutor? executor,
+    QueryExecutor Function()? openConnection,
+  ]) : super(executor ?? openConnection?.call() ?? _openConnection());
 
   @override
   int get schemaVersion => 1;
@@ -89,18 +94,42 @@ class AppDatabase extends _$AppDatabase {
     await delete(rolePermissions).go();
     await delete(sessionStateEntries).go();
   }
+
+  static Future<void> deleteDatabaseFile() async {
+    final dbFolder = await getApplicationDocumentsDirectory();
+    final file = File(p.join(dbFolder.path, 'bakery_pos_local.sqlite'));
+    if (await file.exists()) {
+      await file.delete();
+    }
+  }
 }
 
-LazyDatabase _openConnection() {
+LazyDatabase _openConnection([Future<String> Function()? getKey]) {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'bakery_pos_local.sqlite'));
-    return NativeDatabase.createInBackground(file);
+    final key = getKey != null ? await getKey() : null;
+    return NativeDatabase.createInBackground(
+      file,
+      setup: (rawDb) {
+        if (key != null && key.isNotEmpty) {
+          rawDb.execute("PRAGMA key = '$key';");
+        }
+      },
+    );
   });
 }
 
-final databaseProvider = Provider<AppDatabase>((ref) {
-  final db = AppDatabase();
+/// Till-only database provider, encrypted via SQLCipher using a key kept in SecureStorage.
+final tillDatabaseProvider = Provider<AppDatabase>((ref) {
+  final secureStorage = ref.watch(secureStorageProvider);
+  final db = AppDatabase(
+    null,
+    () => _openConnection(secureStorage.getOrCreateDatabaseKey),
+  );
   ref.onDispose(db.close);
   return db;
 });
+
+@Deprecated('Use tillDatabaseProvider instead to emphasize till-only scope')
+final databaseProvider = tillDatabaseProvider;

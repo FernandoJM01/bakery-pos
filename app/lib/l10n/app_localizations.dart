@@ -256,11 +256,23 @@ abstract class AppLocalizations {
   /// **'URL del servidor'**
   String get enrollmentServerUrlLabel;
 
+  /// No description provided for @enrollmentServerUrlHint.
+  ///
+  /// In es, this message translates to:
+  /// **'http://localhost:3000'**
+  String get enrollmentServerUrlHint;
+
   /// No description provided for @enrollmentSubmitButton.
   ///
   /// In es, this message translates to:
   /// **'Inscribir dispositivo'**
   String get enrollmentSubmitButton;
+
+  /// No description provided for @enrollmentSubmitting.
+  ///
+  /// In es, this message translates to:
+  /// **'Inscribiendo...'**
+  String get enrollmentSubmitting;
 
   /// No description provided for @enrollmentSuccess.
   ///
@@ -273,6 +285,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'El código es inválido o ha expirado'**
   String get enrollmentCodeInvalid;
+
+  /// No description provided for @enrollmentNetworkError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error de conexión con el servidor. Verifique la URL y la red.'**
+  String get enrollmentNetworkError;
+
+  /// No description provided for @enrollmentInvalidUrl.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingrese una URL válida (ej. http://192.168.1.100:3000)'**
+  String get enrollmentInvalidUrl;
+
+  /// No description provided for @enrollmentCodeRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'El código debe tener exactamente 8 caracteres'**
+  String get enrollmentCodeRequired;
 
   /// No description provided for @loginSelectStaff.
   ///

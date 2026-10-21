@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:bakery_pos/core/storage/local_database.dart';
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -8,6 +11,12 @@ void main() {
   late AppDatabase db;
 
   setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (MethodCall methodCall) async => Directory.systemTemp.path,
+        );
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   });
 
@@ -24,21 +33,23 @@ void main() {
       expect(db.schemaVersion, 1);
     });
 
-    test(
-      'databaseProvider provides AppDatabase instance and closes on dispose',
-      () async {
-        final container = ProviderContainer(
-          overrides: [
-            databaseProvider.overrideWithValue(
-              AppDatabase(NativeDatabase.memory()),
-            ),
-          ],
-        );
-        final database = container.read(databaseProvider);
-        expect(database, isA<AppDatabase>());
-        container.dispose();
-      },
-    );
+    test('databaseProvider and tillDatabaseProvider provide AppDatabase instance and close on dispose', () async {
+      final container = ProviderContainer(
+        overrides: [
+          tillDatabaseProvider.overrideWithValue(
+            AppDatabase(NativeDatabase.memory()),
+          ),
+        ],
+      );
+      final database = container.read(tillDatabaseProvider);
+      expect(database, isA<AppDatabase>());
+      expect(container.read(databaseProvider), database);
+      container.dispose();
+    });
+
+    test('deleteDatabaseFile handles non-existent file cleanly', () async {
+      await expectLater(AppDatabase.deleteDatabaseFile(), completes);
+    });
 
     test('saves and retrieves staff bundle and permissions', () async {
       await db.replaceStaffBundle(
@@ -96,6 +107,31 @@ void main() {
       await db.clearAll();
       final emptyValue = await db.getSessionValue('device_status');
       expect(emptyValue, isNull);
+    });
+
+    test('database file cannot be opened without encryption key', () async {
+      final tempDir = Directory.systemTemp.createTempSync();
+      final dbFile = File('${tempDir.path}/encrypted_test.sqlite');
+      const encryptionKey = '0123456789abcdef0123456789abcdef';
+
+      final encryptedDb = AppDatabase(
+        NativeDatabase(
+          dbFile,
+          setup: (rawDb) => rawDb.execute("PRAGMA key = '$encryptionKey';"),
+        ),
+      );
+      await encryptedDb.setSessionValue('secret_key', 'secret_value');
+      await encryptedDb.close();
+
+      final unauthenticatedDb = AppDatabase(NativeDatabase(dbFile));
+
+      expect(
+        () async => await unauthenticatedDb.getSessionValue('secret_key'),
+        throwsA(anything),
+      );
+
+      await unauthenticatedDb.close();
+      tempDir.deleteSync(recursive: true);
     });
   });
 }
