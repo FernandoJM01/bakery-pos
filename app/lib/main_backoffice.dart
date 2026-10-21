@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
 
-void main() => runApp(const BakeryPosApp(mode: AppMode.backoffice));
+void main() =>
+    runApp(const ProviderScope(child: BakeryPosApp(mode: AppMode.backoffice)));
