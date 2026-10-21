@@ -35,6 +35,8 @@
   "enrollmentSubmitting": "Inscribiendo...",
   "enrollmentSuccess": "Dispositivo inscrito correctamente",
   "enrollmentCodeInvalid": "El código es inválido o ha expirado",
+  "enrollmentRateLimited": "Demasiados intentos. Espera unos minutos e intenta de nuevo.",
+  "enrollmentValidationFailed": "Revisa el código ingresado.",
   "enrollmentNetworkError": "Error de conexión con el servidor. Verifique la URL y la red.",
   "enrollmentInvalidUrl": "Ingrese una URL válida (ej. http://192.168.1.100:3000)",
   "enrollmentCodeRequired": "El código debe tener exactamente 8 caracteres",
@@ -44,7 +46,20 @@
   "loginButton": "Entrar",
   "loginInvalidPin": "PIN incorrecto",
   "loginLocked": "Demasiados intentos fallidos. Bloqueado temporalmente.",
+  "loginLockedUntil": "Demasiados intentos. Bloqueado hasta las {time}.",
+  "@loginLockedUntil": {
+    "description": "Mensaje de bloqueo temporal con hora",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "loginStaffNotAllowed": "Usuario no autorizado en esta sucursal o inactivo",
+  "loginOfflineSession": "Sesión sin conexión",
+  "loginNoStaff": "No hay personal disponible. Sincroniza el dispositivo.",
+  "loginSyncSuccess": "Personal sincronizado correctamente",
+  "loginSyncFailed": "Error al sincronizar personal con el servidor",
   "backofficeLoginTitle": "Acceso a Administración",
   "backofficeEmailLabel": "Correo electrónico",
   "backofficePasswordLabel": "Contraseña",

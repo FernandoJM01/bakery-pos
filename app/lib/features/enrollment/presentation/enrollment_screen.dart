@@ -87,6 +87,11 @@ class _EnrollmentScreenState extends ConsumerState<EnrollmentScreen> {
 
       if (e.response?.statusCode == 410 || errorCode == 'DEVICE_CODE_INVALID') {
         setState(() => _errorMessage = l10n.enrollmentCodeInvalid);
+      } else if (e.response?.statusCode == 429 || errorCode == 'RATE_LIMITED') {
+        setState(() => _errorMessage = l10n.enrollmentRateLimited);
+      } else if (e.response?.statusCode == 400 ||
+          errorCode == 'VALIDATION_FAILED') {
+        setState(() => _errorMessage = l10n.enrollmentValidationFailed);
       } else {
         setState(() => _errorMessage = l10n.enrollmentNetworkError);
       }

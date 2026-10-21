@@ -6,6 +6,7 @@ import 'app.dart';
 import 'core/api/api_client_provider.dart';
 import 'core/storage/local_database.dart';
 import 'core/storage/secure_storage.dart';
+import 'features/auth/presentation/till_login_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +32,10 @@ Future<void> main() async {
           };
         }),
       ],
-      child: const BakeryPosApp(mode: AppMode.till),
+      child: BakeryPosApp(
+        mode: AppMode.till,
+        tillLoginBuilder: (context) => const TillLoginScreen(),
+      ),
     ),
   );
 }

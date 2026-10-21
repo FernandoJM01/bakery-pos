@@ -107,6 +107,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get enrollmentCodeInvalid => 'El código es inválido o ha expirado';
 
   @override
+  String get enrollmentRateLimited =>
+      'Demasiados intentos. Espera unos minutos e intenta de nuevo.';
+
+  @override
+  String get enrollmentValidationFailed => 'Revisa el código ingresado.';
+
+  @override
   String get enrollmentNetworkError =>
       'Error de conexión con el servidor. Verifique la URL y la red.';
 
@@ -138,8 +145,26 @@ class AppLocalizationsEs extends AppLocalizations {
       'Demasiados intentos fallidos. Bloqueado temporalmente.';
 
   @override
+  String loginLockedUntil(String time) {
+    return 'Demasiados intentos. Bloqueado hasta las $time.';
+  }
+
+  @override
   String get loginStaffNotAllowed =>
       'Usuario no autorizado en esta sucursal o inactivo';
+
+  @override
+  String get loginOfflineSession => 'Sesión sin conexión';
+
+  @override
+  String get loginNoStaff =>
+      'No hay personal disponible. Sincroniza el dispositivo.';
+
+  @override
+  String get loginSyncSuccess => 'Personal sincronizado correctamente';
+
+  @override
+  String get loginSyncFailed => 'Error al sincronizar personal con el servidor';
 
   @override
   String get backofficeLoginTitle => 'Acceso a Administración';
