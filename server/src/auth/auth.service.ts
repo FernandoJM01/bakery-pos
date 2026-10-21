@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Role, Staff, StaffBranch } from '@prisma/client';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service';
+import { ClockService } from '../common/clock.service';
 import {
   generateToken,
   getDummyArgon2Hash,
@@ -61,6 +62,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly auditService: AuditService,
+    private readonly clock: ClockService,
     configService: ConfigService,
   ) {
     this.deviceTokenPepper = configService.get<string>('DEVICE_TOKEN_PEPPER')!;
@@ -92,7 +94,7 @@ export class AuthService {
     }
 
     // Back office lockout uses its own counters, never the till PIN ones.
-    const now = new Date();
+    const now = this.clock.now();
     if (staff.passwordLockedUntil && staff.passwordLockedUntil > now) {
       throw new HttpException(
         {

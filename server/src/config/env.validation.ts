@@ -41,6 +41,10 @@ export class EnvironmentVariables {
   @IsOptional()
   @IsString()
   LOG_LEVEL?: string = 'info';
+
+  @IsOptional()
+  @IsString()
+  TRUST_PROXY?: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

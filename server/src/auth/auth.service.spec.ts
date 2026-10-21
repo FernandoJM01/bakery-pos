@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
+import { ClockService } from '../common/clock.service';
 import { hashPassword } from '../common/crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from './auth.service';
@@ -68,7 +69,13 @@ describe('AuthService', () => {
       }),
     } as unknown as ConfigService;
 
-    service = new AuthService(prisma, jwtService, auditService, configService);
+    service = new AuthService(
+      prisma,
+      jwtService,
+      auditService,
+      new ClockService(),
+      configService,
+    );
   });
 
   describe('passwordLogin', () => {

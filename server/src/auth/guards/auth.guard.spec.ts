@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
+import { ClockService } from '../../common/clock.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthenticatedUser } from '../interfaces/auth.interface';
 import { AuthGuard } from './auth.guard';
@@ -33,7 +34,13 @@ describe('AuthGuard', () => {
       }),
     } as unknown as ConfigService;
 
-    guard = new AuthGuard(reflector, jwtService, prisma, configService);
+    guard = new AuthGuard(
+      reflector,
+      jwtService,
+      prisma,
+      new ClockService(),
+      configService,
+    );
   });
 
   function createMockContext(

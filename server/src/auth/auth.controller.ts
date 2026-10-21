@@ -22,7 +22,7 @@ export class AuthController {
   @Post('password-login')
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   async passwordLogin(@Body() dto: PasswordLoginDto) {
     return this.authService.passwordLogin(dto);
   }

@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
+import { ClockService } from '../../common/clock.service';
 import { IS_PUBLIC_KEY } from '../../common/decorators/public.decorator';
 import { PERMISSION_KEYS } from '../../common/permissions';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -21,6 +22,7 @@ export class AuthGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
+    private readonly clock: ClockService,
     configService: ConfigService,
   ) {
     this.jwtSecret = configService.get<string>('JWT_SECRET')!;
@@ -88,7 +90,7 @@ export class AuthGuard implements CanActivate {
     if (
       !session ||
       session.revokedAt !== null ||
-      session.expiresAt <= new Date()
+      session.expiresAt <= this.clock.now()
     ) {
       if (isPublic) {
         return true;

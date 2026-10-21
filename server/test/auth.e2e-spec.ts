@@ -6,6 +6,7 @@ import request from 'supertest';
 import { v7 as uuidv7 } from 'uuid';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.setup';
+import { ClockService } from '../src/common/clock.service';
 import { hashPassword, hashPin } from '../src/common/crypto';
 import { validateResponseAgainstContract } from './contract-validator';
 
@@ -34,6 +35,8 @@ describe('Auth & Session Management (e2e)', () => {
   let app: INestApplication;
   let server: Server;
   let prisma: PrismaClient;
+  let clock: ClockService;
+  let actualBranchId: string;
 
   const testBranchId = uuidv7();
   const testStaffId = uuidv7();
@@ -58,7 +61,7 @@ describe('Auth & Session Management (e2e)', () => {
     await prisma.$connect();
 
     // Setup test branch and staff
-    await prisma.branch.upsert({
+    const branch = await prisma.branch.upsert({
       where: { code: 'SUCE2E' },
       update: {},
       create: {
@@ -68,6 +71,7 @@ describe('Auth & Session Management (e2e)', () => {
         isActive: true,
       },
     });
+    actualBranchId = branch.id;
 
     const passwordHash = await hashPassword(testPassword);
     const { pinHash, offlinePinVerifier } = await hashPin('4829');
@@ -76,6 +80,9 @@ describe('Auth & Session Management (e2e)', () => {
       where: { email: testEmail },
       update: {
         passwordHash,
+        failedPasswordAttempts: 0,
+        passwordFailureWindowStart: null,
+        passwordLockedUntil: null,
         failedPinAttempts: 0,
         lockedUntil: null,
         isActive: true,
@@ -92,7 +99,7 @@ describe('Auth & Session Management (e2e)', () => {
         pinUpdatedAt: new Date(),
         isActive: true,
         staffBranches: {
-          create: [{ branchId: testBranchId }],
+          create: [{ branchId: actualBranchId }],
         },
       },
     });
@@ -105,6 +112,11 @@ describe('Auth & Session Management (e2e)', () => {
     configureApp(app);
     await app.init();
     server = app.getHttpServer() as Server;
+    clock = app.get(ClockService);
+  });
+
+  beforeEach(() => {
+    clock.setNow(null);
   });
 
   afterAll(async () => {
@@ -175,7 +187,7 @@ describe('Auth & Session Management (e2e)', () => {
         pinUpdatedAt: new Date(),
         failedPasswordAttempts: 9,
         passwordFailureWindowStart: new Date(),
-        staffBranches: { create: [{ branchId: testBranchId }] },
+        staffBranches: { create: [{ branchId: actualBranchId }] },
       },
     });
 
@@ -211,6 +223,147 @@ describe('Auth & Session Management (e2e)', () => {
     expect(locked.passwordLockedUntil).not.toBeNull();
     expect(locked.lockedUntil).toBeNull();
     expect(locked.failedPinAttempts).toBe(0);
+  });
+
+  it('lock expires, then one wrong password does not re-lock (controllable clock)', async () => {
+    const expireEmail = 'lock-expire-test@bakery.local';
+    const passwordHash = await hashPassword('ValidPass123!');
+    const { pinHash, offlinePinVerifier } = await hashPin('1234');
+    const baseTime = new Date('2026-10-21T10:00:00Z');
+    clock.setNow(baseTime);
+
+    await prisma.staff.upsert({
+      where: { email: expireEmail },
+      update: {
+        failedPasswordAttempts: 9,
+        passwordFailureWindowStart: baseTime,
+        passwordLockedUntil: null,
+      },
+      create: {
+        id: uuidv7(),
+        fullName: 'Expire Lock Tester',
+        displayName: 'ExpireLock',
+        role: Role.OWNER,
+        email: expireEmail,
+        passwordHash,
+        pinHash,
+        offlinePinVerifier,
+        pinUpdatedAt: baseTime,
+        failedPasswordAttempts: 9,
+        passwordFailureWindowStart: baseTime,
+        staffBranches: { create: [{ branchId: actualBranchId }] },
+      },
+    });
+
+    // 10th wrong password locks account until baseTime + 15m
+    const lockRes = await request(server)
+      .post('/v1/auth/password-login')
+      .send({ email: expireEmail, password: 'WrongPassword!' });
+    expect(lockRes.status).toBe(423);
+
+    // Fast-forward 16 minutes: lock has expired
+    clock.advance(16 * 60 * 1000);
+
+    // One wrong password after lock expired must NOT re-lock; it should be attempt 1 (401 AUTH_INVALID_CREDENTIALS)
+    const afterExpireRes = await request(server)
+      .post('/v1/auth/password-login')
+      .send({ email: expireEmail, password: 'WrongPasswordAgain!' });
+    expect(afterExpireRes.status).toBe(401);
+    expect(getBody(afterExpireRes).code).toBe('AUTH_INVALID_CREDENTIALS');
+
+    // Confirm in DB that counter is 1 and lockedUntil is null
+    const staff = await prisma.staff.findUnique({
+      where: { email: expireEmail },
+    });
+    expect(staff?.failedPasswordAttempts).toBe(1);
+    expect(staff?.passwordLockedUntil).toBeNull();
+  });
+
+  it('9 failures, wait 15 minutes, 1 failure does not lock (controllable clock)', async () => {
+    const windowEmail = 'window-test@bakery.local';
+    const passwordHash = await hashPassword('ValidPass123!');
+    const { pinHash, offlinePinVerifier } = await hashPin('1234');
+    const baseTime = new Date('2026-10-21T10:00:00Z');
+    clock.setNow(baseTime);
+
+    await prisma.staff.upsert({
+      where: { email: windowEmail },
+      update: {
+        failedPasswordAttempts: 9,
+        passwordFailureWindowStart: baseTime,
+        passwordLockedUntil: null,
+      },
+      create: {
+        id: uuidv7(),
+        fullName: 'Window Tester',
+        displayName: 'WindowTest',
+        role: Role.OWNER,
+        email: windowEmail,
+        passwordHash,
+        pinHash,
+        offlinePinVerifier,
+        pinUpdatedAt: baseTime,
+        failedPasswordAttempts: 9,
+        passwordFailureWindowStart: baseTime,
+        staffBranches: { create: [{ branchId: actualBranchId }] },
+      },
+    });
+
+    // Advance clock past the 15-minute failure window (16 minutes)
+    clock.advance(16 * 60 * 1000);
+
+    // 1 more wrong password after window expired resets the window; does NOT lock!
+    const res = await request(server)
+      .post('/v1/auth/password-login')
+      .send({ email: windowEmail, password: 'WrongPassword!' });
+
+    expect(res.status).toBe(401);
+    expect(getBody(res).code).toBe('AUTH_INVALID_CREDENTIALS');
+
+    const staff = await prisma.staff.findUnique({
+      where: { email: windowEmail },
+    });
+    expect(staff?.failedPasswordAttempts).toBe(1);
+    expect(staff?.passwordLockedUntil).toBeNull();
+  });
+
+  it('inactive account returns AUTH_INVALID_CREDENTIALS for both right and wrong passwords', async () => {
+    const inactiveEmail = 'inactive-check@bakery.local';
+    const rightPassword = 'RightPassword123!';
+    const passwordHash = await hashPassword(rightPassword);
+    const { pinHash, offlinePinVerifier } = await hashPin('1234');
+
+    await prisma.staff.upsert({
+      where: { email: inactiveEmail },
+      update: { isActive: false, passwordHash },
+      create: {
+        id: uuidv7(),
+        fullName: 'Inactive Checker',
+        displayName: 'InactiveCheck',
+        role: Role.CASHIER,
+        email: inactiveEmail,
+        passwordHash,
+        pinHash,
+        offlinePinVerifier,
+        pinUpdatedAt: new Date(),
+        isActive: false,
+        staffBranches: { create: [{ branchId: actualBranchId }] },
+      },
+    });
+
+    // Right password on inactive account -> 401 AUTH_INVALID_CREDENTIALS
+    const rightRes = await request(server)
+      .post('/v1/auth/password-login')
+      .send({ email: inactiveEmail, password: rightPassword });
+    expect(rightRes.status).toBe(401);
+    expect(getBody(rightRes).code).toBe('AUTH_INVALID_CREDENTIALS');
+
+    // Wrong password on inactive account -> 401 AUTH_INVALID_CREDENTIALS
+    const wrongRes = await request(server)
+      .post('/v1/auth/password-login')
+      .send({ email: inactiveEmail, password: 'WrongPassword999!' });
+    expect(wrongRes.status).toBe(401);
+    expect(getBody(wrongRes).code).toBe('AUTH_INVALID_CREDENTIALS');
   });
 
   it('logs in successfully, satisfies contract, and does not leak hashes (A11)', async () => {
@@ -327,6 +480,33 @@ describe('Auth & Session Management (e2e)', () => {
     expect(newRefreshBody.code).toBe('AUTH_REFRESH_INVALID');
   });
 
+  it('fires two refreshes with the same token in parallel and expects exactly one success', async () => {
+    const loginRes = await request(server)
+      .post('/v1/auth/password-login')
+      .send({ email: testEmail, password: testPassword });
+
+    const loginBody = getBody(loginRes);
+    const refreshToken = loginBody.refreshToken;
+    expect(refreshToken).toBeDefined();
+
+    // Fire two refreshes in parallel with the exact same refresh token
+    const [res1, res2] = await Promise.all([
+      request(server)
+        .post('/v1/auth/refresh')
+        .send({ refreshToken: refreshToken! }),
+      request(server)
+        .post('/v1/auth/refresh')
+        .send({ refreshToken: refreshToken! }),
+    ]);
+
+    const statuses = [res1.status, res2.status].sort();
+    expect(statuses).toEqual([200, 401]);
+
+    const failed = res1.status === 401 ? res1 : res2;
+    const failedBody = getBody(failed);
+    expect(failedBody.code).toBe('AUTH_REFRESH_INVALID');
+  });
+
   it('refuses access token for a deactivated staff member', async () => {
     const deactivatedEmail = 'deactivated-staff@bakery.local';
     const passwordHash = await hashPassword('ValidPass123!');
@@ -347,7 +527,7 @@ describe('Auth & Session Management (e2e)', () => {
         offlinePinVerifier,
         pinUpdatedAt: new Date(),
         isActive: true,
-        staffBranches: { create: [{ branchId: testBranchId }] },
+        staffBranches: { create: [{ branchId: actualBranchId }] },
       },
     });
 

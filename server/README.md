@@ -29,6 +29,11 @@ The system uses PostgreSQL with role separation to enforce security boundaries (
 | `DEVICE_TOKEN_PEPPER` | Yes | Server-side secret pepper for SHA-256 device tokens (min 32 characters in production) |
 | `NODE_ENV` | No | `development` (default), `test`, or `production` |
 | `PORT` | No | Server listen port (default: `3000`) |
+| `TRUST_PROXY` | No | Set to `1`, `true`, or number of hops when behind a reverse proxy (e.g. nginx or AWS ALB) to correctly identify client IPs for throttling |
+
+## Reverse Proxy & IP Rate Limiting
+
+When running behind an ingress proxy (nginx, AWS ALB, Cloudflare), set `TRUST_PROXY=1` (or `true`). Express will evaluate `X-Forwarded-For` so that branch tills sharing an IP are rate-limited appropriately on sensitive endpoints (`password-login` and `refresh`) without blocking the entire branch or health checks.
 
 ## Setup & Development
 
