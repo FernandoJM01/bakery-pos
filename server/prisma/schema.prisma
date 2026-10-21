@@ -50,20 +50,23 @@ model Branch {
 }
 
 model Staff {
-  id                 String    @id @db.Uuid
-  fullName           String    @map("full_name") @db.VarChar(120)
-  displayName        String    @map("display_name") @db.VarChar(30)
-  role               Role      @map("role")
-  email              String?   @unique @db.VarChar(255)
-  passwordHash       String?   @map("password_hash") @db.VarChar(255)
-  pinHash            String    @map("pin_hash") @db.VarChar(255)
-  offlinePinVerifier String    @map("offline_pin_verifier") @db.VarChar(255)
-  pinUpdatedAt       DateTime  @map("pin_updated_at") @db.Timestamptz(6)
-  isActive           Boolean   @default(true) @map("is_active")
-  failedPinAttempts  Int       @default(0) @map("failed_pin_attempts")
-  lockedUntil        DateTime? @map("locked_until") @db.Timestamptz(6)
-  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id                         String    @id @db.Uuid
+  fullName                   String    @map("full_name") @db.VarChar(120)
+  displayName                String    @map("display_name") @db.VarChar(30)
+  role                       Role      @map("role")
+  email                      String?   @unique @db.VarChar(255)
+  passwordHash               String?   @map("password_hash") @db.VarChar(255)
+  pinHash                    String    @map("pin_hash") @db.VarChar(255)
+  offlinePinVerifier         String    @map("offline_pin_verifier") @db.VarChar(255)
+  pinUpdatedAt               DateTime  @map("pin_updated_at") @db.Timestamptz(6)
+  isActive                   Boolean   @default(true) @map("is_active")
+  failedPinAttempts          Int       @default(0) @map("failed_pin_attempts")
+  lockedUntil                DateTime? @map("locked_until") @db.Timestamptz(6)
+  failedPasswordAttempts     Int       @default(0) @map("failed_password_attempts")
+  passwordFailureWindowStart DateTime? @map("password_failure_window_start") @db.Timestamptz(6)
+  passwordLockedUntil        DateTime? @map("password_locked_until") @db.Timestamptz(6)
+  createdAt                  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   staffBranches     StaffBranch[]
   createdDevices    Device[]      @relation("DeviceCreatedBy")

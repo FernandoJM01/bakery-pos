@@ -159,8 +159,9 @@ describe('Auth & Session Management (e2e)', () => {
     await prisma.staff.upsert({
       where: { email: lockoutEmail },
       update: {
-        failedPinAttempts: 9,
-        lockedUntil: null,
+        failedPasswordAttempts: 9,
+        passwordFailureWindowStart: new Date(),
+        passwordLockedUntil: null,
       },
       create: {
         id: uuidv7(),
@@ -172,7 +173,8 @@ describe('Auth & Session Management (e2e)', () => {
         pinHash,
         offlinePinVerifier,
         pinUpdatedAt: new Date(),
-        failedPinAttempts: 9,
+        failedPasswordAttempts: 9,
+        passwordFailureWindowStart: new Date(),
         staffBranches: { create: [{ branchId: testBranchId }] },
       },
     });
@@ -201,6 +203,14 @@ describe('Auth & Session Management (e2e)', () => {
       body: lockedRes.body,
     });
     expect(validation.valid).toBe(true);
+
+    // The back office lockout must not lock the till PIN.
+    const locked = await prisma.staff.findUniqueOrThrow({
+      where: { email: lockoutEmail },
+    });
+    expect(locked.passwordLockedUntil).not.toBeNull();
+    expect(locked.lockedUntil).toBeNull();
+    expect(locked.failedPinAttempts).toBe(0);
   });
 
   it('logs in successfully, satisfies contract, and does not leak hashes (A11)', async () => {

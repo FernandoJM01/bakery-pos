@@ -12,9 +12,11 @@ export class EnvironmentVariables {
   @IsString()
   DATABASE_URL!: string;
 
-  @IsNotEmpty({ message: 'MIGRATION_DATABASE_URL is required' })
+  // Only the Prisma CLI (migrate) uses this; the running server connects as
+  // pos_app and must not be given the admin credentials.
+  @IsOptional()
   @IsString()
-  MIGRATION_DATABASE_URL!: string;
+  MIGRATION_DATABASE_URL?: string;
 
   @IsNotEmpty({ message: 'JWT_SECRET is required' })
   @IsString()

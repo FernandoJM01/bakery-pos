@@ -24,7 +24,7 @@ The system uses PostgreSQL with role separation to enforce security boundaries (
 | Variable | Required | Description |
 |---|---|---|
 | `DATABASE_URL` | Yes | PostgreSQL connection string for the application runtime (connects as `pos_app`) |
-| `MIGRATION_DATABASE_URL` | Yes | PostgreSQL connection string for migrations (connects as admin role `pos`, Prisma `directUrl`) |
+| `MIGRATION_DATABASE_URL` | For `prisma migrate` only | Admin role `pos` connection used by the Prisma CLI (`directUrl`). Do not give it to the running server, which connects as `pos_app`. |
 | `JWT_SECRET` | Yes | Secret for signing staff and device JWTs (min 32 characters in production) |
 | `DEVICE_TOKEN_PEPPER` | Yes | Server-side secret pepper for SHA-256 device tokens (min 32 characters in production) |
 | `NODE_ENV` | No | `development` (default), `test`, or `production` |

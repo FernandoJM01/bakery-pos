@@ -17,13 +17,11 @@ describe('Environment validation', () => {
     );
   });
 
-  it('A3: refuses to start when MIGRATION_DATABASE_URL is missing', () => {
+  it('starts without MIGRATION_DATABASE_URL (only prisma migrate needs it)', () => {
     const env = { ...validBaseEnv };
     delete (env as Record<string, unknown>).MIGRATION_DATABASE_URL;
 
-    expect(() => validateEnv(env)).toThrow(
-      'Server refuses to start: required environment variable(s) missing or invalid: MIGRATION_DATABASE_URL',
-    );
+    expect(() => validateEnv(env)).not.toThrow();
   });
 
   it('A3: refuses to start when JWT_SECRET is missing', () => {

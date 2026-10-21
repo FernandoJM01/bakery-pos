@@ -18,6 +18,7 @@ import {
 import { PERMISSION_KEYS, PermissionKey } from '../common/permissions';
 import { PrismaService } from '../prisma/prisma.service';
 import { PasswordLoginDto } from './dto/password-login.dto';
+import { recordPasswordFailure } from './password-lockout';
 import { AuthenticatedUser, JwtPayload } from './interfaces/auth.interface';
 
 export interface TokenPairResponse {
@@ -90,35 +91,34 @@ export class AuthService {
       });
     }
 
-    // Check account lockout
-    if (staff.lockedUntil && staff.lockedUntil > new Date()) {
+    // Back office lockout uses its own counters, never the till PIN ones.
+    const now = new Date();
+    if (staff.passwordLockedUntil && staff.passwordLockedUntil > now) {
       throw new HttpException(
         {
           code: 'AUTH_LOCKED',
           message: 'Account is locked due to too many failed login attempts',
-          details: { lockedUntil: staff.lockedUntil.toISOString() },
+          details: { lockedUntil: staff.passwordLockedUntil.toISOString() },
         },
         HttpStatus.LOCKED,
       );
     }
 
+    // Always run one argon2 verification so timing does not reveal whether
+    // the staff member has a password.
     const isValidPassword = staff.passwordHash
       ? await verifyHash(staff.passwordHash, dto.password)
-      : false;
+      : await verifyHash(await getDummyArgon2Hash(), dto.password).then(
+          () => false,
+        );
 
     if (!isValidPassword) {
-      const attempts = staff.failedPinAttempts + 1;
-      let lockedUntil: Date | null = null;
-      if (attempts >= 10) {
-        lockedUntil = new Date(Date.now() + 15 * 60 * 1000);
-      }
+      const next = recordPasswordFailure(staff, now);
+      const lockedUntil = next.passwordLockedUntil;
 
       await this.prisma.staff.update({
         where: { id: staff.id },
-        data: {
-          failedPinAttempts: attempts,
-          lockedUntil,
-        },
+        data: next,
       });
 
       await this.auditService.log({
@@ -151,18 +151,24 @@ export class AuthService {
     }
 
     if (!staff.isActive) {
+      // Same answer as a wrong password: do not confirm the password is right.
+      await this.auditService.log({
+        action: 'auth.login_failure',
+        actorStaffId: staff.id,
+        data: { email: staff.email, reason: 'inactive' },
+      });
       throw new UnauthorizedException({
-        code: 'AUTH_REQUIRED',
-        message: 'Account is inactive',
+        code: 'AUTH_INVALID_CREDENTIALS',
+        message: 'Invalid credentials',
       });
     }
 
-    // Reset failed attempts
     await this.prisma.staff.update({
       where: { id: staff.id },
       data: {
-        failedPinAttempts: 0,
-        lockedUntil: null,
+        failedPasswordAttempts: 0,
+        passwordFailureWindowStart: null,
+        passwordLockedUntil: null,
       },
     });
 
@@ -245,9 +251,11 @@ export class AuthService {
           data: { revokedAt: new Date() },
         });
 
+        // auth.logout is the contract's AuditAction for a revoked session.
         await this.auditService.log({
-          action: 'auth.session_revoked',
+          action: 'auth.logout',
           actorStaffId: reusedSession.staffId,
+          deviceId: reusedSession.deviceId,
           data: { reason: 'refresh_token_reuse', sessionId: reusedSession.id },
         });
 
@@ -291,13 +299,21 @@ export class AuthService {
       this.deviceTokenPepper,
     );
 
-    await this.prisma.authSession.update({
-      where: { id: session.id },
+    // Conditional on the old hash, so two concurrent refreshes with the same
+    // token cannot both succeed; the loser is treated as an invalid token.
+    const rotated = await this.prisma.authSession.updateMany({
+      where: { id: session.id, refreshTokenHash: hash, revokedAt: null },
       data: {
         refreshTokenHash: newHash,
         rotatedTokenHashes: { push: hash },
       },
     });
+    if (rotated.count !== 1) {
+      throw new UnauthorizedException({
+        code: 'AUTH_REFRESH_INVALID',
+        message: 'Refresh token was already used',
+      });
+    }
 
     const payload: JwtPayload = {
       sub: session.staff.id,
@@ -379,9 +395,22 @@ export class AuthService {
       branchIds: staff.staffBranches.map((sb) => sb.branchId),
       isActive: staff.isActive,
       hasPassword: Boolean(staff.passwordHash),
-      lockedUntil: staff.lockedUntil ? staff.lockedUntil.toISOString() : null,
+      lockedUntil: latestLock(staff.lockedUntil, staff.passwordLockedUntil),
       createdAt: staff.createdAt.toISOString(),
       updatedAt: staff.updatedAt.toISOString(),
     };
   }
+}
+
+/** Shows the later of the PIN and password locks, if either is active. */
+function latestLock(
+  pinLock: Date | null,
+  passwordLock: Date | null,
+): string | null {
+  const now = Date.now();
+  const active = [pinLock, passwordLock].filter(
+    (d): d is Date => d instanceof Date && d.getTime() > now,
+  );
+  if (active.length === 0) return null;
+  return new Date(Math.max(...active.map((d) => d.getTime()))).toISOString();
 }

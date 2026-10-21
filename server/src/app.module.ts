@@ -18,10 +18,12 @@ import { PrismaModule } from './prisma/prisma.module';
       isGlobal: true,
       validate: validateEnv,
     }),
+    // Generous default: a branch's tills share one public IP. Login routes
+    // set their own tighter limits with @Throttle.
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
-        limit: 10,
+        limit: 600,
       },
     ]),
     LoggerModule.forRoot({

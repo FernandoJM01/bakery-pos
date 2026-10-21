@@ -15,6 +15,7 @@ describe('AuthService', () => {
   let findUniqueSessionSpy: jest.Mock<Promise<unknown>, [unknown]>;
   let findFirstSessionSpy: jest.Mock<Promise<unknown>, [unknown]>;
   let updateSessionSpy: jest.Mock<Promise<unknown>, [unknown]>;
+  let updateManySessionSpy: jest.Mock<Promise<unknown>, [unknown]>;
   let auditLogSpy: jest.Mock<Promise<unknown>, [unknown]>;
 
   beforeEach(() => {
@@ -24,6 +25,9 @@ describe('AuthService', () => {
     findUniqueSessionSpy = jest.fn<Promise<unknown>, [unknown]>();
     findFirstSessionSpy = jest.fn<Promise<unknown>, [unknown]>();
     updateSessionSpy = jest.fn<Promise<unknown>, [unknown]>();
+    updateManySessionSpy = jest
+      .fn<Promise<unknown>, [unknown]>()
+      .mockResolvedValue({ count: 1 });
     auditLogSpy = jest
       .fn<Promise<unknown>, [unknown]>()
       .mockResolvedValue(undefined);
@@ -39,6 +43,7 @@ describe('AuthService', () => {
         findUnique: findUniqueSessionSpy,
         findFirst: findFirstSessionSpy,
         update: updateSessionSpy,
+        updateMany: updateManySessionSpy,
       },
       rolePermission: {
         findMany: jest.fn().mockResolvedValue([]),
@@ -90,7 +95,7 @@ describe('AuthService', () => {
       findFirstStaffSpy.mockResolvedValue({
         id: 'staff-uuid',
         email: 'locked@bakery.local',
-        lockedUntil,
+        passwordLockedUntil: lockedUntil,
         staffBranches: [],
       });
 
@@ -116,8 +121,10 @@ describe('AuthService', () => {
         id: 'staff-uuid',
         email: 'staff@bakery.local',
         passwordHash: realPasswordHash,
-        failedPinAttempts: 9,
-        lockedUntil: null,
+        isActive: true,
+        failedPasswordAttempts: 9,
+        passwordFailureWindowStart: new Date(),
+        passwordLockedUntil: null,
         staffBranches: [],
       });
 
@@ -130,11 +137,11 @@ describe('AuthService', () => {
 
       const updateArgs = updateStaffSpy.mock.calls[0][0] as {
         where: { id: string };
-        data: { failedPinAttempts: number; lockedUntil?: Date };
+        data: { failedPasswordAttempts: number; passwordLockedUntil?: Date };
       };
       expect(updateArgs.where.id).toBe('staff-uuid');
-      expect(updateArgs.data.failedPinAttempts).toBe(10);
-      expect(updateArgs.data.lockedUntil).toBeInstanceOf(Date);
+      expect(updateArgs.data.failedPasswordAttempts).toBe(0);
+      expect(updateArgs.data.passwordLockedUntil).toBeInstanceOf(Date);
 
       expect(auditLogSpy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -142,6 +149,34 @@ describe('AuthService', () => {
           actorStaffId: 'staff-uuid',
         }),
       );
+    });
+
+    it('answers an inactive account like a wrong password', async () => {
+      findFirstStaffSpy.mockResolvedValue({
+        id: 'staff-uuid',
+        email: 'gone@bakery.local',
+        passwordHash: await hashPassword('CorrectPassword123!'),
+        isActive: false,
+        failedPasswordAttempts: 0,
+        passwordFailureWindowStart: null,
+        passwordLockedUntil: null,
+        staffBranches: [],
+      });
+
+      try {
+        await service.passwordLogin({
+          email: 'gone@bakery.local',
+          password: 'CorrectPassword123!',
+        });
+        fail('Expected invalid credentials');
+      } catch (err: unknown) {
+        const res = (err as HttpException).getResponse() as Record<
+          string,
+          unknown
+        >;
+        expect(res.code).toBe('AUTH_INVALID_CREDENTIALS');
+      }
+      expect(createSessionSpy).not.toHaveBeenCalled();
     });
 
     it('logs in successfully, creates session, and audits login_success', async () => {
@@ -180,7 +215,11 @@ describe('AuthService', () => {
 
       expect(updateStaffSpy).toHaveBeenCalledWith({
         where: { id: 'staff-uuid' },
-        data: { failedPinAttempts: 0, lockedUntil: null },
+        data: {
+          failedPasswordAttempts: 0,
+          passwordFailureWindowStart: null,
+          passwordLockedUntil: null,
+        },
       });
       expect(auditLogSpy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -228,12 +267,34 @@ describe('AuthService', () => {
       expect(result.accessToken).toBe('mock-jwt-token');
       expect(result.refreshToken).toBeDefined();
 
-      const rotateArgs = updateSessionSpy.mock.calls[0][0] as {
-        where: { id: string };
+      const rotateArgs = updateManySessionSpy.mock.calls[0][0] as {
+        where: { id: string; refreshTokenHash: string };
         data: { rotatedTokenHashes?: { push?: string } };
       };
       expect(rotateArgs.where.id).toBe('session-uuid');
       expect(typeof rotateArgs.data.rotatedTokenHashes?.push).toBe('string');
+      expect(rotateArgs.where.refreshTokenHash).toBe(
+        rotateArgs.data.rotatedTokenHashes?.push,
+      );
+    });
+
+    it('refuses the loser of two concurrent refreshes with the same token', async () => {
+      findUniqueSessionSpy.mockResolvedValue({
+        id: 'session-uuid',
+        staffId: 'staff-uuid',
+        revokedAt: null,
+        expiresAt: new Date(Date.now() + 3600000),
+        staff: {
+          id: 'staff-uuid',
+          isActive: true,
+          staffBranches: [{ branchId: 'b1' }],
+        },
+      });
+      updateManySessionSpy.mockResolvedValue({ count: 0 });
+
+      await expect(service.refreshToken('valid-token')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 
