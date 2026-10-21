@@ -245,7 +245,7 @@ class FakeApiInterceptor extends Interceptor {
             requestOptions: options,
             response: Response(
               requestOptions: options,
-              statusCode: 403,
+              statusCode: 401,
               data: {
                 'code': 'AUTH_NOT_ALLOWED',
                 'message': 'Staff member is not allowed on this device',

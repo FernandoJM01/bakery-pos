@@ -107,48 +107,57 @@ class TillAuthService {
       _scheduleSilentRefresh(response.accessTokenExpiresAt);
       return session;
     } on DioException catch (e) {
-      final status = e.response?.statusCode;
+      // Offline login only when the server cannot be reached (brief 5.2:
+      // "no connection or a timeout"). A server that answers, even with an
+      // error, never unlocks the offline path.
+      if (_isUnreachable(e)) {
+        return _loginOffline(staff, pin, now);
+      }
+
       final data = e.response?.data;
-      String? code;
-      if (data is Map<String, dynamic>) {
-        code = data['code'] as String?;
-      }
-
-      if (status == 401 || code == 'AUTH_INVALID_PIN') {
-        final lockedUntil = await database.recordFailedPinAttempt(
-          staff.id,
-          now,
-        );
-        if (lockedUntil != null) {
-          throw TillAuthLockoutException(lockedUntil);
-        }
-        throw const TillAuthInvalidPinException();
-      }
-
-      if (status == 403 || code == 'AUTH_NOT_ALLOWED') {
-        throw const TillAuthNotAllowedException();
-      }
-
-      if (status == 423 || code == 'AUTH_LOCKED') {
-        DateTime? lockedUntil;
-        if (data is Map<String, dynamic> && data['details'] is Map) {
-          final details = data['details'] as Map;
-          final timeStr = details['lockedUntil'] as String?;
-          if (timeStr != null) {
-            lockedUntil = DateTime.tryParse(timeStr);
+      final code = data is Map ? data['code']?.toString() : null;
+      switch (code) {
+        case 'AUTH_INVALID_PIN':
+          final lockedUntil = await database.recordFailedPinAttempt(
+            staff.id,
+            now,
+          );
+          if (lockedUntil != null) {
+            throw TillAuthLockoutException(lockedUntil);
           }
-        }
-        lockedUntil ??= now.add(const Duration(minutes: 5));
-        await database.recordFailedPinAttempt(staff.id, now);
-        throw TillAuthLockoutException(lockedUntil);
+          throw const TillAuthInvalidPinException();
+        case 'AUTH_NOT_ALLOWED':
+          throw const TillAuthNotAllowedException();
+        case 'AUTH_LOCKED':
+          DateTime? lockedUntil;
+          if (data is Map && data['details'] is Map) {
+            final timeStr = (data['details'] as Map)['lockedUntil'];
+            if (timeStr is String) lockedUntil = DateTime.tryParse(timeStr);
+          }
+          lockedUntil ??= now.add(const Duration(minutes: 5));
+          await database.recordFailedPinAttempt(staff.id, now);
+          throw TillAuthLockoutException(lockedUntil);
+        default:
+          // Includes DEVICE_REVOKED/DEVICE_UNKNOWN, which the till
+          // interceptor already handles by wiping and re-enrolling.
+          throw TillAuthGenericException(
+            code ?? 'HTTP ${e.response?.statusCode}',
+          );
       }
-
-      // Offline or network error: attempt offline Argon2id verification
-      return _loginOffline(staff, pin, now);
-    } catch (_) {
-      return _loginOffline(staff, pin, now);
     }
   }
+
+  static const _unreachableTypes = {
+    DioExceptionType.connectionTimeout,
+    DioExceptionType.sendTimeout,
+    DioExceptionType.receiveTimeout,
+    DioExceptionType.connectionError,
+  };
+
+  /// No HTTP response at all: timeout or connection failure. Certificate
+  /// errors are deliberately excluded.
+  static bool _isUnreachable(DioException e) =>
+      e.response == null && _unreachableTypes.contains(e.type);
 
   Future<TillSession> _loginOffline(
     StaffEntry staff,

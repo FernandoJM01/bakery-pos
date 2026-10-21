@@ -267,5 +267,84 @@ void main() {
         expect(await secureStorage.getRefreshToken(), 'fake-new-refresh-token');
       },
     );
+
+    test(
+      'a server that answers with an error never falls back to offline login',
+      () async {
+        for (final reply in [
+          (500, <String, dynamic>{'code': 'INTERNAL_SERVER_ERROR'}),
+          (429, <String, dynamic>{'code': 'RATE_LIMITED'}),
+          (401, <String, dynamic>{'code': 'DEVICE_REVOKED'}),
+        ]) {
+          final erroringDio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'))
+            ..interceptors.add(
+              InterceptorsWrapper(
+                onRequest: (options, handler) => handler.reject(
+                  DioException(
+                    requestOptions: options,
+                    type: DioExceptionType.badResponse,
+                    response: Response(
+                      requestOptions: options,
+                      statusCode: reply.$1,
+                      data: reply.$2,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          final authService = TillAuthService(
+            restClient: RestClient(erroringDio),
+            database: db,
+            secureStorage: secureStorage,
+            clock: () => currentTime,
+          );
+
+          // The right PIN would pass offline verification; it must not here.
+          await expectLater(
+            () => authService.loginWithPin(staff: testStaff, pin: '1234'),
+            throwsA(isA<TillAuthGenericException>()),
+            reason: 'HTTP ${reply.$1} must not grant an offline session',
+          );
+          expect(authService.currentSession, isNull);
+        }
+      },
+    );
+
+    test(
+      'AUTH_NOT_ALLOWED is reported as not allowed, not a wrong PIN',
+      () async {
+        final notAllowedDio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'))
+          ..interceptors.add(
+            InterceptorsWrapper(
+              onRequest: (options, handler) => handler.reject(
+                DioException(
+                  requestOptions: options,
+                  type: DioExceptionType.badResponse,
+                  response: Response(
+                    requestOptions: options,
+                    statusCode: 401,
+                    data: {
+                      'code': 'AUTH_NOT_ALLOWED',
+                      'message': 'Not allowed',
+                    },
+                  ),
+                ),
+              ),
+            ),
+          );
+        final authService = TillAuthService(
+          restClient: RestClient(notAllowedDio),
+          database: db,
+          secureStorage: secureStorage,
+          clock: () => currentTime,
+        );
+
+        await expectLater(
+          () => authService.loginWithPin(staff: testStaff, pin: '1234'),
+          throwsA(isA<TillAuthNotAllowedException>()),
+        );
+        expect(await db.getLockout(testStaff.id), isNull);
+      },
+    );
   });
 }
