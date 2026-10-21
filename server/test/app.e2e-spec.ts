@@ -40,8 +40,12 @@ describe('Health & Foundation (e2e)', () => {
     const server = app.getHttpServer() as Server;
     const response = await request(server).get('/health');
 
-    // Health returns 200 when healthy, or 503 if database is not reachable
-    expect([200, 503]).toContain(response.status);
+    // Health returns 200 when database is healthy
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      status: 'ok',
+      database: 'ok',
+    });
 
     const validation = validateResponseAgainstContract({
       path: '/health',

@@ -1,98 +1,75 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Bakery POS — Server
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend API server for Bakery POS (Mexican bakery with 2 branches), built with NestJS 11, TypeScript strict, Node 22, and PostgreSQL 16 via Prisma.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Database & Roles
 
-## Description
+The system uses PostgreSQL with role separation to enforce security boundaries (A14):
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Migration/Admin role (`pos`):** Used during migrations (`prisma migrate dev`, `prisma migrate deploy`) and administrative tasks with full DDL/DML access.
+- **Application role (`pos_app`):** The application runtime connects to the database as `pos_app`. The migration creates it without login, because migrations also run in production; enable login once per environment with a password you choose (in production, a generated secret kept outside the repo):
 
-## Project setup
+  ```bash
+  docker compose -f ../docker-compose.dev.yml exec postgres \
+    psql -U pos -d pos_dev -c "ALTER ROLE pos_app WITH LOGIN PASSWORD 'pos_app_dev_only'"
+  ```
 
-```bash
-$ npm install
-```
+  Dev URL after that: `postgres://pos_app:pos_app_dev_only@127.0.0.1:5432/pos_dev`.
+  - Permission keys and the role matrix are created by a migration, so every environment has them; `npm run seed` only adds dev/staging branches and staff.
+  - Standard CRUD (`SELECT`, `INSERT`, `UPDATE`, `DELETE`) on operational tables (`branch`, `staff`, `staff_branch`, `permission`, `role_permission`, `device`, `auth_session`).
+  - **Insert-only on `audit_log` (A14):** `UPDATE`, `DELETE`, and `TRUNCATE` permissions are revoked on `audit_log`. Any attempt to modify or delete audit rows is rejected at the database level (`42501 permission denied`).
 
-## Compile and run the project
+## Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `DATABASE_URL` | Yes | PostgreSQL connection string (connect as `pos_app` for app runtime, or `pos` for migrations) |
+| `JWT_SECRET` | Yes | Secret for signing staff and device JWTs (min 32 characters in production) |
+| `DEVICE_TOKEN_PEPPER` | Yes | Server-side secret pepper for SHA-256 device tokens (min 32 characters in production) |
+| `NODE_ENV` | No | `development` (default), `test`, or `production` |
+| `PORT` | No | Server listen port (default: `3000`) |
+
+## Setup & Development
 
 ```bash
-# development
-$ npm run start
+# 1. Start local PostgreSQL
+docker compose -f ../docker-compose.dev.yml up -d
 
-# watch mode
-$ npm run start:dev
+# 2. Run migrations
+npx prisma migrate deploy
 
-# production mode
-$ npm run start:prod
+# 3. Seed dev database (branches, permissions, test staff with argon2id PINs)
+npm run seed
+
+# 4. Start development server
+npm run start:dev
 ```
 
-## Run tests
+## Production Owner Creation
+
+In production (`NODE_ENV=production`), `npm run seed` refuses to run. Use the interactive CLI command instead:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run create-owner
 ```
 
-## Deployment
+This prompts interactively for Full Name, Display Name, Email, Password (min 10 chars), and PIN (4-6 digits). It hashes secrets with argon2id ($m=65536, t=3, p=1$), computes an independent offline PIN verifier, and outputs only the confirmed email and ID (prints nothing secret).
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Running Tests
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Unit tests & coverage
+npm test -- --coverage
+
+# E2E tests (including A14 audit_log insert-only verification)
+npm run test:e2e
+
+# Linting
+npm run lint -- --max-warnings=0
+
+# TypeScript typecheck
+npx tsc --noEmit
+
+# Security audit
+npm audit --audit-level=high
 ```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

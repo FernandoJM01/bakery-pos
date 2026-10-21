@@ -46,4 +46,38 @@ describe('Environment validation', () => {
     expect(result.PORT).toBe(3000);
     expect(result.APP_VERSION).toBe('0.1.0-m1');
   });
+
+  it('A3: refuses to start in production when JWT_SECRET or DEVICE_TOKEN_PEPPER is shorter than 32 characters', () => {
+    const prodShortEnv = {
+      ...validBaseEnv,
+      NODE_ENV: 'production',
+      JWT_SECRET: 'short-secret-less-than-32-chars',
+      DEVICE_TOKEN_PEPPER: 'short-pepper',
+    };
+
+    expect(() => validateEnv(prodShortEnv)).toThrow(
+      'Server refuses to start: required environment variable(s) missing or invalid: JWT_SECRET (min 32 chars in production), DEVICE_TOKEN_PEPPER (min 32 chars in production)',
+    );
+  });
+
+  it('A3: accepts production secrets of 32+ characters and development accepts short secrets', () => {
+    const devShortEnv = {
+      ...validBaseEnv,
+      NODE_ENV: 'development',
+      JWT_SECRET: 'change-me-dev-only',
+      DEVICE_TOKEN_PEPPER: 'change-me-dev-only',
+    };
+    const devResult = validateEnv(devShortEnv);
+    expect(devResult.JWT_SECRET).toBe('change-me-dev-only');
+
+    const prodValidEnv = {
+      ...validBaseEnv,
+      NODE_ENV: 'production',
+      JWT_SECRET: 'a'.repeat(32),
+      DEVICE_TOKEN_PEPPER: 'b'.repeat(32),
+    };
+    const prodResult = validateEnv(prodValidEnv);
+    expect(prodResult.JWT_SECRET).toBe('a'.repeat(32));
+    expect(prodResult.DEVICE_TOKEN_PEPPER).toBe('b'.repeat(32));
+  });
 });
