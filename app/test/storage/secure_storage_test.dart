@@ -99,5 +99,34 @@ void main() {
       expect(await service.getDeviceToken(), isNull);
       expect(await service.getRefreshToken(), isNull);
     });
+
+    test(
+      'getOrCreateDatabaseKey generates and persists 32-byte hex key',
+      () async {
+        final key1 = await service.getOrCreateDatabaseKey();
+        expect(key1.length, 64); // 32 bytes hex encoded = 64 chars
+
+        final key2 = await service.getOrCreateDatabaseKey();
+        expect(key2, key1);
+      },
+    );
+
+    test('saves and reads server URL', () async {
+      expect(await service.getServerUrl(), isNull);
+      await service.saveServerUrl('https://pos.test.example.com');
+      expect(await service.getServerUrl(), 'https://pos.test.example.com');
+    });
+
+    test('saves and reads enrolled device and branch details', () async {
+      await service.saveEnrolledDevice(
+        deviceToken: 'token-xyz',
+        deviceJson: '{"id":"dev-1"}',
+        branchJson: '{"id":"br-1"}',
+      );
+
+      expect(await service.getDeviceToken(), 'token-xyz');
+      expect(await service.getEnrolledDevice(), '{"id":"dev-1"}');
+      expect(await service.getEnrolledBranch(), '{"id":"br-1"}');
+    });
   });
 }

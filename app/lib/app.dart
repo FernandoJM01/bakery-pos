@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/router/app_router.dart';
+import 'core/storage/secure_storage.dart';
 import 'core/theme/app_theme.dart';
 import 'l10n/app_localizations.dart';
 
@@ -9,18 +11,21 @@ import 'l10n/app_localizations.dart';
 enum AppMode { till, backoffice }
 
 /// Root widget shared by the till and back office entry points.
-class BakeryPosApp extends StatefulWidget {
+class BakeryPosApp extends ConsumerStatefulWidget {
   const BakeryPosApp({super.key, required this.mode});
 
   final AppMode mode;
 
   @override
-  State<BakeryPosApp> createState() => _BakeryPosAppState();
+  ConsumerState<BakeryPosApp> createState() => _BakeryPosAppState();
 }
 
-class _BakeryPosAppState extends State<BakeryPosApp> {
+class _BakeryPosAppState extends ConsumerState<BakeryPosApp> {
   // Created once so navigation state survives rebuilds of the root widget.
-  late final GoRouter _router = createAppRouter(widget.mode);
+  late final GoRouter _router = createAppRouter(
+    widget.mode,
+    secureStorage: ref.read(secureStorageProvider),
+  );
 
   @override
   void dispose() {
@@ -36,7 +41,7 @@ class _BakeryPosAppState extends State<BakeryPosApp> {
       themeMode: ThemeMode.dark,
       darkTheme: AppTheme.darkTheme,
       routerConfig: _router,
-      locale: const Locale('es'),
+      locale: const Locale('es', 'MX'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
     );

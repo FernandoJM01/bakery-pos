@@ -26,6 +26,38 @@ class FakeApiInterceptor extends Interceptor {
     final path = options.path;
     final method = options.method.toUpperCase();
 
+    final token = options.headers['X-Device-Token'] as String?;
+    if (token == 'revoked-token') {
+      return handler.reject(
+        DioException(
+          requestOptions: options,
+          response: Response(
+            requestOptions: options,
+            statusCode: 401,
+            data: {
+              'code': 'DEVICE_REVOKED',
+              'message': 'Device token has been revoked',
+            },
+          ),
+        ),
+      );
+    }
+    if (token == 'unknown-token') {
+      return handler.reject(
+        DioException(
+          requestOptions: options,
+          response: Response(
+            requestOptions: options,
+            statusCode: 401,
+            data: {
+              'code': 'DEVICE_UNKNOWN',
+              'message': 'Device token is unknown',
+            },
+          ),
+        ),
+      );
+    }
+
     // 1. /health
     if (path.endsWith('/health') && method == 'GET') {
       return handler.resolve(
@@ -42,7 +74,10 @@ class FakeApiInterceptor extends Interceptor {
       final body = options.data as Map<String, dynamic>? ?? {};
       final code = body['enrollmentCode'] as String? ?? '';
 
-      if (code == 'EXPIRED1' || code == 'USEDCODE') {
+      if (code == 'EXPIRED1' ||
+          code == 'USEDCODE' ||
+          code == 'USED2345' ||
+          code == 'EXPR2345') {
         return handler.reject(
           DioException(
             requestOptions: options,

@@ -92,13 +92,31 @@ class AppLocalizationsEs extends AppLocalizations {
   String get enrollmentServerUrlLabel => 'URL del servidor';
 
   @override
+  String get enrollmentServerUrlHint => 'http://localhost:3000';
+
+  @override
   String get enrollmentSubmitButton => 'Inscribir dispositivo';
+
+  @override
+  String get enrollmentSubmitting => 'Inscribiendo...';
 
   @override
   String get enrollmentSuccess => 'Dispositivo inscrito correctamente';
 
   @override
   String get enrollmentCodeInvalid => 'El código es inválido o ha expirado';
+
+  @override
+  String get enrollmentNetworkError =>
+      'Error de conexión con el servidor. Verifique la URL y la red.';
+
+  @override
+  String get enrollmentInvalidUrl =>
+      'Ingrese una URL válida (ej. http://192.168.1.100:3000)';
+
+  @override
+  String get enrollmentCodeRequired =>
+      'El código debe tener exactamente 8 caracteres';
 
   @override
   String get loginSelectStaff => 'Selecciona tu usuario';
