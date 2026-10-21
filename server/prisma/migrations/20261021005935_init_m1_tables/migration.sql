@@ -141,22 +141,24 @@ ALTER TABLE "auth_session" ADD CONSTRAINT "auth_session_staff_id_fkey" FOREIGN K
 ALTER TABLE "auth_session" ADD CONSTRAINT "auth_session_device_id_fkey" FOREIGN KEY ("device_id") REFERENCES "device"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_branch_id_fkey" FOREIGN KEY ("branch_id") REFERENCES "branch"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_branch_id_fkey" FOREIGN KEY ("branch_id") REFERENCES "branch"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_device_id_fkey" FOREIGN KEY ("device_id") REFERENCES "device"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_device_id_fkey" FOREIGN KEY ("device_id") REFERENCES "device"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_actor_staff_id_fkey" FOREIGN KEY ("actor_staff_id") REFERENCES "staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_actor_staff_id_fkey" FOREIGN KEY ("actor_staff_id") REFERENCES "staff"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_approver_staff_id_fkey" FOREIGN KEY ("approver_staff_id") REFERENCES "staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_approver_staff_id_fkey" FOREIGN KEY ("approver_staff_id") REFERENCES "staff"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- Application role with insert-only permissions on audit_log (A14)
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'pos_app') THEN
-        CREATE ROLE pos_app WITH LOGIN PASSWORD 'pos_app_dev_only';
+        -- No password here: migrations also run in production. Each
+        -- environment enables login out of band (see server/README.md).
+        CREATE ROLE pos_app NOLOGIN;
     END IF;
 END
 $$;

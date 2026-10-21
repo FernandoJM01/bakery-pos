@@ -1,25 +1,36 @@
 import { PrismaClient } from '@prisma/client';
+import { randomBytes } from 'crypto';
 import { v7 as uuidv7 } from 'uuid';
 
 describe('A14: audit_log insert-only permissions (e2e)', () => {
   let adminClient: PrismaClient;
   let appClient: PrismaClient;
   const testLogId = uuidv7();
+  const fkStaffId = uuidv7();
+  const fkLogId = uuidv7();
 
   beforeAll(async () => {
     const adminUrl =
       process.env.DATABASE_URL ??
       'postgres://pos:pos_dev_only@127.0.0.1:5432/pos_dev';
 
-    // Application connects using the pos_app role
-    const parsedUrl = new URL(adminUrl);
-    parsedUrl.username = 'pos_app';
-    parsedUrl.password = 'pos_app_dev_only';
-    const appUrl = process.env.APP_DATABASE_URL ?? parsedUrl.toString();
-
     adminClient = new PrismaClient({
       datasources: { db: { url: adminUrl } },
     });
+
+    // The migration creates pos_app without login (it also runs in
+    // production); give it a throwaway password for this test database.
+    let appUrl = process.env.APP_DATABASE_URL;
+    if (!appUrl) {
+      const password = randomBytes(18).toString('hex');
+      await adminClient.$executeRawUnsafe(
+        `ALTER ROLE pos_app WITH LOGIN PASSWORD '${password}'`,
+      );
+      const parsedUrl = new URL(adminUrl);
+      parsedUrl.username = 'pos_app';
+      parsedUrl.password = password;
+      appUrl = parsedUrl.toString();
+    }
     appClient = new PrismaClient({
       datasources: { db: { url: appUrl } },
     });
@@ -31,9 +42,10 @@ describe('A14: audit_log insert-only permissions (e2e)', () => {
   afterAll(async () => {
     try {
       // Clean up test record using admin credentials
-      await adminClient.$executeRawUnsafe(
-        `DELETE FROM audit_log WHERE id = '${testLogId}'`,
-      );
+      await adminClient.auditLog.deleteMany({
+        where: { id: { in: [testLogId, fkLogId] } },
+      });
+      await adminClient.staff.deleteMany({ where: { id: fkStaffId } });
     } catch {
       // Ignore cleanup error if already removed
     } finally {
@@ -96,5 +108,33 @@ describe('A14: audit_log insert-only permissions (e2e)', () => {
         `DELETE FROM audit_log WHERE id = '${testLogId}'`,
       ),
     ).rejects.toThrow(/permission denied for table audit_log/);
+  });
+
+  it('A14: deleting a staff member cannot rewrite audit history', async () => {
+    const staffId = fkStaffId;
+    const logId = fkLogId;
+    await adminClient.staff.create({
+      data: {
+        id: staffId,
+        fullName: 'A14 Temp',
+        displayName: 'Temp',
+        role: 'CASHIER',
+        pinHash: 'not-a-real-hash',
+        offlinePinVerifier: 'not-a-real-hash',
+        pinUpdatedAt: new Date(),
+      },
+    });
+    await appClient.auditLog.create({
+      data: { id: logId, actorStaffId: staffId, action: 'test.a14_fk' },
+    });
+
+    // Referential actions run as the table owner, so ON DELETE SET NULL
+    // would bypass the revoked UPDATE; the foreign key must refuse instead.
+    await expect(
+      appClient.staff.delete({ where: { id: staffId } }),
+    ).rejects.toThrow(/foreign key/i);
+
+    const log = await adminClient.auditLog.findUnique({ where: { id: logId } });
+    expect(log?.actorStaffId).toBe(staffId);
   });
 });

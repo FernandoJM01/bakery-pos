@@ -1,4 +1,5 @@
 import { PrismaClient, Role } from '@prisma/client';
+import { randomInt } from 'crypto';
 import { v7 as uuidv7 } from 'uuid';
 import { hashPassword, hashPin } from '../src/common/crypto';
 import {
@@ -10,7 +11,7 @@ import {
 const prisma = new PrismaClient();
 
 function randomPin(): string {
-  return Math.floor(1000 + Math.random() * 9000).toString();
+  return randomInt(1000, 10000).toString();
 }
 
 interface SeedStaffCredential {
@@ -92,7 +93,14 @@ async function main() {
     },
   });
 
-  // 4. Seed Staff: Clean existing test staff and sessions
+  // 4. Seed Staff: Clean existing test staff and sessions. Staff referenced by
+  // audit rows cannot be deleted (audit history is immutable), so a used
+  // database must be reset instead.
+  if ((await prisma.auditLog.count()) > 0) {
+    throw new Error(
+      'audit_log has rows, so seeded staff cannot be replaced. Reset the dev database with `npx prisma migrate reset` (it re-runs the seed).',
+    );
+  }
   console.log('Seeding staff and credentials...');
   await prisma.authSession.deleteMany();
   await prisma.staffBranch.deleteMany();

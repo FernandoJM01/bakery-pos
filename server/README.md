@@ -7,7 +7,15 @@ Backend API server for Bakery POS (Mexican bakery with 2 branches), built with N
 The system uses PostgreSQL with role separation to enforce security boundaries (A14):
 
 - **Migration/Admin role (`pos`):** Used during migrations (`prisma migrate dev`, `prisma migrate deploy`) and administrative tasks with full DDL/DML access.
-- **Application role (`pos_app`):** The application runtime connects to the database as `pos_app` (in dev: `postgres://pos_app:pos_app_dev_only@127.0.0.1:5432/pos_dev`).
+- **Application role (`pos_app`):** The application runtime connects to the database as `pos_app`. The migration creates it without login, because migrations also run in production; enable login once per environment with a password you choose (in production, a generated secret kept outside the repo):
+
+  ```bash
+  docker compose -f ../docker-compose.dev.yml exec postgres \
+    psql -U pos -d pos_dev -c "ALTER ROLE pos_app WITH LOGIN PASSWORD 'pos_app_dev_only'"
+  ```
+
+  Dev URL after that: `postgres://pos_app:pos_app_dev_only@127.0.0.1:5432/pos_dev`.
+  - Permission keys and the role matrix are created by a migration, so every environment has them; `npm run seed` only adds dev/staging branches and staff.
   - Standard CRUD (`SELECT`, `INSERT`, `UPDATE`, `DELETE`) on operational tables (`branch`, `staff`, `staff_branch`, `permission`, `role_permission`, `device`, `auth_session`).
   - **Insert-only on `audit_log` (A14):** `UPDATE`, `DELETE`, and `TRUNCATE` permissions are revoked on `audit_log`. Any attempt to modify or delete audit rows is rejected at the database level (`42501 permission denied`).
 
