@@ -12,10 +12,16 @@ enum AppMode { till, backoffice }
 
 /// Root widget shared by the till and back office entry points.
 class BakeryPosApp extends ConsumerStatefulWidget {
-  const BakeryPosApp({super.key, required this.mode, this.tillLoginBuilder});
+  const BakeryPosApp({
+    super.key,
+    required this.mode,
+    this.tillLoginBuilder,
+    this.tillHomeBuilder,
+  });
 
   final AppMode mode;
   final WidgetBuilder? tillLoginBuilder;
+  final WidgetBuilder? tillHomeBuilder;
 
   @override
   ConsumerState<BakeryPosApp> createState() => _BakeryPosAppState();
@@ -27,6 +33,7 @@ class _BakeryPosAppState extends ConsumerState<BakeryPosApp> {
     widget.mode,
     secureStorage: ref.read(secureStorageProvider),
     tillLoginBuilder: widget.tillLoginBuilder,
+    tillHomeBuilder: widget.tillHomeBuilder,
   );
 
   @override

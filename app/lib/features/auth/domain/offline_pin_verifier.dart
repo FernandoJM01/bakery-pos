@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:argon2/argon2.dart';
@@ -7,24 +8,42 @@ class OfflinePinVerifier {
   const OfflinePinVerifier();
 
   /// Verifies [pin] against the PHC format Argon2id [verifier].
-  /// Format: `$argon2id$v=19$m=65536,t=3,p=1$<salt-b64>$<hash-b64>`
-  Future<bool> verify(String pin, String verifier) async {
+  /// Runs off the UI thread via [Isolate.run] to prevent screen freezes.
+  /// Strictly requires: argon2id, v=19, m=65536, t=3, p=1.
+  Future<bool> verify(String pin, String verifier) {
+    return Isolate.run(() => _verifySync(pin, verifier));
+  }
+
+  static bool _verifySync(String pin, String verifier) {
     try {
       final parts = verifier.split(r'$');
-      if (parts.length < 6) return false;
+      if (parts.length != 6) return false;
       if (parts[1] != 'argon2id') return false;
+      if (parts[2] != 'v=19') return false;
 
-      int iterations = 3;
-      int memory = 65536;
-      int parallelism = 1;
+      int? memory;
+      int? iterations;
+      int? parallelism;
 
       for (final param in parts[3].split(',')) {
         final kv = param.split('=');
-        if (kv.length == 2) {
-          if (kv[0] == 'm') memory = int.tryParse(kv[1]) ?? memory;
-          if (kv[0] == 't') iterations = int.tryParse(kv[1]) ?? iterations;
-          if (kv[0] == 'p') parallelism = int.tryParse(kv[1]) ?? parallelism;
+        if (kv.length != 2) return false;
+        final val = int.tryParse(kv[1]);
+        if (val == null) return false;
+        if (kv[0] == 'm') {
+          memory = val;
+        } else if (kv[0] == 't') {
+          iterations = val;
+        } else if (kv[0] == 'p') {
+          parallelism = val;
+        } else {
+          return false;
         }
+      }
+
+      // Enforce strict contract parameters: m=65536, t=3, p=1
+      if (memory != 65536 || iterations != 3 || parallelism != 1) {
+        return false;
       }
 
       final salt = _decodeBase64(parts[4]);
@@ -34,9 +53,9 @@ class OfflinePinVerifier {
         Argon2Parameters.ARGON2_id,
         salt,
         version: Argon2Parameters.ARGON2_VERSION_13,
-        iterations: iterations,
-        memory: memory,
-        lanes: parallelism,
+        iterations: iterations!,
+        memory: memory!,
+        lanes: parallelism!,
       );
 
       final generator = Argon2BytesGenerator()..init(params);

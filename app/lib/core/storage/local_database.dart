@@ -61,7 +61,17 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.createTable(staffLockoutEntries);
+      }
+    },
+  );
 
   Future<void> replaceStaffBundle({
     required List<StaffEntriesCompanion> staff,
@@ -139,6 +149,17 @@ class AppDatabase extends _$AppDatabase {
       ),
     );
     return lockedUntil;
+  }
+
+  Future<void> setLockoutUntil(String staffId, DateTime lockedUntil) async {
+    final existing = await getLockout(staffId);
+    await into(staffLockoutEntries).insertOnConflictUpdate(
+      StaffLockoutEntriesCompanion(
+        staffId: Value(staffId),
+        failedAttempts: Value(existing?.failedAttempts ?? 0),
+        lockedUntil: Value(lockedUntil),
+      ),
+    );
   }
 
   Future<void> resetLockout(String staffId) async {

@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_client_provider.dart';
@@ -32,7 +34,16 @@ final tillSessionProvider = NotifierProvider<TillSessionNotifier, TillSession?>(
 
 class TillSessionNotifier extends Notifier<TillSession?> {
   @override
-  TillSession? build() => null;
+  TillSession? build() {
+    final service = ref.watch(tillAuthServiceProvider);
+    service.addListener(_onServiceChanged);
+    ref.onDispose(() => service.removeListener(_onServiceChanged));
+    return service.currentSession;
+  }
+
+  void _onServiceChanged() {
+    state = ref.read(tillAuthServiceProvider).currentSession;
+  }
 
   Future<TillSession> login({
     required StaffEntry staff,
@@ -49,9 +60,16 @@ class TillSessionNotifier extends Notifier<TillSession?> {
     await service.logout();
     state = null;
   }
+
+  Future<TillSession> reauthenticateOnline(String pin) async {
+    final service = ref.read(tillAuthServiceProvider);
+    final session = await service.reauthenticateOnline(pin);
+    state = session;
+    return session;
+  }
 }
 
-class TillAuthService {
+class TillAuthService extends ChangeNotifier {
   TillAuthService({
     required this.restClient,
     required this.database,
@@ -105,6 +123,7 @@ class TillAuthService {
 
       _currentSession = session;
       _scheduleSilentRefresh(response.accessTokenExpiresAt);
+      notifyListeners();
       return session;
     } on DioException catch (e) {
       // Offline login only when the server cannot be reached (brief 5.2:
@@ -117,6 +136,10 @@ class TillAuthService {
       final data = e.response?.data;
       final code = data is Map ? data['code']?.toString() : null;
       switch (code) {
+        case 'DEVICE_REVOKED':
+        case 'DEVICE_UNKNOWN':
+          // The till interceptor handles revocation; rethrow without touching local database
+          rethrow;
         case 'AUTH_INVALID_PIN':
           final lockedUntil = await database.recordFailedPinAttempt(
             staff.id,
@@ -135,13 +158,13 @@ class TillAuthService {
             if (timeStr is String) lockedUntil = DateTime.tryParse(timeStr);
           }
           lockedUntil ??= now.add(const Duration(minutes: 5));
-          await database.recordFailedPinAttempt(staff.id, now);
+          await database.setLockoutUntil(staff.id, lockedUntil);
           throw TillAuthLockoutException(lockedUntil);
         default:
-          // Includes DEVICE_REVOKED/DEVICE_UNKNOWN, which the till
-          // interceptor already handles by wiping and re-enrolling.
           throw TillAuthGenericException(
-            code ?? 'HTTP ${e.response?.statusCode}',
+            (data is Map && data['message'] is String)
+                ? data['message'] as String
+                : (code ?? e.message ?? 'HTTP ${e.response?.statusCode}'),
           );
       }
     }
@@ -157,7 +180,9 @@ class TillAuthService {
   /// No HTTP response at all: timeout or connection failure. Certificate
   /// errors are deliberately excluded.
   static bool _isUnreachable(DioException e) =>
-      e.response == null && _unreachableTypes.contains(e.type);
+      e.response == null &&
+      (_unreachableTypes.contains(e.type) ||
+          (e.type == DioExceptionType.unknown && e.error is SocketException));
 
   Future<TillSession> _loginOffline(
     StaffEntry staff,
@@ -181,6 +206,7 @@ class TillAuthService {
       isOffline: true,
     );
     _currentSession = session;
+    notifyListeners();
     return session;
   }
 
@@ -198,7 +224,10 @@ class TillAuthService {
   Future<void> silentRefresh() async {
     if (_currentSession == null || _currentSession!.isOffline) return;
     final token = await secureStorage.getRefreshToken();
-    if (token == null) return;
+    if (token == null) {
+      await logout();
+      return;
+    }
 
     try {
       final res = await restClient.auth.refreshToken(
@@ -213,18 +242,35 @@ class TillAuthService {
         accessTokenExpiresAt: res.accessTokenExpiresAt,
       );
       _scheduleSilentRefresh(res.accessTokenExpiresAt);
-    } catch (_) {
-      // If refresh fails silently, next network request will handle 401
+      notifyListeners();
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await logout();
+      }
+    } catch (_) {}
+  }
+
+  Future<TillSession> reauthenticateOnline(String pin) async {
+    if (_currentSession == null) {
+      throw const TillAuthGenericException('No active session');
     }
+    return loginWithPin(staff: _currentSession!.staff, pin: pin);
   }
 
   Future<void> logout() async {
     _refreshTimer?.cancel();
     _currentSession = null;
     await secureStorage.deleteRefreshToken();
+    notifyListeners();
   }
 
+  bool _isDisposed = false;
+
+  @override
   void dispose() {
+    if (_isDisposed) return;
+    _isDisposed = true;
     _refreshTimer?.cancel();
+    super.dispose();
   }
 }

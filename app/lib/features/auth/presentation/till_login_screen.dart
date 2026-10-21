@@ -171,194 +171,246 @@ class _TillLoginScreenState extends ConsumerState<TillLoginScreen> {
         ],
       ),
       body: SafeArea(
-        child: _staffList.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+        child: Column(
+          children: [
+            if (ref.watch(tillSessionProvider)?.isOffline == true)
+              Container(
+                key: const Key('login-offline-session-banner'),
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: AppDimensions.paddingMedium,
+                ),
+                color: AppColors.surfaceHighlight,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(
-                      Icons.person_off_rounded,
-                      size: 64,
-                      color: AppColors.textMuted,
+                      Icons.cloud_off_rounded,
+                      color: AppColors.primaryAmber,
+                      size: 20,
                     ),
-                    const SizedBox(height: AppDimensions.paddingMedium),
+                    const SizedBox(width: 8),
                     Text(
-                      l10n.loginNoStaff,
-                      style: const TextStyle(color: AppColors.textMuted),
-                    ),
-                    const SizedBox(height: AppDimensions.paddingMedium),
-                    ElevatedButton.icon(
-                      key: const Key('login-retry-sync-button'),
-                      onPressed: _loadStaff,
-                      icon: const Icon(Icons.refresh_rounded),
-                      label: Text(l10n.commonRetry),
+                      l10n.loginOfflineSession,
+                      style: const TextStyle(
+                        color: AppColors.primaryAmber,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
-              )
-            : Row(
-                children: [
-                  // Left column: Staff tiles
-                  Expanded(
-                    flex: 5,
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        border: Border(
-                          right: BorderSide(
-                            color: AppColors.surfaceHighlight,
-                            width: 1,
-                          ),
-                        ),
-                      ),
+              ),
+            Expanded(
+              child: _staffList.isEmpty
+                  ? Center(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.all(
-                              AppDimensions.paddingMedium,
-                            ),
-                            child: Text(
-                              l10n.loginSelectStaff,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(color: AppColors.textMuted),
-                            ),
+                          const Icon(
+                            Icons.person_off_rounded,
+                            size: 64,
+                            color: AppColors.textMuted,
                           ),
-                          Expanded(
-                            child: ListView.separated(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppDimensions.paddingMedium,
-                              ),
-                              itemCount: _staffList.length,
-                              separatorBuilder: (context, index) =>
-                                  const SizedBox(height: 8),
-                              itemBuilder: (context, index) {
-                                final staff = _staffList[index];
-                                final isSelected =
-                                    _selectedStaff?.id == staff.id;
-                                return _StaffTile(
-                                  key: Key('staff-tile-${staff.id}'),
-                                  name: staff.displayName,
-                                  initials: _getInitials(staff.displayName),
-                                  isSelected: isSelected,
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedStaff = staff;
-                                      _pin = '';
-                                      _errorMessage = null;
-                                    });
-                                  },
-                                );
-                              },
-                            ),
+                          const SizedBox(height: AppDimensions.paddingMedium),
+                          Text(
+                            l10n.loginNoStaff,
+                            style: const TextStyle(color: AppColors.textMuted),
+                          ),
+                          const SizedBox(height: AppDimensions.paddingMedium),
+                          ElevatedButton.icon(
+                            key: const Key('login-retry-sync-button'),
+                            onPressed: _loadStaff,
+                            icon: const Icon(Icons.refresh_rounded),
+                            label: Text(l10n.commonRetry),
                           ),
                         ],
                       ),
-                    ),
-                  ),
-
-                  // Right column: Keypad and PIN Entry
-                  Expanded(
-                    flex: 6,
-                    child: Center(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(
-                          AppDimensions.paddingLarge,
-                        ),
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 380),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                _selectedStaff?.displayName ??
-                                    l10n.loginSelectStaff,
-                                style: Theme.of(context).textTheme.titleLarge
-                                    ?.copyWith(color: AppColors.textPrimary),
-                                textAlign: TextAlign.center,
+                    )
+                  : Row(
+                      children: [
+                        // Left column: Staff tiles
+                        Expanded(
+                          flex: 5,
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              border: Border(
+                                right: BorderSide(
+                                  color: AppColors.surfaceHighlight,
+                                  width: 1,
+                                ),
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                l10n.loginEnterPin,
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(color: AppColors.textMuted),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(
-                                height: AppDimensions.paddingMedium,
-                              ),
-
-                              if (_errorMessage != null) ...[
-                                Container(
-                                  key: const Key('login-error-banner'),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Padding(
                                   padding: const EdgeInsets.all(
                                     AppDimensions.paddingMedium,
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.alertRedBg,
-                                    borderRadius: BorderRadius.circular(
-                                      AppDimensions.radiusMedium,
-                                    ),
-                                    border: Border.all(
-                                      color: AppColors.alertRed,
-                                    ),
-                                  ),
                                   child: Text(
-                                    _errorMessage!,
-                                    style: const TextStyle(
-                                      color: AppColors.alertRed,
-                                    ),
-                                    textAlign: TextAlign.center,
+                                    l10n.loginSelectStaff,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(color: AppColors.textMuted),
                                   ),
                                 ),
-                                const SizedBox(
-                                  height: AppDimensions.paddingMedium,
+                                Expanded(
+                                  child: ListView.separated(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppDimensions.paddingMedium,
+                                    ),
+                                    itemCount: _staffList.length,
+                                    separatorBuilder: (context, index) =>
+                                        const SizedBox(height: 8),
+                                    itemBuilder: (context, index) {
+                                      final staff = _staffList[index];
+                                      final isSelected =
+                                          _selectedStaff?.id == staff.id;
+                                      return _StaffTile(
+                                        key: Key('staff-tile-${staff.id}'),
+                                        name: staff.displayName,
+                                        initials: _getInitials(
+                                          staff.displayName,
+                                        ),
+                                        isSelected: isSelected,
+                                        onTap: () {
+                                          setState(() {
+                                            _selectedStaff = staff;
+                                            _pin = '';
+                                            _errorMessage = null;
+                                          });
+                                        },
+                                      );
+                                    },
+                                  ),
                                 ),
                               ],
-
-                              // PIN Dots: show only typed dots
-                              Container(
-                                key: const Key('pin-dots-container'),
-                                height: 48,
-                                alignment: Alignment.center,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: List.generate(_pin.length, (index) {
-                                    return Container(
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                      ),
-                                      width: 16,
-                                      height: 16,
-                                      decoration: const BoxDecoration(
-                                        color: AppColors.primaryAmber,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    );
-                                  }),
-                                ),
-                              ),
-                              const SizedBox(
-                                height: AppDimensions.paddingMedium,
-                              ),
-
-                              // Keypad
-                              _Keypad(
-                                onDigit: _onDigitPressed,
-                                onBackspace: _onBackspacePressed,
-                                onConfirm: _onConfirmPressed,
-                                isConfirmEnabled:
-                                    _pin.length >= 4 && _pin.length <= 6,
-                                isLoading: _isLoading,
-                              ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
+
+                        // Right column: Keypad and PIN Entry
+                        Expanded(
+                          flex: 6,
+                          child: Center(
+                            child: SingleChildScrollView(
+                              padding: const EdgeInsets.all(
+                                AppDimensions.paddingLarge,
+                              ),
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 380,
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Text(
+                                      _selectedStaff?.displayName ??
+                                          l10n.loginSelectStaff,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge
+                                          ?.copyWith(
+                                            color: AppColors.textPrimary,
+                                          ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      l10n.loginEnterPin,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            color: AppColors.textMuted,
+                                          ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(
+                                      height: AppDimensions.paddingMedium,
+                                    ),
+
+                                    if (_errorMessage != null) ...[
+                                      Container(
+                                        key: const Key('login-error-banner'),
+                                        padding: const EdgeInsets.all(
+                                          AppDimensions.paddingMedium,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.alertRedBg,
+                                          borderRadius: BorderRadius.circular(
+                                            AppDimensions.radiusMedium,
+                                          ),
+                                          border: Border.all(
+                                            color: AppColors.alertRed,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          _errorMessage!,
+                                          style: const TextStyle(
+                                            color: AppColors.alertRed,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: AppDimensions.paddingMedium,
+                                      ),
+                                    ],
+
+                                    // PIN Dots: show only typed dots
+                                    Container(
+                                      key: const Key('pin-dots-container'),
+                                      height: 48,
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: List.generate(_pin.length, (
+                                          index,
+                                        ) {
+                                          return Container(
+                                            margin: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                            ),
+                                            width: 16,
+                                            height: 16,
+                                            decoration: const BoxDecoration(
+                                              color: AppColors.primaryAmber,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          );
+                                        }),
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: AppDimensions.paddingMedium,
+                                    ),
+
+                                    // Keypad
+                                    _Keypad(
+                                      onDigit: _onDigitPressed,
+                                      onBackspace: _onBackspacePressed,
+                                      onConfirm: _onConfirmPressed,
+                                      isConfirmEnabled:
+                                          _pin.length >= 4 && _pin.length <= 6,
+                                      isLoading: _isLoading,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
+            ),
+          ],
+        ),
       ),
     );
   }

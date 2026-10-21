@@ -6,6 +6,7 @@ import 'app.dart';
 import 'core/api/api_client_provider.dart';
 import 'core/storage/local_database.dart';
 import 'core/storage/secure_storage.dart';
+import 'features/auth/presentation/till_home_screen.dart';
 import 'features/auth/presentation/till_login_screen.dart';
 
 Future<void> main() async {
@@ -35,6 +36,7 @@ Future<void> main() async {
       child: BakeryPosApp(
         mode: AppMode.till,
         tillLoginBuilder: (context) => const TillLoginScreen(),
+        tillHomeBuilder: (context) => const TillHomeScreen(),
       ),
     ),
   );

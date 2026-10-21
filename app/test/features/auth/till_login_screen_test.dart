@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bakery_pos/core/api/api_client_provider.dart';
 import 'package:bakery_pos/core/api/fake/fake_api_interceptor.dart';
 import 'package:bakery_pos/core/api/generated/rest_client.dart';
@@ -115,11 +117,14 @@ void main() {
     late RestClient restClient;
     late TillAuthService authService;
 
+    const validVerifier =
+        r'$argon2id$v=19$m=65536,p=1,t=3$p6+vhCNw8VlT1Bnq34jEeg$cZv+IP6sdJhBnTqEB3+SsD8svzrLHXPiPpDEWJPp/54';
+
     final staff1 = StaffEntriesCompanion.insert(
       id: '0192e2b0-0020-7000-8000-000000000020',
       displayName: 'Carlos (Gerente)',
       role: 'BRANCH_MANAGER',
-      offlinePinVerifier: r'$argon2id$v=19$m=65536,t=3,p=1$dGVzdHNhbHQxMjM0$a3eQTmzY2EF7EnnZVEMeIqJEhBxWE2OCvFk+kud2a/4',
+      offlinePinVerifier: validVerifier,
       pinUpdatedAt: DateTime.utc(2026, 1, 1),
     );
 
@@ -127,7 +132,7 @@ void main() {
       id: '0192e2b0-0030-7000-8000-000000000030',
       displayName: 'Ana (Cajera)',
       role: 'CASHIER',
-      offlinePinVerifier: r'$argon2id$v=19$m=65536,t=3,p=1$dGVzdHNhbHQxMjM0$a3eQTmzY2EF7EnnZVEMeIqJEhBxWE2OCvFk+kud2a/4',
+      offlinePinVerifier: validVerifier,
       pinUpdatedAt: DateTime.utc(2026, 1, 1),
     );
 
@@ -347,6 +352,54 @@ void main() {
 
       expect(find.byKey(const Key('till-home-screen')), findsOneWidget);
       authService.dispose();
+    });
+
+    testWidgets('shows loginOfflineSession banner when session is offline', (
+      tester,
+    ) async {
+      final offlineDio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'))
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              handler.reject(
+                DioException(
+                  requestOptions: options,
+                  type: DioExceptionType.connectionError,
+                  error: const SocketException('offline'),
+                ),
+              );
+            },
+          ),
+        );
+      final offlineAuth = TillAuthService(
+        restClient: RestClient(offlineDio),
+        database: db,
+        secureStorage: secureStorage,
+      );
+
+      final staff = await db.getStaffById(
+        '0192e2b0-0020-7000-8000-000000000020',
+      );
+      await tester.runAsync(() async {
+        await offlineAuth.loginWithPin(staff: staff!, pin: '1234');
+      });
+
+      await tester.pumpWidget(
+        createTillLoginTestWidget(
+          database: db,
+          secureStorage: secureStorage,
+          restClient: RestClient(offlineDio),
+          authService: offlineAuth,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const Key('login-offline-session-banner')),
+        findsOneWidget,
+      );
+      expect(find.text('Sesión sin conexión'), findsOneWidget);
+      offlineAuth.dispose();
     });
   });
 }

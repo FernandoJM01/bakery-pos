@@ -21,6 +21,7 @@ GoRouter createAppRouter(
   AppMode mode, {
   SecureStorageService? secureStorage,
   WidgetBuilder? tillLoginBuilder,
+  WidgetBuilder? tillHomeBuilder,
 }) {
   final initialLocation = mode == AppMode.till
       ? AppRoutes.tillLogin
@@ -68,10 +69,12 @@ GoRouter createAppRouter(
       ),
       GoRoute(
         path: AppRoutes.tillHome,
-        builder: (context, state) => const _RoutePlaceholder(
-          titleKey: 'appTitle',
-          routeName: 'till-home',
-        ),
+        builder: (context, state) =>
+            tillHomeBuilder?.call(context) ??
+            const _RoutePlaceholder(
+              titleKey: 'appTitle',
+              routeName: 'till-home',
+            ),
       ),
       GoRoute(
         path: AppRoutes.backofficeLogin,
