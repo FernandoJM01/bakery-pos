@@ -1,48 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import 'core/router/app_router.dart';
+import 'core/theme/app_theme.dart';
+import 'l10n/app_localizations.dart';
 
 /// Which surface the app runs as.
 enum AppMode { till, backoffice }
 
 /// Root widget shared by the till and back office entry points.
-class BakeryPosApp extends StatelessWidget {
+class BakeryPosApp extends StatefulWidget {
   const BakeryPosApp({super.key, required this.mode});
 
   final AppMode mode;
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Bakery POS',
-      debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.dark,
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFFFB300),
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-      ),
-      home: _PlaceholderHome(mode: mode),
-    );
-  }
+  State<BakeryPosApp> createState() => _BakeryPosAppState();
 }
 
-class _PlaceholderHome extends StatelessWidget {
-  const _PlaceholderHome({required this.mode});
+class _BakeryPosAppState extends State<BakeryPosApp> {
+  // Created once so navigation state survives rebuilds of the root widget.
+  late final GoRouter _router = createAppRouter(widget.mode);
 
-  final AppMode mode;
+  @override
+  void dispose() {
+    _router.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text(
-          mode.name,
-          key: const Key('mode-label'),
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-      ),
+    return MaterialApp.router(
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+      debugShowCheckedModeBanner: false,
+      themeMode: ThemeMode.dark,
+      darkTheme: AppTheme.darkTheme,
+      routerConfig: _router,
+      locale: const Locale('es'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
     );
   }
 }

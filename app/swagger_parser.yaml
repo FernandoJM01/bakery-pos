@@ -1,0 +1,6 @@
+swagger_parser:
+  schema_path: ../contracts/openapi.yaml
+  output_directory: lib/core/api/generated
+  json_serializer: json_serializable
+  client_postfix: ApiClient
+  put_in_folder: false
