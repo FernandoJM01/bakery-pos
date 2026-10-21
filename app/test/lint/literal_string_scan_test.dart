@@ -3,65 +3,73 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+/// Finds user-facing string literals: the first argument of text widgets and
+/// the usual text-carrying named arguments. Literals without letters (such as
+/// separators) are allowed. Spans lines, so `Text(\n  'Hola',\n)` is caught.
+final _userFacingLiteral = RegExp(
+  r'''(?:\b(?:Text|SelectableText|Tooltip)\(\s*|\b(?:labelText|hintText|helperText|errorText|counterText|prefixText|suffixText|tooltip|semanticsLabel|semanticLabel|message|title|label)\s*:\s*)(['"])((?:(?!\1)[^\\\n]|\\.)*)\1''',
+);
+
+final _letter = RegExp(r'[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]');
+
+List<String> findLiteralStrings(String source) => [
+  for (final match in _userFacingLiteral.allMatches(source))
+    if (_letter.hasMatch(match.group(2)!)) match.group(2)!,
+];
+
 void main() {
   group('Acceptance Test A18', () {
+    test('the scanner catches literals in widgets and text arguments', () {
+      const sample = '''
+        Text('Hola');
+        Text(
+          "Cobrar 2 piezas",
+        );
+        InputDecoration(labelText: 'Correo', hintText: 'ej. ana@x.mx');
+        IconButton(tooltip: 'Cerrar', onPressed: null);
+        Text(l10n.appTitle);
+        Text(' · ');
+        Key('mode-label');
+      ''';
+
+      expect(findLiteralStrings(sample), [
+        'Hola',
+        'Cobrar 2 piezas',
+        'Correo',
+        'ej. ana@x.mx',
+        'Cerrar',
+      ]);
+    });
+
     test('A18: all till and back office text comes from app_es.arb', () {
       final arbFile = File('lib/l10n/app_es.arb');
       expect(arbFile.existsSync(), isTrue, reason: 'app_es.arb must exist');
+      final arbMap =
+          jsonDecode(arbFile.readAsStringSync()) as Map<String, dynamic>;
+      expect(arbMap['@@locale'], 'es');
 
-      final arbContent = arbFile.readAsStringSync();
-      final Map<String, dynamic> arbMap =
-          jsonDecode(arbContent) as Map<String, dynamic>;
-
-      expect(arbMap.containsKey('appTitle'), isTrue);
-      expect(arbMap.containsKey('statusOnline'), isTrue);
-      expect(arbMap.containsKey('statusOffline'), isTrue);
-      expect(arbMap.containsKey('loginButton'), isTrue);
-
-      // Scan dart files in lib/ for prohibited hardcoded user-facing strings in Text widgets
-      final libDir = Directory('lib');
-      final dartFiles = libDir
+      final dartFiles = Directory('lib')
           .listSync(recursive: true)
           .whereType<File>()
           .where(
             (f) =>
                 f.path.endsWith('.dart') &&
-                !f.path.contains('.g.dart') &&
-                !f.path.contains('app_localizations') &&
-                !f.path.contains('generated/'),
-          )
-          .toList();
+                !f.path.endsWith('.g.dart') &&
+                !f.path.contains('${Platform.pathSeparator}l10n') &&
+                !f.path.contains('${Platform.pathSeparator}generated'),
+          );
 
-      final violations = <String>[];
-      // Regex matching Text('...') where string contains user-facing Spanish letters/words
-      // and isn't a key or identifier
-      final hardcodedTextRegex = RegExp(
-        r'''Text\(\s*['"]([A-ZÁÉÍÓÚÑa-záéíóúñ\s]{4,})['"]\s*[,)]''',
-      );
-
-      for (final file in dartFiles) {
-        final lines = file.readAsLinesSync();
-        for (var i = 0; i < lines.length; i++) {
-          final line = lines[i];
-          final match = hardcodedTextRegex.firstMatch(line);
-          if (match != null) {
-            final literal = match.group(1);
-            // Ignore debug labels, technical mode names or Keys
-            if (literal != null &&
-                literal != 'Bakery POS' &&
-                !line.contains('Key(')) {
-              violations.add(
-                '${file.path}:${i + 1} hardcoded Text("$literal")',
-              );
-            }
-          }
-        }
-      }
+      final violations = [
+        for (final file in dartFiles)
+          for (final literal in findLiteralStrings(file.readAsStringSync()))
+            '${file.path}: "$literal"',
+      ];
 
       expect(
         violations,
         isEmpty,
-        reason: 'All user-facing strings in Text widgets must come from app_es.arb via AppLocalizations',
+        reason:
+            'User-facing text must come from app_es.arb via AppLocalizations',
       );
     });
   });

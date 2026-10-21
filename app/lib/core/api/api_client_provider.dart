@@ -1,16 +1,22 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'fake/fake_api_interceptor.dart';
 import 'generated/rest_client.dart';
 
-// By default in debug or tests, we can enable the fake API if needed
-final useFakeApiProvider = Provider<bool>((ref) => kDebugMode);
+/// Compile-time switch for the in-memory fake API:
+/// `flutter run --dart-define=USE_FAKE_API=true -t lib/main_till.dart`.
+/// Being a const, builds without the flag tree-shake the fake (and its test
+/// PINs and passwords) out entirely.
+const bool useFakeApi = bool.fromEnvironment('USE_FAKE_API');
 
-final serverBaseUrlProvider = Provider<String>(
-  (ref) => 'http://localhost:3000',
+/// Default server URL for this build: `--dart-define=API_BASE_URL=https://...`.
+const String defaultApiBaseUrl = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: 'http://localhost:3000',
 );
+
+final serverBaseUrlProvider = Provider<String>((ref) => defaultApiBaseUrl);
 
 final dioProvider = Provider<Dio>((ref) {
   final baseUrl = ref.watch(serverBaseUrlProvider);
@@ -26,8 +32,7 @@ final dioProvider = Provider<Dio>((ref) {
     ),
   );
 
-  final useFake = ref.watch(useFakeApiProvider);
-  if (useFake) {
+  if (useFakeApi) {
     dio.interceptors.add(FakeApiInterceptor());
   }
 
