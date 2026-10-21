@@ -7,8 +7,156 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Minimal model so Prisma Client generates in PR 1 foundation.
-// Full 8 tables and migrations are delivered in PR 2 (m1/server-schema).
-model SystemHealth {
-  id String @id
+enum Role {
+  OWNER
+  BRANCH_MANAGER
+  CASHIER
+  BAKER
+
+  @@map("role")
+}
+
+enum DeviceType {
+  TILL
+  PRODUCTION
+
+  @@map("device_type")
+}
+
+enum DeviceStatus {
+  PENDING
+  ACTIVE
+  REVOKED
+
+  @@map("device_status")
+}
+
+model Branch {
+  id        String   @id @db.Uuid
+  code      String   @unique @db.VarChar(10)
+  name      String   @db.VarChar(120)
+  address   String?  @db.VarChar(300)
+  timezone  String   @default("America/Mexico_City") @db.VarChar(50)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  staffBranches StaffBranch[]
+  devices       Device[]
+  auditLogs     AuditLog[]
+
+  @@map("branch")
+}
+
+model Staff {
+  id                 String    @id @db.Uuid
+  fullName           String    @map("full_name") @db.VarChar(120)
+  displayName        String    @map("display_name") @db.VarChar(30)
+  role               Role      @map("role")
+  email              String?   @unique @db.VarChar(255)
+  passwordHash       String?   @map("password_hash") @db.VarChar(255)
+  pinHash            String    @map("pin_hash") @db.VarChar(255)
+  offlinePinVerifier String    @map("offline_pin_verifier") @db.VarChar(255)
+  pinUpdatedAt       DateTime  @map("pin_updated_at") @db.Timestamptz(6)
+  isActive           Boolean   @default(true) @map("is_active")
+  failedPinAttempts  Int       @default(0) @map("failed_pin_attempts")
+  lockedUntil        DateTime? @map("locked_until") @db.Timestamptz(6)
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  staffBranches     StaffBranch[]
+  createdDevices    Device[]      @relation("DeviceCreatedBy")
+  authSessions      AuthSession[]
+  actorAuditLogs    AuditLog[]    @relation("AuditLogActor")
+  approverAuditLogs AuditLog[]    @relation("AuditLogApprover")
+
+  @@map("staff")
+}
+
+model StaffBranch {
+  staffId  String @map("staff_id") @db.Uuid
+  branchId String @map("branch_id") @db.Uuid
+
+  staff  Staff  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@id([staffId, branchId])
+  @@map("staff_branch")
+}
+
+model Permission {
+  key         String @id @db.VarChar(100)
+  description String @db.VarChar(255)
+
+  rolePermissions RolePermission[]
+
+  @@map("permission")
+}
+
+model RolePermission {
+  role          Role   @map("role")
+  permissionKey String @map("permission_key") @db.VarChar(100)
+
+  permission Permission @relation(fields: [permissionKey], references: [key], onDelete: Cascade)
+
+  @@id([role, permissionKey])
+  @@map("role_permission")
+}
+
+model Device {
+  id                   String       @id @db.Uuid
+  branchId             String       @map("branch_id") @db.Uuid
+  name                 String       @db.VarChar(40)
+  type                 DeviceType   @map("type")
+  status               DeviceStatus @default(PENDING) @map("status")
+  enrollmentCodeHash   String?      @map("enrollment_code_hash") @db.VarChar(255)
+  enrollmentExpiresAt  DateTime?    @map("enrollment_expires_at") @db.Timestamptz(6)
+  tokenHash            String?      @map("token_hash") @db.VarChar(255)
+  lastSeenAt           DateTime?    @map("last_seen_at") @db.Timestamptz(6)
+  appVersion           String?      @map("app_version") @db.VarChar(40)
+  createdBy            String?      @map("created_by") @db.Uuid
+  createdAt            DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  revokedAt            DateTime?    @map("revoked_at") @db.Timestamptz(6)
+
+  branch       Branch        @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  creator      Staff?        @relation("DeviceCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+  authSessions AuthSession[]
+  auditLogs    AuditLog[]
+
+  @@map("device")
+}
+
+model AuthSession {
+  id               String    @id @db.Uuid
+  staffId          String    @map("staff_id") @db.Uuid
+  deviceId         String?   @map("device_id") @db.Uuid
+  refreshTokenHash String    @map("refresh_token_hash") @db.VarChar(255)
+  expiresAt        DateTime  @map("expires_at") @db.Timestamptz(6)
+  revokedAt        DateTime? @map("revoked_at") @db.Timestamptz(6)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  staff  Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  device Device? @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@map("auth_session")
+}
+
+model AuditLog {
+  id              String   @id @db.Uuid
+  occurredAt      DateTime @default(now()) @map("occurred_at") @db.Timestamptz(6)
+  branchId        String?  @map("branch_id") @db.Uuid
+  deviceId        String?  @map("device_id") @db.Uuid
+  actorStaffId    String?  @map("actor_staff_id") @db.Uuid
+  approverStaffId String?  @map("approver_staff_id") @db.Uuid
+  action          String   @db.VarChar(100)
+  entityType      String?  @map("entity_type") @db.VarChar(100)
+  entityId        String?  @map("entity_id") @db.VarChar(100)
+  data            Json     @default("{}") @db.JsonB
+
+  branch   Branch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  device   Device? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  actor    Staff?  @relation("AuditLogActor", fields: [actorStaffId], references: [id], onDelete: SetNull)
+  approver Staff?  @relation("AuditLogApprover", fields: [approverStaffId], references: [id], onDelete: SetNull)
+
+  @@map("audit_log")
 }

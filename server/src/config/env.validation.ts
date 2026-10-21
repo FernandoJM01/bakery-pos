@@ -51,5 +51,21 @@ export function validateEnv(config: Record<string, unknown>) {
       `Server refuses to start: required environment variable(s) missing or invalid: ${missingKeys}`,
     );
   }
+
+  if (validatedConfig.NODE_ENV === 'production') {
+    const invalidSecrets: string[] = [];
+    if (validatedConfig.JWT_SECRET.length < 32) {
+      invalidSecrets.push('JWT_SECRET (min 32 chars in production)');
+    }
+    if (validatedConfig.DEVICE_TOKEN_PEPPER.length < 32) {
+      invalidSecrets.push('DEVICE_TOKEN_PEPPER (min 32 chars in production)');
+    }
+    if (invalidSecrets.length > 0) {
+      throw new Error(
+        `Server refuses to start: required environment variable(s) missing or invalid: ${invalidSecrets.join(', ')}`,
+      );
+    }
+  }
+
   return validatedConfig;
 }
