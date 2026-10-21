@@ -99,5 +99,29 @@ void main() {
       final restClient = container.read(restClientProvider);
       expect(restClient, isNotNull);
     });
+
+    test('serverBaseUrlProvider starts from the URL saved at enrollment', () {
+      final container = ProviderContainer(
+        overrides: [
+          serverBaseUrlProvider.overrideWith(
+            () => ServerBaseUrlNotifier('https://suc1.example.mx'),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(serverBaseUrlProvider), 'https://suc1.example.mx');
+      expect(
+        container.read(dioProvider).options.baseUrl,
+        'https://suc1.example.mx',
+      );
+    });
+
+    test('serverBaseUrlProvider falls back to the build default', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(serverBaseUrlProvider), defaultApiBaseUrl);
+    });
   });
 }

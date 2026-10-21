@@ -23,8 +23,14 @@ final serverBaseUrlProvider = NotifierProvider<ServerBaseUrlNotifier, String>(
 );
 
 class ServerBaseUrlNotifier extends Notifier<String> {
+  /// [savedUrl] is the URL stored at enrollment, loaded by main_till.dart so
+  /// an enrolled till keeps talking to its server after a restart.
+  ServerBaseUrlNotifier([this.savedUrl]);
+
+  final String? savedUrl;
+
   @override
-  String build() => defaultApiBaseUrl;
+  String build() => savedUrl ?? defaultApiBaseUrl;
 
   void setBaseUrl(String url) {
     state = url;

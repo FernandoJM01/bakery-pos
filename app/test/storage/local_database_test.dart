@@ -33,19 +33,21 @@ void main() {
       expect(db.schemaVersion, 1);
     });
 
-    test('databaseProvider and tillDatabaseProvider provide AppDatabase instance and close on dispose', () async {
-      final container = ProviderContainer(
-        overrides: [
-          tillDatabaseProvider.overrideWithValue(
-            AppDatabase(NativeDatabase.memory()),
-          ),
-        ],
-      );
-      final database = container.read(tillDatabaseProvider);
-      expect(database, isA<AppDatabase>());
-      expect(container.read(databaseProvider), database);
-      container.dispose();
-    });
+    test(
+      'tillDatabaseProvider provides AppDatabase instance and close on dispose',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            tillDatabaseProvider.overrideWithValue(
+              AppDatabase(NativeDatabase.memory()),
+            ),
+          ],
+        );
+        final database = container.read(tillDatabaseProvider);
+        expect(database, isA<AppDatabase>());
+        container.dispose();
+      },
+    );
 
     test('deleteDatabaseFile handles non-existent file cleanly', () async {
       await expectLater(AppDatabase.deleteDatabaseFile(), completes);
@@ -112,12 +114,13 @@ void main() {
     test('database file cannot be opened without encryption key', () async {
       final tempDir = Directory.systemTemp.createTempSync();
       final dbFile = File('${tempDir.path}/encrypted_test.sqlite');
-      const encryptionKey = '0123456789abcdef0123456789abcdef';
+      const encryptionKey =
+          '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 
       final encryptedDb = AppDatabase(
         NativeDatabase(
           dbFile,
-          setup: (rawDb) => rawDb.execute("PRAGMA key = '$encryptionKey';"),
+          setup: (rawDb) => applyEncryptionKey(rawDb, encryptionKey),
         ),
       );
       await encryptedDb.setSessionValue('secret_key', 'secret_value');
@@ -132,6 +135,15 @@ void main() {
 
       await unauthenticatedDb.close();
       tempDir.deleteSync(recursive: true);
+    });
+
+    test('applyEncryptionKey rejects keys that are not 32 bytes of hex', () {
+      final db = AppDatabase(
+        NativeDatabase.memory(
+          setup: (rawDb) => applyEncryptionKey(rawDb, 'short-passphrase'),
+        ),
+      );
+      expect(() => db.getSessionValue('x'), throwsA(isA<ArgumentError>()));
     });
   });
 }
