@@ -1,3 +1,4 @@
+import { createHmac, randomBytes } from 'crypto';
 import * as argon2 from 'argon2';
 
 export const ARGON2_OPTIONS: argon2.HashOptions & { raw?: false } = {
@@ -7,6 +8,35 @@ export const ARGON2_OPTIONS: argon2.HashOptions & { raw?: false } = {
   parallelism: 1,
   raw: false,
 };
+
+let cachedDummyArgon2Hash: string | null = null;
+
+/**
+ * Returns a precomputed valid argon2id hash for constant-time comparison on unknown users.
+ */
+export async function getDummyArgon2Hash(): Promise<string> {
+  if (!cachedDummyArgon2Hash) {
+    cachedDummyArgon2Hash = await argon2.hash(
+      'dummy-secret-constant-time',
+      ARGON2_OPTIONS,
+    );
+  }
+  return cachedDummyArgon2Hash;
+}
+
+/**
+ * Generates 32 random bytes as a hex string (opaque tokens).
+ */
+export function generateToken(): string {
+  return randomBytes(32).toString('hex');
+}
+
+/**
+ * Computes SHA-256 HMAC of a token using the server pepper.
+ */
+export function hashTokenWithPepper(token: string, pepper: string): string {
+  return createHmac('sha256', pepper).update(token).digest('hex');
+}
 
 /**
  * Hashes a password using argon2id (m=65536, t=3, p=1).

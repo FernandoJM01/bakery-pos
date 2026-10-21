@@ -1,5 +1,5 @@
 import { PrismaClient, Role } from '@prisma/client';
-import { randomInt } from 'crypto';
+import { randomBytes, randomInt } from 'crypto';
 import { v7 as uuidv7 } from 'uuid';
 import { hashPassword, hashPin } from '../src/common/crypto';
 import {
@@ -12,6 +12,11 @@ const prisma = new PrismaClient();
 
 function randomPin(): string {
   return randomInt(1000, 10000).toString();
+}
+
+function randomPassword(): string {
+  // At least 12 characters, safe URL-safe base64
+  return randomBytes(12).toString('base64url');
 }
 
 interface SeedStaffCredential {
@@ -159,7 +164,7 @@ async function main() {
     displayName: 'Fernando (Owner)',
     role: Role.OWNER,
     email: 'owner@bakery.local',
-    rawPassword: 'OwnerPassword123!',
+    rawPassword: randomPassword(),
     rawPin: randomPin(),
     branchIds: [suc1.id, suc2.id],
     branchLabel: 'ALL (SUC1, SUC2)',
@@ -171,7 +176,7 @@ async function main() {
     displayName: 'Gerente Centro',
     role: Role.BRANCH_MANAGER,
     email: 'manager.suc1@bakery.local',
-    rawPassword: 'ManagerPassword123!',
+    rawPassword: randomPassword(),
     rawPin: randomPin(),
     branchIds: [suc1.id],
     branchLabel: 'SUC1',
@@ -210,7 +215,7 @@ async function main() {
     displayName: 'Gerente Norte',
     role: Role.BRANCH_MANAGER,
     email: 'manager.suc2@bakery.local',
-    rawPassword: 'ManagerPassword123!',
+    rawPassword: randomPassword(),
     rawPin: randomPin(),
     branchIds: [suc2.id],
     branchLabel: 'SUC2',

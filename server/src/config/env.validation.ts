@@ -12,6 +12,10 @@ export class EnvironmentVariables {
   @IsString()
   DATABASE_URL!: string;
 
+  @IsNotEmpty({ message: 'MIGRATION_DATABASE_URL is required' })
+  @IsString()
+  MIGRATION_DATABASE_URL!: string;
+
   @IsNotEmpty({ message: 'JWT_SECRET is required' })
   @IsString()
   JWT_SECRET!: string;

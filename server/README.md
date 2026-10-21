@@ -23,7 +23,8 @@ The system uses PostgreSQL with role separation to enforce security boundaries (
 
 | Variable | Required | Description |
 |---|---|---|
-| `DATABASE_URL` | Yes | PostgreSQL connection string (connect as `pos_app` for app runtime, or `pos` for migrations) |
+| `DATABASE_URL` | Yes | PostgreSQL connection string for the application runtime (connects as `pos_app`) |
+| `MIGRATION_DATABASE_URL` | Yes | PostgreSQL connection string for migrations (connects as admin role `pos`, Prisma `directUrl`) |
 | `JWT_SECRET` | Yes | Secret for signing staff and device JWTs (min 32 characters in production) |
 | `DEVICE_TOKEN_PEPPER` | Yes | Server-side secret pepper for SHA-256 device tokens (min 32 characters in production) |
 | `NODE_ENV` | No | `development` (default), `test`, or `production` |
@@ -47,13 +48,15 @@ npm run start:dev
 
 ## Production Owner Creation
 
-In production (`NODE_ENV=production`), `npm run seed` refuses to run. Use the interactive CLI command instead:
+In production (`NODE_ENV=production`), `npm run seed` refuses to run. Build the project first and use the interactive CLI command:
 
 ```bash
+npm run build
 npm run create-owner
+# For local dev without building, use: npm run create-owner:dev
 ```
 
-This prompts interactively for Full Name, Display Name, Email, Password (min 10 chars), and PIN (4-6 digits). It hashes secrets with argon2id ($m=65536, t=3, p=1$), computes an independent offline PIN verifier, and outputs only the confirmed email and ID (prints nothing secret).
+This prompts interactively for Full Name, Display Name, Email, Password (min 10 chars), and PIN (4-6 digits) while hiding password and PIN inputs. It hashes secrets with argon2id ($m=65536, t=3, p=1$), computes an independent offline PIN verifier, and outputs only the confirmed email and ID (prints nothing secret). Runs directly from `node dist/cli/create-owner.js` in production without requiring `ts-node`.
 
 ## Running Tests
 
