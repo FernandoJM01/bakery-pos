@@ -45,6 +45,7 @@ dependencies:
   uuid: ^4.6.0
   retrofit: ^4.10.0
   json_annotation: ^4.12.0
+  argon2: ^1.0.1
 
 hooks:
   user_defines:
@@ -53,6 +54,8 @@ hooks:
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  integration_test:
     sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to

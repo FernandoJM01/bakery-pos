@@ -93,6 +93,38 @@ class FakeApiInterceptor extends Interceptor {
         );
       }
 
+      if (code == 'RATELMT2') {
+        return handler.reject(
+          DioException(
+            requestOptions: options,
+            response: Response(
+              requestOptions: options,
+              statusCode: 429,
+              data: {
+                'code': 'RATE_LIMITED',
+                'message': 'Too many attempts, please wait',
+              },
+            ),
+          ),
+        );
+      }
+
+      if (code == 'BADCD234') {
+        return handler.reject(
+          DioException(
+            requestOptions: options,
+            response: Response(
+              requestOptions: options,
+              statusCode: 400,
+              data: {
+                'code': 'VALIDATION_FAILED',
+                'message': 'Enrollment code format is invalid',
+              },
+            ),
+          ),
+        );
+      }
+
       return handler.resolve(
         Response(
           requestOptions: options,
@@ -135,21 +167,21 @@ class FakeApiInterceptor extends Interceptor {
                 'id': managerId,
                 'displayName': 'Carlos (Gerente)',
                 'role': 'BRANCH_MANAGER',
-                'offlinePinVerifier': r'$argon2id$v=19$m=65536,t=3,p=1$c2FsdHNhbHQ$aGFzaGhhc2hoYXNo',
+                'offlinePinVerifier': r'$argon2id$v=19$m=65536,t=3,p=1$dGVzdHNhbHQxMjM0$a3eQTmzY2EF7EnnZVEMeIqJEhBxWE2OCvFk+kud2a/4',
                 'pinUpdatedAt': DateTime.now().toUtc().toIso8601String(),
               },
               {
                 'id': cashierId,
                 'displayName': 'Ana (Cajera)',
                 'role': 'CASHIER',
-                'offlinePinVerifier': r'$argon2id$v=19$m=65536,t=3,p=1$c2FsdHNhbHQ$aGFzaGhhc2hoYXNo',
+                'offlinePinVerifier': r'$argon2id$v=19$m=65536,t=3,p=1$dGVzdHNhbHQxMjM0$a3eQTmzY2EF7EnnZVEMeIqJEhBxWE2OCvFk+kud2a/4',
                 'pinUpdatedAt': DateTime.now().toUtc().toIso8601String(),
               },
               {
                 'id': bakerId,
                 'displayName': 'Beto (Panadero)',
                 'role': 'BAKER',
-                'offlinePinVerifier': r'$argon2id$v=19$m=65536,t=3,p=1$c2FsdHNhbHQ$aGFzaGhhc2hoYXNo',
+                'offlinePinVerifier': r'$argon2id$v=19$m=65536,t=3,p=1$dGVzdHNhbHQxMjM0$a3eQTmzY2EF7EnnZVEMeIqJEhBxWE2OCvFk+kud2a/4',
                 'pinUpdatedAt': DateTime.now().toUtc().toIso8601String(),
               },
             ],
@@ -201,6 +233,22 @@ class FakeApiInterceptor extends Interceptor {
                       .toUtc()
                       .toIso8601String(),
                 },
+              },
+            ),
+          ),
+        );
+      }
+
+      if (pin == '0000' || staffId == 'not-allowed-id') {
+        return handler.reject(
+          DioException(
+            requestOptions: options,
+            response: Response(
+              requestOptions: options,
+              statusCode: 401,
+              data: {
+                'code': 'AUTH_NOT_ALLOWED',
+                'message': 'Staff member is not allowed on this device',
               },
             ),
           ),
@@ -267,6 +315,45 @@ class FakeApiInterceptor extends Interceptor {
               'permissions': permissions,
               'deviceId': deviceId,
             },
+          },
+        ),
+      );
+    }
+
+    // 4b. /v1/auth/refresh
+    if (path.endsWith('/v1/auth/refresh') && method == 'POST') {
+      final body = options.data as Map<String, dynamic>? ?? {};
+      final refreshToken = body['refreshToken'] as String? ?? '';
+      if (refreshToken.isEmpty || refreshToken == 'invalid-token') {
+        return handler.reject(
+          DioException(
+            requestOptions: options,
+            response: Response(
+              requestOptions: options,
+              statusCode: 401,
+              data: {
+                'code': 'AUTH_REFRESH_INVALID',
+                'message': 'Refresh token is invalid or expired',
+              },
+            ),
+          ),
+        );
+      }
+      return handler.resolve(
+        Response(
+          requestOptions: options,
+          statusCode: 200,
+          data: {
+            'accessToken': 'fake-refreshed-jwt',
+            'accessTokenExpiresAt': DateTime.now()
+                .add(const Duration(minutes: 15))
+                .toUtc()
+                .toIso8601String(),
+            'refreshToken': 'fake-new-refresh-token',
+            'refreshTokenExpiresAt': DateTime.now()
+                .add(const Duration(hours: 12))
+                .toUtc()
+                .toIso8601String(),
           },
         ),
       );

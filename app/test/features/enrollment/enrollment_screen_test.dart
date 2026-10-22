@@ -3,10 +3,13 @@ import 'package:bakery_pos/core/api/api_client_provider.dart';
 import 'package:bakery_pos/core/api/fake/fake_api_interceptor.dart';
 import 'package:bakery_pos/core/api/generated/rest_client.dart';
 import 'package:bakery_pos/core/router/app_router.dart';
+import 'package:bakery_pos/core/storage/local_database.dart';
 import 'package:bakery_pos/core/storage/secure_storage.dart';
+import 'package:bakery_pos/features/auth/presentation/till_login_screen.dart';
 import 'package:bakery_pos/features/enrollment/presentation/enrollment_screen.dart';
 import 'package:bakery_pos/l10n/app_localizations.dart';
 import 'package:dio/dio.dart';
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -186,6 +189,53 @@ void main() {
       },
     );
 
+    testWidgets('shows Spanish error for rate limiting (429 RATE_LIMITED)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(createEnrollmentTestWidget(fakeStore: fakeStore));
+      await tester.pumpAndSettle();
+
+      final codeField = find.byKey(const Key('enrollment-code-field'));
+      final submitButton = find.byKey(const Key('enrollment-submit-button'));
+
+      await tester.enterText(codeField, 'RATELMT2');
+      await tester.ensureVisible(submitButton);
+      await tester.tap(submitButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('enrollment-error-banner')), findsOneWidget);
+      expect(
+        find.text(
+          'Demasiados intentos. Espera unos minutos e intenta de nuevo.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets(
+      'shows Spanish error for code validation failure (400 VALIDATION_FAILED)',
+      (tester) async {
+        await tester.pumpWidget(
+          createEnrollmentTestWidget(fakeStore: fakeStore),
+        );
+        await tester.pumpAndSettle();
+
+        final codeField = find.byKey(const Key('enrollment-code-field'));
+        final submitButton = find.byKey(const Key('enrollment-submit-button'));
+
+        await tester.enterText(codeField, 'BADCD234');
+        await tester.ensureVisible(submitButton);
+        await tester.tap(submitButton);
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byKey(const Key('enrollment-error-banner')),
+          findsOneWidget,
+        );
+        expect(find.text('Revisa el código ingresado.'), findsOneWidget);
+      },
+    );
+
     testWidgets(
       'activates device successfully with valid code and stores credentials',
       (tester) async {
@@ -275,6 +325,7 @@ void main() {
       final router = createAppRouter(
         AppMode.till,
         secureStorage: secureStorage,
+        tillLoginBuilder: (context) => const TillLoginScreen(),
       );
 
       await tester.pumpWidget(
@@ -299,14 +350,22 @@ void main() {
     ) async {
       final secureStorage = SecureStorageService(fakeStore);
       await secureStorage.saveDeviceToken('active-device-token');
+      final inMemoryDb = AppDatabase(NativeDatabase.memory());
+      final fakeDio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'))
+        ..interceptors.add(FakeApiInterceptor());
       final router = createAppRouter(
         AppMode.till,
         secureStorage: secureStorage,
+        tillLoginBuilder: (context) => const TillLoginScreen(),
       );
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [secureStorageProvider.overrideWithValue(secureStorage)],
+          overrides: [
+            secureStorageProvider.overrideWithValue(secureStorage),
+            tillDatabaseProvider.overrideWithValue(inMemoryDb),
+            restClientProvider.overrideWithValue(RestClient(fakeDio)),
+          ],
           child: MaterialApp.router(
             locale: const Locale('es', 'MX'),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -317,9 +376,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // With token present, lands on login placeholder
-      expect(find.byKey(const Key('mode-label')), findsOneWidget);
-      expect(find.text('till-login'), findsOneWidget);
+      // With token present, lands on TillLoginScreen
+      expect(find.byType(TillLoginScreen), findsOneWidget);
+      await inMemoryDb.close();
     });
   });
 }

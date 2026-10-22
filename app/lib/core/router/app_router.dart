@@ -17,7 +17,12 @@ class AppRoutes {
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
-GoRouter createAppRouter(AppMode mode, {SecureStorageService? secureStorage}) {
+GoRouter createAppRouter(
+  AppMode mode, {
+  SecureStorageService? secureStorage,
+  WidgetBuilder? tillLoginBuilder,
+  WidgetBuilder? tillHomeBuilder,
+}) {
   final initialLocation = mode == AppMode.till
       ? AppRoutes.tillLogin
       : AppRoutes.backofficeLogin;
@@ -55,17 +60,21 @@ GoRouter createAppRouter(AppMode mode, {SecureStorageService? secureStorage}) {
       ),
       GoRoute(
         path: AppRoutes.tillLogin,
-        builder: (context, state) => const _RoutePlaceholder(
-          titleKey: 'loginEnterPin',
-          routeName: 'till-login',
-        ),
+        builder: (context, state) =>
+            tillLoginBuilder?.call(context) ??
+            const _RoutePlaceholder(
+              titleKey: 'loginEnterPin',
+              routeName: 'till-login',
+            ),
       ),
       GoRoute(
         path: AppRoutes.tillHome,
-        builder: (context, state) => const _RoutePlaceholder(
-          titleKey: 'appTitle',
-          routeName: 'till-home',
-        ),
+        builder: (context, state) =>
+            tillHomeBuilder?.call(context) ??
+            const _RoutePlaceholder(
+              titleKey: 'appTitle',
+              routeName: 'till-home',
+            ),
       ),
       GoRoute(
         path: AppRoutes.backofficeLogin,

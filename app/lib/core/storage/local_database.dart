@@ -38,14 +38,40 @@ class SessionStateEntries extends Table {
   Set<Column> get primaryKey => {key};
 }
 
-@DriftDatabase(tables: [StaffEntries, RolePermissions, SessionStateEntries])
+class StaffLockoutEntries extends Table {
+  TextColumn get staffId => text()();
+  IntColumn get failedAttempts => integer().withDefault(const Constant(0))();
+  DateTimeColumn get lockedUntil => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {staffId};
+}
+
+@DriftDatabase(
+  tables: [
+    StaffEntries,
+    RolePermissions,
+    SessionStateEntries,
+    StaffLockoutEntries,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
   /// Pass [openEncryptedTillDatabase] in the app; tests pass an in-memory
   /// executor. There is deliberately no unencrypted default.
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.createTable(staffLockoutEntries);
+      }
+    },
+  );
 
   Future<void> replaceStaffBundle({
     required List<StaffEntriesCompanion> staff,
@@ -89,10 +115,64 @@ class AppDatabase extends _$AppDatabase {
     return row?.value;
   }
 
+  Future<StaffLockoutEntry?> getLockout(String staffId) {
+    return (select(
+      staffLockoutEntries,
+    )..where((tbl) => tbl.staffId.equals(staffId))).getSingleOrNull();
+  }
+
+  Future<DateTime?> getActiveLockout(String staffId, DateTime now) async {
+    final entry = await getLockout(staffId);
+    if (entry == null || entry.lockedUntil == null) return null;
+    if (entry.lockedUntil!.isAfter(now)) {
+      return entry.lockedUntil;
+    }
+    // Lockout has expired; clear it
+    await resetLockout(staffId);
+    return null;
+  }
+
+  Future<DateTime?> recordFailedPinAttempt(String staffId, DateTime now) async {
+    final existing = await getLockout(staffId);
+    if (existing?.lockedUntil != null && existing!.lockedUntil!.isAfter(now)) {
+      return existing.lockedUntil;
+    }
+    final attempts = (existing?.failedAttempts ?? 0) + 1;
+    final lockedUntil = attempts >= 5
+        ? now.add(const Duration(minutes: 5))
+        : null;
+    await into(staffLockoutEntries).insertOnConflictUpdate(
+      StaffLockoutEntriesCompanion(
+        staffId: Value(staffId),
+        failedAttempts: Value(attempts),
+        lockedUntil: Value(lockedUntil),
+      ),
+    );
+    return lockedUntil;
+  }
+
+  Future<void> setLockoutUntil(String staffId, DateTime lockedUntil) async {
+    final existing = await getLockout(staffId);
+    await into(staffLockoutEntries).insertOnConflictUpdate(
+      StaffLockoutEntriesCompanion(
+        staffId: Value(staffId),
+        failedAttempts: Value(existing?.failedAttempts ?? 0),
+        lockedUntil: Value(lockedUntil),
+      ),
+    );
+  }
+
+  Future<void> resetLockout(String staffId) async {
+    await (delete(
+      staffLockoutEntries,
+    )..where((tbl) => tbl.staffId.equals(staffId))).go();
+  }
+
   Future<void> clearAll() async {
     await delete(staffEntries).go();
     await delete(rolePermissions).go();
     await delete(sessionStateEntries).go();
+    await delete(staffLockoutEntries).go();
   }
 
   static Future<void> deleteDatabaseFile() async {

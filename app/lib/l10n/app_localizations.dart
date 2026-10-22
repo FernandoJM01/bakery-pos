@@ -286,6 +286,18 @@ abstract class AppLocalizations {
   /// **'El código es inválido o ha expirado'**
   String get enrollmentCodeInvalid;
 
+  /// No description provided for @enrollmentRateLimited.
+  ///
+  /// In es, this message translates to:
+  /// **'Demasiados intentos. Espera unos minutos e intenta de nuevo.'**
+  String get enrollmentRateLimited;
+
+  /// No description provided for @enrollmentValidationFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisa el código ingresado.'**
+  String get enrollmentValidationFailed;
+
   /// No description provided for @enrollmentNetworkError.
   ///
   /// In es, this message translates to:
@@ -340,11 +352,41 @@ abstract class AppLocalizations {
   /// **'Demasiados intentos fallidos. Bloqueado temporalmente.'**
   String get loginLocked;
 
+  /// Mensaje de bloqueo temporal con hora
+  ///
+  /// In es, this message translates to:
+  /// **'Demasiados intentos. Bloqueado hasta las {time}.'**
+  String loginLockedUntil(String time);
+
   /// No description provided for @loginStaffNotAllowed.
   ///
   /// In es, this message translates to:
   /// **'Usuario no autorizado en esta sucursal o inactivo'**
   String get loginStaffNotAllowed;
+
+  /// No description provided for @loginOfflineSession.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión sin conexión'**
+  String get loginOfflineSession;
+
+  /// No description provided for @loginNoStaff.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay personal disponible. Sincroniza el dispositivo.'**
+  String get loginNoStaff;
+
+  /// No description provided for @loginSyncSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Personal sincronizado correctamente'**
+  String get loginSyncSuccess;
+
+  /// No description provided for @loginSyncFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al sincronizar personal con el servidor'**
+  String get loginSyncFailed;
 
   /// No description provided for @backofficeLoginTitle.
   ///

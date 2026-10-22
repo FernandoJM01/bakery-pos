@@ -812,6 +812,285 @@ class SessionStateEntriesCompanion extends UpdateCompanion<SessionStateEntry> {
   }
 }
 
+class $StaffLockoutEntriesTable extends StaffLockoutEntries
+    with TableInfo<$StaffLockoutEntriesTable, StaffLockoutEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $StaffLockoutEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _staffIdMeta = const VerificationMeta(
+    'staffId',
+  );
+  @override
+  late final GeneratedColumn<String> staffId = GeneratedColumn<String>(
+    'staff_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _failedAttemptsMeta = const VerificationMeta(
+    'failedAttempts',
+  );
+  @override
+  late final GeneratedColumn<int> failedAttempts = GeneratedColumn<int>(
+    'failed_attempts',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _lockedUntilMeta = const VerificationMeta(
+    'lockedUntil',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lockedUntil = GeneratedColumn<DateTime>(
+    'locked_until',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [staffId, failedAttempts, lockedUntil];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'staff_lockout_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<StaffLockoutEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('staff_id')) {
+      context.handle(
+        _staffIdMeta,
+        staffId.isAcceptableOrUnknown(data['staff_id']!, _staffIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_staffIdMeta);
+    }
+    if (data.containsKey('failed_attempts')) {
+      context.handle(
+        _failedAttemptsMeta,
+        failedAttempts.isAcceptableOrUnknown(
+          data['failed_attempts']!,
+          _failedAttemptsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('locked_until')) {
+      context.handle(
+        _lockedUntilMeta,
+        lockedUntil.isAcceptableOrUnknown(
+          data['locked_until']!,
+          _lockedUntilMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {staffId};
+  @override
+  StaffLockoutEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return StaffLockoutEntry(
+      staffId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}staff_id'],
+      )!,
+      failedAttempts: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}failed_attempts'],
+      )!,
+      lockedUntil: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}locked_until'],
+      ),
+    );
+  }
+
+  @override
+  $StaffLockoutEntriesTable createAlias(String alias) {
+    return $StaffLockoutEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class StaffLockoutEntry extends DataClass
+    implements Insertable<StaffLockoutEntry> {
+  final String staffId;
+  final int failedAttempts;
+  final DateTime? lockedUntil;
+  const StaffLockoutEntry({
+    required this.staffId,
+    required this.failedAttempts,
+    this.lockedUntil,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['staff_id'] = Variable<String>(staffId);
+    map['failed_attempts'] = Variable<int>(failedAttempts);
+    if (!nullToAbsent || lockedUntil != null) {
+      map['locked_until'] = Variable<DateTime>(lockedUntil);
+    }
+    return map;
+  }
+
+  StaffLockoutEntriesCompanion toCompanion(bool nullToAbsent) {
+    return StaffLockoutEntriesCompanion(
+      staffId: Value(staffId),
+      failedAttempts: Value(failedAttempts),
+      lockedUntil: lockedUntil == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lockedUntil),
+    );
+  }
+
+  factory StaffLockoutEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return StaffLockoutEntry(
+      staffId: serializer.fromJson<String>(json['staffId']),
+      failedAttempts: serializer.fromJson<int>(json['failedAttempts']),
+      lockedUntil: serializer.fromJson<DateTime?>(json['lockedUntil']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'staffId': serializer.toJson<String>(staffId),
+      'failedAttempts': serializer.toJson<int>(failedAttempts),
+      'lockedUntil': serializer.toJson<DateTime?>(lockedUntil),
+    };
+  }
+
+  StaffLockoutEntry copyWith({
+    String? staffId,
+    int? failedAttempts,
+    Value<DateTime?> lockedUntil = const Value.absent(),
+  }) => StaffLockoutEntry(
+    staffId: staffId ?? this.staffId,
+    failedAttempts: failedAttempts ?? this.failedAttempts,
+    lockedUntil: lockedUntil.present ? lockedUntil.value : this.lockedUntil,
+  );
+  StaffLockoutEntry copyWithCompanion(StaffLockoutEntriesCompanion data) {
+    return StaffLockoutEntry(
+      staffId: data.staffId.present ? data.staffId.value : this.staffId,
+      failedAttempts: data.failedAttempts.present
+          ? data.failedAttempts.value
+          : this.failedAttempts,
+      lockedUntil: data.lockedUntil.present
+          ? data.lockedUntil.value
+          : this.lockedUntil,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StaffLockoutEntry(')
+          ..write('staffId: $staffId, ')
+          ..write('failedAttempts: $failedAttempts, ')
+          ..write('lockedUntil: $lockedUntil')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(staffId, failedAttempts, lockedUntil);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is StaffLockoutEntry &&
+          other.staffId == this.staffId &&
+          other.failedAttempts == this.failedAttempts &&
+          other.lockedUntil == this.lockedUntil);
+}
+
+class StaffLockoutEntriesCompanion extends UpdateCompanion<StaffLockoutEntry> {
+  final Value<String> staffId;
+  final Value<int> failedAttempts;
+  final Value<DateTime?> lockedUntil;
+  final Value<int> rowid;
+  const StaffLockoutEntriesCompanion({
+    this.staffId = const Value.absent(),
+    this.failedAttempts = const Value.absent(),
+    this.lockedUntil = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  StaffLockoutEntriesCompanion.insert({
+    required String staffId,
+    this.failedAttempts = const Value.absent(),
+    this.lockedUntil = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : staffId = Value(staffId);
+  static Insertable<StaffLockoutEntry> custom({
+    Expression<String>? staffId,
+    Expression<int>? failedAttempts,
+    Expression<DateTime>? lockedUntil,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (staffId != null) 'staff_id': staffId,
+      if (failedAttempts != null) 'failed_attempts': failedAttempts,
+      if (lockedUntil != null) 'locked_until': lockedUntil,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  StaffLockoutEntriesCompanion copyWith({
+    Value<String>? staffId,
+    Value<int>? failedAttempts,
+    Value<DateTime?>? lockedUntil,
+    Value<int>? rowid,
+  }) {
+    return StaffLockoutEntriesCompanion(
+      staffId: staffId ?? this.staffId,
+      failedAttempts: failedAttempts ?? this.failedAttempts,
+      lockedUntil: lockedUntil ?? this.lockedUntil,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (staffId.present) {
+      map['staff_id'] = Variable<String>(staffId.value);
+    }
+    if (failedAttempts.present) {
+      map['failed_attempts'] = Variable<int>(failedAttempts.value);
+    }
+    if (lockedUntil.present) {
+      map['locked_until'] = Variable<DateTime>(lockedUntil.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StaffLockoutEntriesCompanion(')
+          ..write('staffId: $staffId, ')
+          ..write('failedAttempts: $failedAttempts, ')
+          ..write('lockedUntil: $lockedUntil, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -821,6 +1100,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $SessionStateEntriesTable sessionStateEntries =
       $SessionStateEntriesTable(this);
+  late final $StaffLockoutEntriesTable staffLockoutEntries =
+      $StaffLockoutEntriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -829,6 +1110,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     staffEntries,
     rolePermissions,
     sessionStateEntries,
+    staffLockoutEntries,
   ];
 }
 
@@ -1377,6 +1659,199 @@ typedef $$SessionStateEntriesTableProcessedTableManager =
       SessionStateEntry,
       PrefetchHooks Function()
     >;
+typedef $$StaffLockoutEntriesTableCreateCompanionBuilder =
+    StaffLockoutEntriesCompanion Function({
+      required String staffId,
+      Value<int> failedAttempts,
+      Value<DateTime?> lockedUntil,
+      Value<int> rowid,
+    });
+typedef $$StaffLockoutEntriesTableUpdateCompanionBuilder =
+    StaffLockoutEntriesCompanion Function({
+      Value<String> staffId,
+      Value<int> failedAttempts,
+      Value<DateTime?> lockedUntil,
+      Value<int> rowid,
+    });
+
+class $$StaffLockoutEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $StaffLockoutEntriesTable> {
+  $$StaffLockoutEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get staffId => $composableBuilder(
+    column: $table.staffId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get failedAttempts => $composableBuilder(
+    column: $table.failedAttempts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lockedUntil => $composableBuilder(
+    column: $table.lockedUntil,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$StaffLockoutEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $StaffLockoutEntriesTable> {
+  $$StaffLockoutEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get staffId => $composableBuilder(
+    column: $table.staffId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get failedAttempts => $composableBuilder(
+    column: $table.failedAttempts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lockedUntil => $composableBuilder(
+    column: $table.lockedUntil,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$StaffLockoutEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $StaffLockoutEntriesTable> {
+  $$StaffLockoutEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get staffId =>
+      $composableBuilder(column: $table.staffId, builder: (column) => column);
+
+  GeneratedColumn<int> get failedAttempts => $composableBuilder(
+    column: $table.failedAttempts,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lockedUntil => $composableBuilder(
+    column: $table.lockedUntil,
+    builder: (column) => column,
+  );
+}
+
+class $$StaffLockoutEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $StaffLockoutEntriesTable,
+          StaffLockoutEntry,
+          $$StaffLockoutEntriesTableFilterComposer,
+          $$StaffLockoutEntriesTableOrderingComposer,
+          $$StaffLockoutEntriesTableAnnotationComposer,
+          $$StaffLockoutEntriesTableCreateCompanionBuilder,
+          $$StaffLockoutEntriesTableUpdateCompanionBuilder,
+          (
+            StaffLockoutEntry,
+            BaseReferences<
+              _$AppDatabase,
+              $StaffLockoutEntriesTable,
+              StaffLockoutEntry
+            >,
+          ),
+          StaffLockoutEntry,
+          PrefetchHooks Function()
+        > {
+  $$StaffLockoutEntriesTableTableManager(
+    _$AppDatabase db,
+    $StaffLockoutEntriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$StaffLockoutEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$StaffLockoutEntriesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$StaffLockoutEntriesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> staffId = const Value.absent(),
+                Value<int> failedAttempts = const Value.absent(),
+                Value<DateTime?> lockedUntil = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => StaffLockoutEntriesCompanion(
+                staffId: staffId,
+                failedAttempts: failedAttempts,
+                lockedUntil: lockedUntil,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String staffId,
+                Value<int> failedAttempts = const Value.absent(),
+                Value<DateTime?> lockedUntil = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => StaffLockoutEntriesCompanion.insert(
+                staffId: staffId,
+                failedAttempts: failedAttempts,
+                lockedUntil: lockedUntil,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$StaffLockoutEntriesTable, StaffLockoutEntry>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $StaffLockoutEntriesTable,
+                    StaffLockoutEntry
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$StaffLockoutEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $StaffLockoutEntriesTable,
+      StaffLockoutEntry,
+      $$StaffLockoutEntriesTableFilterComposer,
+      $$StaffLockoutEntriesTableOrderingComposer,
+      $$StaffLockoutEntriesTableAnnotationComposer,
+      $$StaffLockoutEntriesTableCreateCompanionBuilder,
+      $$StaffLockoutEntriesTableUpdateCompanionBuilder,
+      (
+        StaffLockoutEntry,
+        BaseReferences<
+          _$AppDatabase,
+          $StaffLockoutEntriesTable,
+          StaffLockoutEntry
+        >,
+      ),
+      StaffLockoutEntry,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1387,4 +1862,6 @@ class $AppDatabaseManager {
       $$RolePermissionsTableTableManager(_db, _db.rolePermissions);
   $$SessionStateEntriesTableTableManager get sessionStateEntries =>
       $$SessionStateEntriesTableTableManager(_db, _db.sessionStateEntries);
+  $$StaffLockoutEntriesTableTableManager get staffLockoutEntries =>
+      $$StaffLockoutEntriesTableTableManager(_db, _db.staffLockoutEntries);
 }
