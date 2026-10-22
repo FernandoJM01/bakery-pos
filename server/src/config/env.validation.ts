@@ -12,6 +12,12 @@ export class EnvironmentVariables {
   @IsString()
   DATABASE_URL!: string;
 
+  // Only the Prisma CLI (migrate) uses this; the running server connects as
+  // pos_app and must not be given the admin credentials.
+  @IsOptional()
+  @IsString()
+  MIGRATION_DATABASE_URL?: string;
+
   @IsNotEmpty({ message: 'JWT_SECRET is required' })
   @IsString()
   JWT_SECRET!: string;
@@ -35,6 +41,10 @@ export class EnvironmentVariables {
   @IsOptional()
   @IsString()
   LOG_LEVEL?: string = 'info';
+
+  @IsOptional()
+  @IsString()
+  TRUST_PROXY?: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

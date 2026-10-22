@@ -17,9 +17,10 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "prisma migrate deploy && jest --config ./test/jest-e2e.json",
+    "test:e2e": "node -e \"if (!process.env.MIGRATION_DATABASE_URL) process.env.MIGRATION_DATABASE_URL = process.env.DATABASE_URL || 'postgres://pos:pos_dev_only@127.0.0.1:5432/pos_dev'; const { execSync } = require('child_process'); execSync('npx prisma migrate deploy', { stdio: 'inherit', env: process.env });\" && jest --config ./test/jest-e2e.json",
     "seed": "prisma db seed",
-    "create-owner": "ts-node src/cli/create-owner.ts"
+    "create-owner": "node dist/cli/create-owner.js",
+    "create-owner:dev": "ts-node src/cli/create-owner.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -28,7 +29,9 @@
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/jwt": "^12.0.3",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/throttler": "^6.7.1",
     "@prisma/client": "6.4.0",
     "argon2": "^0.45.1",
     "class-transformer": "^0.5.1",
@@ -96,7 +99,7 @@
       "<rootDir>/../test/setup.ts"
     ],
     "transformIgnorePatterns": [
-      "node_modules/(?!(uuid)/)"
+      "node_modules/(?!(uuid|@nestjs/jwt)/)"
     ]
   }
 }

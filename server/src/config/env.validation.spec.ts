@@ -3,6 +3,7 @@ import { validateEnv } from './env.validation';
 describe('Environment validation', () => {
   const validBaseEnv = {
     DATABASE_URL: 'postgres://pos:pos_dev@localhost:5432/pos_dev',
+    MIGRATION_DATABASE_URL: 'postgres://pos:pos_dev@localhost:5432/pos_dev',
     JWT_SECRET: 'test-jwt-secret-key-super-secure',
     DEVICE_TOKEN_PEPPER: 'test-device-pepper-super-secure',
   };
@@ -14,6 +15,13 @@ describe('Environment validation', () => {
     expect(() => validateEnv(env)).toThrow(
       'Server refuses to start: required environment variable(s) missing or invalid: DATABASE_URL',
     );
+  });
+
+  it('starts without MIGRATION_DATABASE_URL (only prisma migrate needs it)', () => {
+    const env = { ...validBaseEnv };
+    delete (env as Record<string, unknown>).MIGRATION_DATABASE_URL;
+
+    expect(() => validateEnv(env)).not.toThrow();
   });
 
   it('A3: refuses to start when JWT_SECRET is missing', () => {

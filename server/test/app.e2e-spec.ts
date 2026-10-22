@@ -16,6 +16,10 @@ describe('Health & Foundation (e2e)', () => {
     process.env.DATABASE_URL =
       process.env.DATABASE_URL ??
       'postgres://pos:pos_dev_only@127.0.0.1:5432/pos_dev';
+    process.env.MIGRATION_DATABASE_URL =
+      process.env.MIGRATION_DATABASE_URL ??
+      process.env.DATABASE_URL ??
+      'postgres://pos:pos_dev_only@127.0.0.1:5432/pos_dev';
     process.env.JWT_SECRET =
       process.env.JWT_SECRET ?? 'ci-only-jwt-secret-not-for-production';
     process.env.DEVICE_TOKEN_PEPPER =
@@ -72,5 +76,15 @@ describe('Health & Foundation (e2e)', () => {
     expect(validateError).toBeDefined();
     expect(validateError!(prefixed.body)).toBe(true);
     expect(prefixed.body).toMatchObject({ code: 'NOT_FOUND' });
+  });
+
+  it('handles 50 GET /health requests in a row with 200 (not throttled)', async () => {
+    const server = app.getHttpServer() as Server;
+    for (let i = 0; i < 50; i++) {
+      const response = await request(server).get('/health');
+      expect(response.status).toBe(200);
+      const body = response.body as { status?: string };
+      expect(body.status).toBe('ok');
+    }
   });
 });

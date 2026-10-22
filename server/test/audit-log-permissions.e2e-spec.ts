@@ -5,12 +5,14 @@ import { v7 as uuidv7 } from 'uuid';
 describe('A14: audit_log insert-only permissions (e2e)', () => {
   let adminClient: PrismaClient;
   let appClient: PrismaClient;
+  let alteredPassword = false;
   const testLogId = uuidv7();
   const fkStaffId = uuidv7();
   const fkLogId = uuidv7();
 
   beforeAll(async () => {
     const adminUrl =
+      process.env.MIGRATION_DATABASE_URL ??
       process.env.DATABASE_URL ??
       'postgres://pos:pos_dev_only@127.0.0.1:5432/pos_dev';
 
@@ -19,9 +21,25 @@ describe('A14: audit_log insert-only permissions (e2e)', () => {
     });
 
     // The migration creates pos_app without login (it also runs in
-    // production); give it a throwaway password for this test database.
+    // production); give it a throwaway password for this test database if
+    // not already configured via DATABASE_URL or APP_DATABASE_URL.
     let appUrl = process.env.APP_DATABASE_URL;
     if (!appUrl) {
+      const currentDbUrl = process.env.DATABASE_URL;
+      if (currentDbUrl) {
+        try {
+          const parsed = new URL(currentDbUrl);
+          if (parsed.username === 'pos_app' && parsed.password) {
+            appUrl = currentDbUrl;
+          }
+        } catch {
+          // Fall through to generating throwaway password
+        }
+      }
+    }
+
+    if (!appUrl) {
+      alteredPassword = true;
       const password = randomBytes(18).toString('hex');
       await adminClient.$executeRawUnsafe(
         `ALTER ROLE pos_app WITH LOGIN PASSWORD '${password}'`,
@@ -46,6 +64,11 @@ describe('A14: audit_log insert-only permissions (e2e)', () => {
         where: { id: { in: [testLogId, fkLogId] } },
       });
       await adminClient.staff.deleteMany({ where: { id: fkStaffId } });
+      if (alteredPassword) {
+        await adminClient.$executeRawUnsafe(
+          `ALTER ROLE pos_app WITH LOGIN PASSWORD 'pos_app_dev_only'`,
+        );
+      }
     } catch {
       // Ignore cleanup error if already removed
     } finally {

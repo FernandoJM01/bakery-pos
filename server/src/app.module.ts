@@ -1,7 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
+import { AuditModule } from './audit/audit.module';
+import { AuthModule } from './auth/auth.module';
+import { AuthGuard } from './auth/guards/auth.guard';
+import { ClockModule } from './common/clock.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { PermissionsGuard } from './common/guards/permissions.guard';
 import { validateEnv } from './config/env.validation';
@@ -14,6 +19,14 @@ import { PrismaModule } from './prisma/prisma.module';
       isGlobal: true,
       validate: validateEnv,
     }),
+    // Generous default: a branch's tills share one public IP. Login routes
+    // set their own tighter limits with @Throttle.
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 600,
+      },
+    ]),
     LoggerModule.forRoot({
       pinoHttp: {
         redact: {
@@ -45,10 +58,21 @@ import { PrismaModule } from './prisma/prisma.module';
             : undefined,
       },
     }),
+    ClockModule,
     PrismaModule,
+    AuditModule,
+    AuthModule,
     HealthModule,
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: PermissionsGuard,
