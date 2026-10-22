@@ -20,6 +20,8 @@ final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 GoRouter createAppRouter(
   AppMode mode, {
   SecureStorageService? secureStorage,
+  Listenable? refreshListenable,
+  bool Function()? hasSession,
   WidgetBuilder? tillLoginBuilder,
   WidgetBuilder? tillHomeBuilder,
 }) {
@@ -30,6 +32,7 @@ GoRouter createAppRouter(
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: initialLocation,
+    refreshListenable: refreshListenable,
     redirect: (context, state) async {
       if (mode == AppMode.till) {
         final storage =
@@ -40,11 +43,19 @@ GoRouter createAppRouter(
         final token = await storage.getDeviceToken();
         final hasToken = token != null && token.isNotEmpty;
         final isEnrollment = state.matchedLocation == AppRoutes.tillEnrollment;
+        final isLogin = state.matchedLocation == AppRoutes.tillLogin;
 
         if (!hasToken && !isEnrollment) {
           return AppRoutes.tillEnrollment;
         }
         if (hasToken && isEnrollment) {
+          return AppRoutes.tillLogin;
+        }
+        if (hasToken &&
+            hasSession != null &&
+            !hasSession() &&
+            !isLogin &&
+            !isEnrollment) {
           return AppRoutes.tillLogin;
         }
       }

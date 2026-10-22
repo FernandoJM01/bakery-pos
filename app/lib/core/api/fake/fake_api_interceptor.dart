@@ -359,6 +359,13 @@ class FakeApiInterceptor extends Interceptor {
       );
     }
 
+    // 4c. /v1/auth/logout
+    if (path.endsWith('/v1/auth/logout') && method == 'POST') {
+      return handler.resolve(
+        Response(requestOptions: options, statusCode: 204),
+      );
+    }
+
     // 5. /v1/auth/password-login
     if (path.endsWith('/v1/auth/password-login') && method == 'POST') {
       final body = options.data as Map<String, dynamic>? ?? {};

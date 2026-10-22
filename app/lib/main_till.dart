@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:go_router/go_router.dart';
 
 import 'app.dart';
 import 'core/api/api_client_provider.dart';
+import 'core/router/app_router.dart';
 import 'core/storage/local_database.dart';
 import 'core/storage/secure_storage.dart';
+import 'features/auth/data/till_auth_service.dart';
+import 'features/auth/domain/session_lock_manager.dart';
 import 'features/auth/presentation/till_home_screen.dart';
 import 'features/auth/presentation/till_login_screen.dart';
+import 'features/auth/presentation/user_activity_detector.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,11 +38,38 @@ Future<void> main() async {
           };
         }),
       ],
-      child: BakeryPosApp(
-        mode: AppMode.till,
-        tillLoginBuilder: (context) => const TillLoginScreen(),
-        tillHomeBuilder: (context) => const TillHomeScreen(),
-      ),
+      child: const TillAppRoot(),
     ),
   );
+}
+
+class TillAppRoot extends ConsumerStatefulWidget {
+  const TillAppRoot({super.key});
+
+  @override
+  ConsumerState<TillAppRoot> createState() => _TillAppRootState();
+}
+
+class _TillAppRootState extends ConsumerState<TillAppRoot> {
+  @override
+  void initState() {
+    super.initState();
+    ref.read(sessionLockManagerProvider).onNavigateToLogin = () {
+      rootNavigatorKey.currentContext?.go(AppRoutes.tillLogin);
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authService = ref.watch(tillAuthServiceProvider);
+    return BakeryPosApp(
+      mode: AppMode.till,
+      refreshListenable: authService,
+      hasSession: () => authService.currentSession != null,
+      tillLoginBuilder: (context) => const TillLoginScreen(),
+      tillHomeBuilder: (context) => const TillHomeScreen(),
+      appWrapper: (context, child) =>
+          UserActivityDetector(child: child ?? const SizedBox.shrink()),
+    );
+  }
 }

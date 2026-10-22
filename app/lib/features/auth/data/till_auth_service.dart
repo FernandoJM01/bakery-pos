@@ -254,11 +254,23 @@ class TillAuthService extends ChangeNotifier {
     if (_currentSession == null) {
       throw const TillAuthGenericException('No active session');
     }
-    return loginWithPin(staff: _currentSession!.staff, pin: pin);
+    final previousSession = _currentSession!;
+    final session = await loginWithPin(staff: previousSession.staff, pin: pin);
+    if (session.isOffline) {
+      _currentSession = previousSession;
+      notifyListeners();
+      throw const TillAuthGenericException('Still offline');
+    }
+    return session;
   }
 
   Future<void> logout() async {
     _refreshTimer?.cancel();
+    if (_currentSession != null && !_currentSession!.isOffline) {
+      try {
+        await restClient.auth.logout();
+      } catch (_) {}
+    }
     _currentSession = null;
     await secureStorage.deleteRefreshToken();
     notifyListeners();

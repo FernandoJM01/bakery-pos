@@ -4,20 +4,35 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/api_client_provider.dart';
 import '../../../core/api/generated/rest_client.dart';
 import '../../../core/storage/local_database.dart';
+import '../../auth/data/till_auth_service.dart';
+import '../../auth/domain/till_auth_state.dart';
 
 final staffSyncServiceProvider = Provider<StaffSyncService>((ref) {
   final restClient = ref.watch(restClientProvider);
   final db = ref.watch(tillDatabaseProvider);
-  return StaffSyncService(restClient: restClient, database: db);
+  final authService = ref.watch(tillAuthServiceProvider);
+  return StaffSyncService(
+    restClient: restClient,
+    database: db,
+    authService: authService,
+  );
 });
 
 class StaffSyncService {
-  StaffSyncService({required this.restClient, required this.database});
+  StaffSyncService({
+    required this.restClient,
+    required this.database,
+    this.authService,
+  });
 
   final RestClient restClient;
   final AppDatabase database;
+  final TillAuthService? authService;
 
   Future<int> syncStaffBundle() async {
+    if (authService?.currentSession?.isOffline == true) {
+      throw const TillAuthGenericException('Online re-authentication required');
+    }
     final bundle = await restClient.devices.getDeviceStaffBundle();
 
     final staffCompanions = bundle.staff.map((s) {

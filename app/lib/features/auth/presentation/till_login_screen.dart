@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/router/app_router.dart';
 import '../../../core/storage/local_database.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimensions.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../staff/data/staff_sync_service.dart';
 import '../data/till_auth_service.dart';
+import '../domain/session_lock_manager.dart';
 import '../domain/till_auth_state.dart';
 
 class TillLoginScreen extends ConsumerStatefulWidget {
@@ -34,9 +34,16 @@ class _TillLoginScreenState extends ConsumerState<TillLoginScreen> {
   Future<void> _loadStaff() async {
     final db = ref.read(tillDatabaseProvider);
     final staff = await db.getAllStaff();
+    final lockedId = ref.read(sessionLockManagerProvider).lockedStaffId;
     if (mounted) {
       setState(() {
         _staffList = staff;
+        if (lockedId != null) {
+          final match = staff.where((s) => s.id == lockedId);
+          if (match.isNotEmpty) {
+            _selectedStaff = match.first;
+          }
+        }
         if (staff.isNotEmpty && _selectedStaff == null) {
           _selectedStaff = staff.first;
         }
@@ -98,7 +105,10 @@ class _TillLoginScreenState extends ConsumerState<TillLoginScreen> {
           .read(tillSessionProvider.notifier)
           .login(staff: _selectedStaff!, pin: _pin);
       if (mounted) {
-        context.go(AppRoutes.tillHome);
+        final destination = ref
+            .read(sessionLockManagerProvider)
+            .onLoginSuccess(staff: _selectedStaff!);
+        context.go(destination);
       }
     } on TillAuthInvalidPinException {
       if (mounted) {

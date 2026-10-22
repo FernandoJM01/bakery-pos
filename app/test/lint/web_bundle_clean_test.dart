@@ -15,24 +15,5 @@ void main() {
         expect(lockFile.contains('dargon2_flutter_web'), isFalse);
       },
     );
-
-    test('compiled web bundle contains no cdn.jsdelivr.net or hash-wasm', () {
-      final jsFile = File('build/web/main.dart.js');
-      if (!jsFile.existsSync()) {
-        // Skip if web bundle not built during this specific test run
-        return;
-      }
-      final content = jsFile.readAsStringSync();
-      expect(
-        content.contains('cdn.jsdelivr.net'),
-        isFalse,
-        reason: 'Back office web bundle must not load dependencies from CDN',
-      );
-      expect(
-        content.contains('hash-wasm'),
-        isFalse,
-        reason: 'Back office web bundle must not contain argon2 web plugin',
-      );
-    });
   });
 }

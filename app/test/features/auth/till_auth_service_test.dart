@@ -7,6 +7,7 @@ import 'package:bakery_pos/core/storage/local_database.dart';
 import 'package:bakery_pos/core/storage/secure_storage.dart';
 import 'package:bakery_pos/features/auth/data/till_auth_service.dart';
 import 'package:bakery_pos/features/auth/domain/till_auth_state.dart';
+import 'package:bakery_pos/features/staff/data/staff_sync_service.dart';
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
@@ -553,6 +554,96 @@ void main() {
       expect(container.read(tillSessionProvider), isNull);
 
       container.dispose();
+    });
+
+    test('online re-authentication is required after an offline session before sync', () async {
+      final offlineDio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'))
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) => handler.reject(
+              DioException(
+                requestOptions: options,
+                type: DioExceptionType.connectionError,
+                error: const SocketException('offline'),
+              ),
+            ),
+          ),
+        );
+      final offlineAuth = TillAuthService(
+        restClient: RestClient(offlineDio),
+        database: db,
+        secureStorage: secureStorage,
+        clock: () => currentTime,
+      );
+
+      final session = await offlineAuth.loginWithPin(
+        staff: testStaff,
+        pin: '1234',
+      );
+      expect(session.isOffline, isTrue);
+
+      final syncService = StaffSyncService(
+        restClient: restClient,
+        database: db,
+        authService: offlineAuth,
+      );
+
+      // Attempt sync during offline session -> MUST throw
+      await expectLater(
+        () => syncService.syncStaffBundle(),
+        throwsA(isA<TillAuthGenericException>()),
+      );
+
+      // Attempt reauthenticateOnline while still offline -> throws and stays offline
+      await expectLater(
+        () => offlineAuth.reauthenticateOnline('1234'),
+        throwsA(isA<TillAuthGenericException>()),
+      );
+      expect(offlineAuth.currentSession?.isOffline, isTrue);
+
+      // Still cannot sync
+      await expectLater(
+        () => syncService.syncStaffBundle(),
+        throwsA(isA<TillAuthGenericException>()),
+      );
+
+      offlineAuth.dispose();
+    });
+
+    test('logout calls POST /v1/auth/logout and clears tokens', () async {
+      bool logoutEndpointCalled = false;
+      final logoutDio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'))
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              if (options.path.endsWith('/v1/auth/logout') &&
+                  options.method == 'POST') {
+                logoutEndpointCalled = true;
+                return handler.resolve(
+                  Response(requestOptions: options, statusCode: 204),
+                );
+              }
+              handler.next(options);
+            },
+          ),
+        )
+        ..interceptors.add(FakeApiInterceptor());
+
+      final auth = TillAuthService(
+        restClient: RestClient(logoutDio),
+        database: db,
+        secureStorage: secureStorage,
+        clock: () => currentTime,
+      );
+
+      await auth.loginWithPin(staff: testStaff, pin: '1234');
+      expect(auth.currentSession, isNotNull);
+
+      await auth.logout();
+      expect(logoutEndpointCalled, isTrue);
+      expect(auth.currentSession, isNull);
+      expect(await secureStorage.getRefreshToken(), isNull);
+      auth.dispose();
     });
   });
 }
