@@ -1,4 +1,5 @@
 import {
+  generateEnrollmentCode,
   generateToken,
   getDummyArgon2Hash,
   hashPassword,
@@ -55,5 +56,18 @@ describe('Crypto & Argon2id Hashing', () => {
   it('provides a valid argon2id dummy hash for constant-time comparisons', async () => {
     const dummy = await getDummyArgon2Hash();
     expect(dummy).toMatch(/^\$argon2id\$/);
+  });
+
+  it('generates 8-character enrollment codes matching pattern', () => {
+    const pattern = /^[A-HJ-NP-Z2-9]{8}$/;
+    for (let i = 0; i < 20; i++) {
+      const code = generateEnrollmentCode();
+      expect(code).toHaveLength(8);
+      expect(code).toMatch(pattern);
+      expect(code).not.toContain('0');
+      expect(code).not.toContain('O');
+      expect(code).not.toContain('1');
+      expect(code).not.toContain('I');
+    }
   });
 });

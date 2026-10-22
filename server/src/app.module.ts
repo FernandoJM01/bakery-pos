@@ -10,6 +10,8 @@ import { ClockModule } from './common/clock.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { PermissionsGuard } from './common/guards/permissions.guard';
 import { validateEnv } from './config/env.validation';
+import { DevicesModule } from './devices/devices.module';
+import { DeviceGuard } from './devices/guards/device.guard';
 import { HealthModule } from './health/health.module';
 import { PrismaModule } from './prisma/prisma.module';
 
@@ -62,6 +64,7 @@ import { PrismaModule } from './prisma/prisma.module';
     PrismaModule,
     AuditModule,
     AuthModule,
+    DevicesModule,
     HealthModule,
   ],
   providers: [
@@ -72,6 +75,10 @@ import { PrismaModule } from './prisma/prisma.module';
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: DeviceGuard,
     },
     {
       provide: APP_GUARD,

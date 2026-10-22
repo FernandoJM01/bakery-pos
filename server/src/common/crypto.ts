@@ -1,5 +1,7 @@
-import { createHmac, randomBytes } from 'crypto';
+import { createHmac, randomBytes, randomInt } from 'crypto';
 import * as argon2 from 'argon2';
+
+export const ENROLLMENT_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 export const ARGON2_OPTIONS: argon2.HashOptions & { raw?: false } = {
   type: argon2.argon2id,
@@ -29,6 +31,19 @@ export async function getDummyArgon2Hash(): Promise<string> {
  */
 export function generateToken(): string {
   return randomBytes(32).toString('hex');
+}
+
+/**
+ * Generates an 8-character cryptographic random enrollment code.
+ * Alphabet: A-H, J-N, P-Z, 2-9 (32 unambiguous chars, excluding 0, O, 1, I).
+ */
+export function generateEnrollmentCode(): string {
+  let code = '';
+  for (let i = 0; i < 8; i++) {
+    code +=
+      ENROLLMENT_CODE_ALPHABET[randomInt(0, ENROLLMENT_CODE_ALPHABET.length)];
+  }
+  return code;
 }
 
 /**

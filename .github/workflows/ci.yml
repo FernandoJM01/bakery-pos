@@ -38,7 +38,8 @@ jobs:
           --health-cmd "pg_isready -U pos -d pos_test"
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
-      DATABASE_URL: postgres://pos:pos_ci_only@localhost:5432/pos_test
+      DATABASE_URL: postgres://pos_app:pos_app_ci_only@localhost:5432/pos_test
+      MIGRATION_DATABASE_URL: postgres://pos:pos_ci_only@localhost:5432/pos_test
       JWT_SECRET: ci-only-jwt-secret-not-for-production
       DEVICE_TOKEN_PEPPER: ci-only-pepper-not-for-production
     steps:
@@ -52,6 +53,10 @@ jobs:
       - run: npm run lint -- --max-warnings=0
       - run: npx tsc --noEmit
       - run: npm test -- --coverage
+      - name: Deploy migrations and enable pos_app login
+        run: |
+          DATABASE_URL=$MIGRATION_DATABASE_URL npx prisma migrate deploy
+          DATABASE_URL=$MIGRATION_DATABASE_URL node -e "const { PrismaClient } = require('@prisma/client'); const p = new PrismaClient(); p.\$executeRawUnsafe(\"ALTER ROLE pos_app WITH LOGIN PASSWORD 'pos_app_ci_only'\").then(() => p.\$disconnect());"
       - run: npm run test:e2e
       - run: npm audit --audit-level=high
 

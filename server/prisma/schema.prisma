@@ -145,6 +145,7 @@ model AuthSession {
   device Device? @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 
   @@index([staffId])
+  @@index([rotatedTokenHashes], type: Gin)
   @@map("auth_session")
 }
 
