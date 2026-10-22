@@ -45,6 +45,14 @@ class SessionLockManager extends ChangeNotifier {
   final DateTime Function() _clock;
   void Function()? onNavigateToLogin;
 
+  /// Reads the current location (set by main_till.dart from the router), so a
+  /// lock fired by the idle timer still remembers which screen to restore.
+  String? Function()? readCurrentRoute;
+
+  /// True only for a logged-in, unlocked session. The router uses this, so a
+  /// locked till cannot reach any till screen without the PIN.
+  bool get hasActiveSession => authService.currentSession != null && !_isLocked;
+
   DateTime _lastActivity = DateTime.now();
   Timer? _inactivityTimer;
   bool _isDisposed = false;
@@ -103,7 +111,7 @@ class SessionLockManager extends ChangeNotifier {
 
     _lockedUser = LockedUserState(
       staffId: session.staff.id,
-      route: currentRoute ?? '/till',
+      route: _restorableRoute(currentRoute ?? readCurrentRoute?.call()),
       lockedAt: _clock(),
       state: inMemoryState,
     );
@@ -155,4 +163,15 @@ class SessionLockManager extends ChangeNotifier {
     _inactivityTimer?.cancel();
     super.dispose();
   }
+}
+
+/// Login and enrollment are never restore targets.
+String _restorableRoute(String? route) {
+  if (route == null ||
+      route.isEmpty ||
+      route.startsWith('/login') ||
+      route.startsWith('/enrollment')) {
+    return '/till';
+  }
+  return route;
 }

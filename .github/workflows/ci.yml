@@ -72,6 +72,7 @@ jobs:
       - run: flutter analyze --fatal-infos
       - run: flutter test --coverage
       - run: flutter build web --release --target lib/main_backoffice.dart
+      - run: bash tool/check_web_bundle.sh
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

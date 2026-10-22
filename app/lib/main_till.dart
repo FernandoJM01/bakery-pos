@@ -54,18 +54,26 @@ class _TillAppRootState extends ConsumerState<TillAppRoot> {
   @override
   void initState() {
     super.initState();
-    ref.read(sessionLockManagerProvider).onNavigateToLogin = () {
+    final lockManager = ref.read(sessionLockManagerProvider);
+    lockManager.onNavigateToLogin = () {
       rootNavigatorKey.currentContext?.go(AppRoutes.tillLogin);
+    };
+    lockManager.readCurrentRoute = () {
+      final context = rootNavigatorKey.currentContext;
+      if (context == null) return null;
+      return GoRouter.of(context).routerDelegate.currentConfiguration.uri
+          .toString();
     };
   }
 
   @override
   Widget build(BuildContext context) {
     final authService = ref.watch(tillAuthServiceProvider);
+    final lockManager = ref.watch(sessionLockManagerProvider);
     return BakeryPosApp(
       mode: AppMode.till,
-      refreshListenable: authService,
-      hasSession: () => authService.currentSession != null,
+      refreshListenable: Listenable.merge([authService, lockManager]),
+      hasSession: () => lockManager.hasActiveSession,
       tillLoginBuilder: (context) => const TillLoginScreen(),
       tillHomeBuilder: (context) => const TillHomeScreen(),
       appWrapper: (context, child) =>

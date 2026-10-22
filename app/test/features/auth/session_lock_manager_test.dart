@@ -133,6 +133,45 @@ void main() {
       await db.close();
     });
 
+    test(
+      'an idle-timer lock remembers the current screen and blocks access',
+      () async {
+        await authService.loginWithPin(staff: staff1, pin: '1234');
+        final lockManager = SessionLockManager(
+          authService: authService,
+          clock: () => currentTime,
+        )..readCurrentRoute = () => '/till/sales?ticket=7';
+
+        expect(lockManager.hasActiveSession, isTrue);
+        currentTime = currentTime.add(const Duration(minutes: 2));
+        expect(lockManager.checkInactivity(), isTrue);
+
+        // The session still exists (held state) but is not usable while locked.
+        expect(authService.currentSession, isNotNull);
+        expect(lockManager.hasActiveSession, isFalse);
+        expect(lockManager.lockedRoute, '/till/sales?ticket=7');
+
+        expect(
+          lockManager.onLoginSuccess(staff: staff1),
+          '/till/sales?ticket=7',
+        );
+        expect(lockManager.hasActiveSession, isTrue);
+        lockManager.dispose();
+      },
+    );
+
+    test('login and enrollment are never restore targets', () async {
+      await authService.loginWithPin(staff: staff1, pin: '1234');
+      final lockManager = SessionLockManager(
+        authService: authService,
+        clock: () => currentTime,
+      )..readCurrentRoute = () => '/login';
+
+      lockManager.lockCurrentSession();
+      expect(lockManager.lockedRoute, '/till');
+      lockManager.dispose();
+    });
+
     test('auto-lock fires at 2:00 and not at 1:59', () async {
       await authService.loginWithPin(staff: staff1, pin: '1234');
       bool navigatedToLogin = false;
