@@ -26,6 +26,8 @@ describe('DevicesService', () => {
   let createDeviceMock: jest.Mock<Promise<unknown>, [unknown]>;
   let updateDeviceMock: jest.Mock<Promise<unknown>, [unknown]>;
   let updateManySessionMock: jest.Mock<Promise<unknown>, [unknown]>;
+  let updateManyDeviceMock: jest.Mock<Promise<unknown>, [unknown]>;
+  let findUniqueOrThrowDeviceMock: jest.Mock<Promise<unknown>, [unknown]>;
   let findManyStaffMock: jest.Mock<Promise<unknown>, [unknown]>;
   let createAuditLogMock: jest.Mock<Promise<unknown>, [unknown]>;
   let auditLogMock: jest.Mock<Promise<unknown>, [unknown]>;
@@ -50,6 +52,10 @@ describe('DevicesService', () => {
     createDeviceMock = jest.fn<Promise<unknown>, [unknown]>();
     updateDeviceMock = jest.fn<Promise<unknown>, [unknown]>();
     updateManySessionMock = jest.fn<Promise<unknown>, [unknown]>();
+    updateManyDeviceMock = jest
+      .fn<Promise<unknown>, [unknown]>()
+      .mockResolvedValue({ count: 1 });
+    findUniqueOrThrowDeviceMock = jest.fn<Promise<unknown>, [unknown]>();
     findManyStaffMock = jest.fn<Promise<unknown>, [unknown]>();
     createAuditLogMock = jest.fn<Promise<unknown>, [unknown]>();
     auditLogMock = jest.fn<Promise<unknown>, [unknown]>();
@@ -63,6 +69,8 @@ describe('DevicesService', () => {
         findFirst: findFirstDeviceMock,
         create: createDeviceMock,
         update: updateDeviceMock,
+        updateMany: updateManyDeviceMock,
+        findUniqueOrThrow: findUniqueOrThrowDeviceMock,
       },
       authSession: {
         updateMany: updateManySessionMock,
@@ -218,15 +226,12 @@ describe('DevicesService', () => {
       };
 
       findFirstDeviceMock.mockResolvedValue(pendingDevice);
-      updateDeviceMock.mockImplementation(
-        ({ data }: { data: Record<string, unknown> }): Promise<Device> =>
-          Promise.resolve({
-            ...pendingDevice,
-            ...data,
-            status: DeviceStatus.ACTIVE,
-            branch: mockBranch,
-          } as unknown as Device),
-      );
+      findUniqueOrThrowDeviceMock.mockResolvedValue({
+        ...pendingDevice,
+        status: DeviceStatus.ACTIVE,
+        enrollmentCodeHash: null,
+        branch: mockBranch,
+      });
 
       const res = await service.activateDevice({
         enrollmentCode: code,
@@ -242,6 +247,36 @@ describe('DevicesService', () => {
       };
       expect(auditArg.data.action).toBe('device.activated');
       expect(auditArg.data.deviceId).toBe(deviceId);
+
+      // The claim is conditional on the code still being unused.
+      const claimArg = updateManyDeviceMock.mock.calls[0][0] as {
+        where: { id: string; enrollmentCodeHash: string; status: string };
+      };
+      expect(claimArg.where).toEqual({
+        id: deviceId,
+        enrollmentCodeHash: codeHash,
+        status: DeviceStatus.PENDING,
+      });
+    });
+
+    it('throws 410 when a concurrent activation already claimed the code', async () => {
+      const code = 'ABCDEFGH';
+      const baseTime = new Date('2026-10-21T10:00:00Z');
+      clock.setNow(baseTime);
+      findFirstDeviceMock.mockResolvedValue({
+        id: uuidv7(),
+        branchId: mockBranch.id,
+        status: DeviceStatus.PENDING,
+        enrollmentCodeHash: hashTokenWithPepper(code, pepper),
+        enrollmentExpiresAt: new Date(baseTime.getTime() + 60_000),
+        branch: mockBranch,
+      });
+      updateManyDeviceMock.mockResolvedValue({ count: 0 });
+
+      await expect(
+        service.activateDevice({ enrollmentCode: code, appVersion: '1.0.0' }),
+      ).rejects.toThrow(HttpException);
+      expect(createAuditLogMock).not.toHaveBeenCalled();
     });
 
     it('throws 410 DEVICE_CODE_INVALID when code is expired or invalid', async () => {

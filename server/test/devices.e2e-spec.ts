@@ -456,4 +456,32 @@ describe('Devices & Enrollment (e2e)', () => {
     expect(actions).toContain('device.activated');
     expect(actions).toContain('device.revoked');
   });
+
+  it('A7: two simultaneous activations with one code: exactly one succeeds', async () => {
+    clock.setNow(null);
+    const createRes = await request(server)
+      .post('/v1/devices')
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({ branchId, name: 'Till race', type: DeviceType.TILL });
+    expect(createRes.status).toBe(201);
+    const code = getBody(createRes).enrollmentCode!;
+
+    const results = await Promise.all(
+      [1, 2].map(() =>
+        request(server)
+          .post('/v1/devices/activate')
+          .send({ enrollmentCode: code, appVersion: '1.0.0' }),
+      ),
+    );
+
+    expect(results.map((r) => r.status).sort()).toEqual([200, 410]);
+    const winner = results.find((r) => r.status === 200)!;
+    const token = getBody(winner).deviceToken!;
+
+    // The winner's token is the one stored, so it works.
+    const bundleRes = await request(server)
+      .get('/v1/devices/me/staff')
+      .set('X-Device-Token', token);
+    expect(bundleRes.status).toBe(200);
+  });
 });

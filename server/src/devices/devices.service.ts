@@ -181,8 +181,14 @@ export class DevicesService {
     const tokenHash = hashTokenWithPepper(deviceToken, this.pepper);
 
     const updated = await this.prisma.$transaction(async (tx) => {
-      const d = await tx.device.update({
-        where: { id: device.id },
+      // Conditional on the code still being unused, so two concurrent
+      // activations with one code cannot both succeed (single use, A7).
+      const claimed = await tx.device.updateMany({
+        where: {
+          id: device.id,
+          enrollmentCodeHash: codeHash,
+          status: DeviceStatus.PENDING,
+        },
         data: {
           status: DeviceStatus.ACTIVE,
           tokenHash,
@@ -191,6 +197,18 @@ export class DevicesService {
           appVersion: dto.appVersion,
           lastSeenAt: now,
         },
+      });
+      if (claimed.count !== 1) {
+        throw new HttpException(
+          {
+            code: 'DEVICE_CODE_INVALID',
+            message: 'Enrollment code is invalid, used, or expired',
+          },
+          HttpStatus.GONE,
+        );
+      }
+      const d = await tx.device.findUniqueOrThrow({
+        where: { id: device.id },
         include: { branch: true },
       });
 
@@ -226,6 +244,11 @@ export class DevicesService {
         code: 'NOT_FOUND',
         message: 'Device not found',
       });
+    }
+
+    // Revoking twice must not move revokedAt or write a second audit row.
+    if (device.status === DeviceStatus.REVOKED) {
+      return serializeDevice(device);
     }
 
     const now = this.clock.now();
