@@ -8,10 +8,11 @@ import {
   ParseUUIDPipe,
   Post,
   Query,
-  Req,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Device } from '@prisma/client';
+import type { AuthenticatedUser } from '../auth/interfaces/auth.interface';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { CurrentDevice } from './decorators/current-device.decorator';
@@ -20,15 +21,6 @@ import { DevicesService } from './devices.service';
 import { ActivateDeviceDto } from './dto/activate-device.dto';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { ListDevicesQueryDto } from './dto/list-devices-query.dto';
-
-interface RequestWithUser {
-  user: {
-    sub: string;
-    sid: string;
-    branchIds: string[];
-    did?: string;
-  };
-}
 
 @Controller('devices')
 export class DevicesController {
@@ -45,9 +37,9 @@ export class DevicesController {
   @RequirePermission('devices.manage')
   async createDevice(
     @Body() dto: CreateDeviceDto,
-    @Req() req: RequestWithUser,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.devicesService.createDevice(dto, req.user.sub);
+    return this.devicesService.createDevice(dto, user.staffId);
   }
 
   @Post('activate')
@@ -79,8 +71,8 @@ export class DevicesController {
   @RequirePermission('devices.manage')
   async revokeDevice(
     @Param('deviceId', ParseUUIDPipe) deviceId: string,
-    @Req() req: RequestWithUser,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.devicesService.revokeDevice(deviceId, req.user.sub);
+    return this.devicesService.revokeDevice(deviceId, user.staffId);
   }
 }

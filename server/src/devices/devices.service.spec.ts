@@ -153,6 +153,24 @@ describe('DevicesService', () => {
         ),
       ).rejects.toThrow(BadRequestException);
     });
+
+    it('throws BadRequestException if branch is inactive', async () => {
+      findUniqueBranchMock.mockResolvedValue({
+        ...mockBranch,
+        isActive: false,
+      });
+
+      await expect(
+        service.createDevice(
+          {
+            branchId: mockBranch.id,
+            name: 'Caja Inactiva',
+            type: DeviceType.TILL,
+          },
+          uuidv7(),
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
   });
 
   describe('regenerateEnrollmentCode', () => {
@@ -282,6 +300,37 @@ describe('DevicesService', () => {
     it('throws 410 DEVICE_CODE_INVALID when code is expired or invalid', async () => {
       const code = 'ABCDEFGH';
       findFirstDeviceMock.mockResolvedValue(null);
+
+      await expect(
+        service.activateDevice({
+          enrollmentCode: code,
+          appVersion: '1.0.0',
+        }),
+      ).rejects.toThrow(
+        new HttpException(
+          {
+            code: 'DEVICE_CODE_INVALID',
+            message: 'Enrollment code is invalid, used, or expired',
+          },
+          HttpStatus.GONE,
+        ),
+      );
+    });
+
+    it('throws 410 DEVICE_CODE_INVALID when device branch is inactive', async () => {
+      const code = 'ABCDEFGH';
+      const codeHash = hashTokenWithPepper(code, pepper);
+      const baseTime = new Date('2026-10-21T10:00:00Z');
+      clock.setNow(baseTime);
+
+      findFirstDeviceMock.mockResolvedValue({
+        id: uuidv7(),
+        branchId: mockBranch.id,
+        status: DeviceStatus.PENDING,
+        enrollmentCodeHash: codeHash,
+        enrollmentExpiresAt: new Date(baseTime.getTime() + 10 * 60 * 1000),
+        branch: { ...mockBranch, isActive: false },
+      });
 
       await expect(
         service.activateDevice({

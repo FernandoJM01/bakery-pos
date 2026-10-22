@@ -51,6 +51,7 @@ describe('Devices & Enrollment (e2e)', () => {
   let clock: ClockService;
 
   let branchId: string;
+  let ownerStaffId: string;
   let ownerToken: string;
   let cashierToken: string;
 
@@ -82,7 +83,7 @@ describe('Devices & Enrollment (e2e)', () => {
     // Create owner staff
     const ownerPassHash = await hashPassword(ownerPassword);
     const ownerPinHashes = await hashPin('1111');
-    await prisma.staff.upsert({
+    const owner = await prisma.staff.upsert({
       where: { email: ownerEmail },
       update: {
         passwordHash: ownerPassHash,
@@ -104,6 +105,7 @@ describe('Devices & Enrollment (e2e)', () => {
         staffBranches: { create: [{ branchId }] },
       },
     });
+    ownerStaffId = owner.id;
 
     // Create cashier staff
     const cashierPassHash = await hashPassword(cashierPassword);
@@ -211,6 +213,18 @@ describe('Devices & Enrollment (e2e)', () => {
     expect(jsonStr).not.toContain('Hash');
     expect(jsonStr).not.toContain('pinHash');
     expect(jsonStr).not.toContain('passwordHash');
+
+    // Verify creator is recorded as ownerStaffId
+    const dbDevice = await prisma.device.findUnique({
+      where: { id: body.device!.id },
+    });
+    expect(dbDevice?.createdBy).toBe(ownerStaffId);
+
+    // Verify audit log recorded actorStaffId as ownerStaffId
+    const createAudit = await prisma.auditLog.findFirst({
+      where: { action: 'device.created', deviceId: body.device!.id },
+    });
+    expect(createAudit?.actorStaffId).toBe(ownerStaffId);
   });
 
   it('GET /v1/devices lists devices and supports branchId filtering', async () => {
@@ -442,9 +456,35 @@ describe('Devices & Enrollment (e2e)', () => {
     expect(session?.revokedAt).not.toBeNull();
   });
 
-  it('records audit rows for device.created, device.activated, and device.revoked', async () => {
+  it('records audit rows for device.created, device.activated, and device.revoked with proper actors', async () => {
+    const createRes = await request(server)
+      .post('/v1/devices')
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({
+        branchId,
+        name: 'Audit Actor Till',
+        type: DeviceType.TILL,
+      });
+    expect(createRes.status).toBe(201);
+    const testDeviceId = getBody(createRes).device!.id;
+    const code = getBody(createRes).enrollmentCode!;
+
+    const activateRes = await request(server)
+      .post('/v1/devices/activate')
+      .send({
+        enrollmentCode: code,
+        appVersion: '1.0.0',
+      });
+    expect(activateRes.status).toBe(200);
+
+    const revokeRes = await request(server)
+      .post(`/v1/devices/${testDeviceId}/revoke`)
+      .set('Authorization', `Bearer ${ownerToken}`);
+    expect(revokeRes.status).toBe(200);
+
     const auditRows = await prisma.auditLog.findMany({
       where: {
+        deviceId: testDeviceId,
         action: {
           in: ['device.created', 'device.activated', 'device.revoked'],
         },
@@ -455,6 +495,81 @@ describe('Devices & Enrollment (e2e)', () => {
     expect(actions).toContain('device.created');
     expect(actions).toContain('device.activated');
     expect(actions).toContain('device.revoked');
+
+    const createdRows = auditRows.filter((r) => r.action === 'device.created');
+    expect(createdRows).toHaveLength(1);
+    expect(createdRows[0].actorStaffId).toBe(ownerStaffId);
+
+    const revokedRows = auditRows.filter((r) => r.action === 'device.revoked');
+    expect(revokedRows).toHaveLength(1);
+    expect(revokedRows[0].actorStaffId).toBe(ownerStaffId);
+
+    const activatedRows = auditRows.filter(
+      (r) => r.action === 'device.activated',
+    );
+    expect(activatedRows).toHaveLength(1);
+    expect(activatedRows[0].actorStaffId).toBeNull();
+  });
+
+  it('refuses to create a device in an inactive branch (VALIDATION_FAILED)', async () => {
+    const inactiveBranch = await prisma.branch.upsert({
+      where: { code: 'INACT' },
+      update: { isActive: false },
+      create: {
+        id: uuidv7(),
+        code: 'INACT',
+        name: 'Sucursal Inactiva',
+        timezone: 'America/Mexico_City',
+        isActive: false,
+      },
+    });
+
+    const res = await request(server)
+      .post('/v1/devices')
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({
+        branchId: inactiveBranch.id,
+        name: 'Caja Inactiva',
+        type: DeviceType.TILL,
+      });
+
+    expect(res.status).toBe(400);
+    expect(getBody(res).code).toBe('VALIDATION_FAILED');
+  });
+
+  it('refuses to activate a device in an inactive branch (DEVICE_CODE_INVALID)', async () => {
+    // Create device while branch is active
+    const createRes = await request(server)
+      .post('/v1/devices')
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({
+        branchId,
+        name: 'Till Inactive Branch Test',
+        type: DeviceType.TILL,
+      });
+    expect(createRes.status).toBe(201);
+    const code = getBody(createRes).enrollmentCode!;
+
+    // Deactivate the branch
+    await prisma.branch.update({
+      where: { id: branchId },
+      data: { isActive: false },
+    });
+
+    try {
+      const activateRes = await request(server)
+        .post('/v1/devices/activate')
+        .send({ enrollmentCode: code, appVersion: '1.0.0' });
+
+      expect(activateRes.status).toBe(410);
+      expect(getBody(activateRes).code).toBe('DEVICE_CODE_INVALID');
+    } finally {
+      // Restore branch to active
+      await prisma.branch.update({
+        where: { id: branchId },
+        data: { isActive: true },
+      });
+    }
   });
 
   it('A7: two simultaneous activations with one code: exactly one succeeds', async () => {

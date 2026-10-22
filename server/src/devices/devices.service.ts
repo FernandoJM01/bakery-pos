@@ -73,10 +73,10 @@ export class DevicesService {
     const branch = await this.prisma.branch.findUnique({
       where: { id: dto.branchId },
     });
-    if (!branch) {
+    if (!branch || !branch.isActive) {
       throw new BadRequestException({
         code: 'VALIDATION_FAILED',
-        message: 'Branch not found',
+        message: 'Branch not found or inactive',
       });
     }
 
@@ -166,7 +166,8 @@ export class DevicesService {
     if (
       !device ||
       !device.enrollmentExpiresAt ||
-      device.enrollmentExpiresAt < now
+      device.enrollmentExpiresAt < now ||
+      !device.branch.isActive
     ) {
       throw new HttpException(
         {
