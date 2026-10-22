@@ -1,5 +1,7 @@
 import '../../../core/storage/local_database.dart';
 
+export 'till_auth_exceptions.dart';
+
 class TillSession {
   const TillSession({
     required this.staff,
@@ -16,26 +18,23 @@ class TillSession {
   final DateTime? accessTokenExpiresAt;
 
   bool hasPermission(String permission) => permissions.contains(permission);
-}
 
-sealed class TillAuthException implements Exception {
-  const TillAuthException();
-}
-
-class TillAuthInvalidPinException extends TillAuthException {
-  const TillAuthInvalidPinException();
-}
-
-class TillAuthNotAllowedException extends TillAuthException {
-  const TillAuthNotAllowedException();
-}
-
-class TillAuthLockoutException extends TillAuthException {
-  const TillAuthLockoutException(this.lockedUntil);
-  final DateTime lockedUntil;
-}
-
-class TillAuthGenericException extends TillAuthException {
-  const TillAuthGenericException(this.message);
-  final String message;
+  TillSession copyWith({
+    StaffEntry? staff,
+    List<String>? permissions,
+    bool? isOffline,
+    String? accessToken,
+    DateTime? accessTokenExpiresAt,
+    bool clearAccessToken = false,
+  }) {
+    return TillSession(
+      staff: staff ?? this.staff,
+      permissions: permissions ?? this.permissions,
+      isOffline: isOffline ?? this.isOffline,
+      accessToken: clearAccessToken ? null : (accessToken ?? this.accessToken),
+      accessTokenExpiresAt: clearAccessToken
+          ? null
+          : (accessTokenExpiresAt ?? this.accessTokenExpiresAt),
+    );
+  }
 }

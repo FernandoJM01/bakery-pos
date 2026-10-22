@@ -22,15 +22,15 @@ class StaffSyncService {
   StaffSyncService({
     required this.restClient,
     required this.database,
-    this.authService,
+    required this.authService,
   });
 
   final RestClient restClient;
   final AppDatabase database;
-  final TillAuthService? authService;
+  final TillAuthService authService;
 
   Future<int> syncStaffBundle() async {
-    if (authService?.currentSession?.isOffline == true) {
+    if (authService.currentSession?.isOffline == true) {
       throw const TillAuthGenericException('Online re-authentication required');
     }
     final bundle = await restClient.devices.getDeviceStaffBundle();

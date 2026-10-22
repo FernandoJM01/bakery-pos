@@ -118,9 +118,6 @@ void main() {
       lockManager = SessionLockManager(
         authService: authService,
         clock: () => currentTime,
-        onNavigateToLogin: () {
-          rootNavigatorKey.currentContext?.go(AppRoutes.tillLogin);
-        },
       );
 
       await db.replaceStaffBundle(

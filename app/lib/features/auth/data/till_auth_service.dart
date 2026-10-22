@@ -9,17 +9,20 @@ import '../../../core/api/api_client_provider.dart';
 import '../../../core/api/generated/models/pin_login_request.dart';
 import '../../../core/api/generated/models/refresh_request.dart';
 import '../../../core/api/generated/rest_client.dart';
+import '../../../core/api/till_auth_interceptor.dart';
 import '../../../core/storage/local_database.dart';
 import '../../../core/storage/secure_storage.dart';
 import '../domain/offline_pin_verifier.dart';
 import '../domain/till_auth_state.dart';
 
 final tillAuthServiceProvider = Provider<TillAuthService>((ref) {
+  final dio = ref.watch(dioProvider);
   final restClient = ref.watch(restClientProvider);
   final database = ref.watch(tillDatabaseProvider);
   final secureStorage = ref.watch(secureStorageProvider);
   final service = TillAuthService(
     restClient: restClient,
+    dio: dio,
     database: database,
     secureStorage: secureStorage,
     verifier: const OfflinePinVerifier(),
@@ -72,20 +75,34 @@ class TillSessionNotifier extends Notifier<TillSession?> {
 class TillAuthService extends ChangeNotifier {
   TillAuthService({
     required this.restClient,
+    this.dio,
     required this.database,
     required this.secureStorage,
     this.verifier = const OfflinePinVerifier(),
     DateTime Function()? clock,
-  }) : _clock = clock ?? DateTime.now;
+  }) : _clock = clock ?? DateTime.now {
+    if (dio != null) {
+      _authInterceptor = TillAuthInterceptor(
+        dio: dio!,
+        getAccessToken: () => _currentSession?.accessToken,
+        isSessionOffline: () => _currentSession?.isOffline ?? false,
+        refreshAccessToken: silentRefresh,
+      );
+      dio!.interceptors.insert(0, _authInterceptor!);
+    }
+  }
 
   final RestClient restClient;
+  final Dio? dio;
   final AppDatabase database;
   final SecureStorageService secureStorage;
   final OfflinePinVerifier verifier;
   final DateTime Function() _clock;
 
+  TillAuthInterceptor? _authInterceptor;
   TillSession? _currentSession;
   Timer? _refreshTimer;
+  Completer<String?>? _refreshCompleter;
 
   TillSession? get currentSession => _currentSession;
 
@@ -93,6 +110,11 @@ class TillAuthService extends ChangeNotifier {
     required StaffEntry staff,
     required String pin,
   }) async {
+    // If a different user is logging in, log out the previous user first
+    if (_currentSession != null && _currentSession!.staff.id != staff.id) {
+      await logout();
+    }
+
     final now = _clock();
 
     // Check active local lockout
@@ -210,6 +232,20 @@ class TillAuthService extends ChangeNotifier {
     return session;
   }
 
+  void pauseForLock() {
+    _refreshTimer?.cancel();
+    if (_currentSession != null) {
+      _currentSession = _currentSession!.copyWith(clearAccessToken: true);
+      notifyListeners();
+    }
+  }
+
+  void clearLocalSession() {
+    _refreshTimer?.cancel();
+    _currentSession = null;
+    notifyListeners();
+  }
+
   void _scheduleSilentRefresh(DateTime expiresAt) {
     _refreshTimer?.cancel();
     final now = _clock();
@@ -221,13 +257,19 @@ class TillAuthService extends ChangeNotifier {
     });
   }
 
-  Future<void> silentRefresh() async {
-    if (_currentSession == null || _currentSession!.isOffline) return;
+  Future<String?> silentRefresh() async {
+    if (_refreshCompleter != null) {
+      return _refreshCompleter!.future;
+    }
+    if (_currentSession == null || _currentSession!.isOffline) return null;
     final token = await secureStorage.getRefreshToken();
     if (token == null) {
       await logout();
-      return;
+      return null;
     }
+
+    final completer = Completer<String?>();
+    _refreshCompleter = completer;
 
     try {
       final res = await restClient.auth.refreshToken(
@@ -243,11 +285,20 @@ class TillAuthService extends ChangeNotifier {
       );
       _scheduleSilentRefresh(res.accessTokenExpiresAt);
       notifyListeners();
+      completer.complete(res.accessToken);
+      return res.accessToken;
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
         await logout();
       }
-    } catch (_) {}
+      completer.complete(null);
+      return null;
+    } catch (_) {
+      completer.complete(null);
+      return null;
+    } finally {
+      _refreshCompleter = null;
+    }
   }
 
   Future<TillSession> reauthenticateOnline(String pin) async {
@@ -268,9 +319,13 @@ class TillAuthService extends ChangeNotifier {
     _refreshTimer?.cancel();
     if (_currentSession != null && !_currentSession!.isOffline) {
       try {
+        if (_currentSession!.accessToken == null) {
+          await silentRefresh();
+        }
         await restClient.auth.logout();
       } catch (_) {}
     }
+    _refreshTimer?.cancel();
     _currentSession = null;
     await secureStorage.deleteRefreshToken();
     notifyListeners();
@@ -283,6 +338,9 @@ class TillAuthService extends ChangeNotifier {
     if (_isDisposed) return;
     _isDisposed = true;
     _refreshTimer?.cancel();
+    if (_authInterceptor != null && dio != null) {
+      dio!.interceptors.remove(_authInterceptor);
+    }
     super.dispose();
   }
 }

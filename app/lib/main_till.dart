@@ -35,6 +35,8 @@ Future<void> main() async {
             ref.invalidate(tillDatabaseProvider);
             await AppDatabase.deleteDatabaseFile();
             await ref.read(secureStorageProvider).clearAll();
+            ref.read(tillAuthServiceProvider).clearLocalSession();
+            ref.read(sessionLockManagerProvider).clearLockedState();
           };
         }),
       ],
@@ -55,9 +57,6 @@ class _TillAppRootState extends ConsumerState<TillAppRoot> {
   void initState() {
     super.initState();
     final lockManager = ref.read(sessionLockManagerProvider);
-    lockManager.onNavigateToLogin = () {
-      rootNavigatorKey.currentContext?.go(AppRoutes.tillLogin);
-    };
     lockManager.readCurrentRoute = () {
       final context = rootNavigatorKey.currentContext;
       if (context == null) return null;

@@ -6,8 +6,44 @@ import 'package:bakery_pos/features/auth/data/till_auth_service.dart';
 import 'package:bakery_pos/features/auth/domain/session_lock_manager.dart';
 import 'package:dio/dio.dart';
 import 'package:drift/native.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+class _TestCartNotifier extends Notifier<List<String>> {
+  @override
+  List<String> build() => [];
+
+  void setItems(List<String> items) => state = List.from(items);
+}
+
+class TestStopwatch implements Stopwatch {
+  Duration _elapsed = Duration.zero;
+  bool _running = false;
+
+  void advance(Duration d) {
+    if (_running) _elapsed += d;
+  }
+
+  @override
+  Duration get elapsed => _elapsed;
+  @override
+  int get elapsedMilliseconds => _elapsed.inMilliseconds;
+  @override
+  int get elapsedMicroseconds => _elapsed.inMicroseconds;
+  @override
+  int get elapsedTicks => _elapsed.inMicroseconds;
+  @override
+  int get frequency => 1000000;
+  @override
+  bool get isRunning => _running;
+  @override
+  void reset() => _elapsed = Duration.zero;
+  @override
+  void start() => _running = true;
+  @override
+  void stop() => _running = false;
+}
 
 class _FakeSecureStorage extends Fake implements FlutterSecureStorage {
   final Map<String, String> values = {};
@@ -174,39 +210,97 @@ void main() {
 
     test('auto-lock fires at 2:00 and not at 1:59', () async {
       await authService.loginWithPin(staff: staff1, pin: '1234');
-      bool navigatedToLogin = false;
+      final stopwatch = TestStopwatch();
 
       final lockManager = SessionLockManager(
         authService: authService,
         clock: () => currentTime,
-        onNavigateToLogin: () => navigatedToLogin = true,
+        stopwatch: stopwatch,
       );
 
       // Advance by 1 minute 59 seconds: should NOT lock
       currentTime = currentTime.add(const Duration(minutes: 1, seconds: 59));
+      stopwatch.advance(const Duration(minutes: 1, seconds: 59));
       expect(lockManager.checkInactivity(), isFalse);
       expect(lockManager.isLocked, isFalse);
-      expect(navigatedToLogin, isFalse);
+      expect(lockManager.hasActiveSession, isTrue);
 
       // Advance by 1 more second (total 2:00): MUST lock
       currentTime = currentTime.add(const Duration(seconds: 1));
+      stopwatch.advance(const Duration(seconds: 1));
       expect(lockManager.checkInactivity(), isTrue);
       expect(lockManager.isLocked, isTrue);
+      expect(lockManager.hasActiveSession, isFalse);
       expect(lockManager.lockedStaffId, staff1.id);
-      expect(navigatedToLogin, isTrue);
 
       lockManager.dispose();
     });
 
-    test('user activity resets inactivity countdown', () async {
+    testWidgets(
+      'fakeAsync test that drives the real Timer: elapse(1:59) does not lock, elapse(0:01) locks',
+      (tester) async {
+        await tester.runAsync(() async {
+          await authService.loginWithPin(staff: staff1, pin: '1234');
+        });
+
+        final stopwatch = TestStopwatch();
+        final lockManager = SessionLockManager(
+          authService: authService,
+          clock: () => currentTime,
+          stopwatch: stopwatch,
+        );
+
+        lockManager.recordActivity();
+        expect(lockManager.isLocked, isFalse);
+
+        // Elapse 1 minute 59 seconds
+        stopwatch.advance(const Duration(minutes: 1, seconds: 59));
+        currentTime = currentTime.add(const Duration(minutes: 1, seconds: 59));
+        await tester.pump(const Duration(minutes: 1, seconds: 59));
+        expect(lockManager.isLocked, isFalse);
+
+        // Elapse remaining 1 second (total 2:00)
+        stopwatch.advance(const Duration(seconds: 1));
+        currentTime = currentTime.add(const Duration(seconds: 1));
+        await tester.pump(const Duration(seconds: 1));
+        expect(lockManager.isLocked, isTrue);
+
+        lockManager.dispose();
+      },
+    );
+
+    test('switch user restores to the exact same screen when the same user logs back in', () async {
       await authService.loginWithPin(staff: staff1, pin: '1234');
       final lockManager = SessionLockManager(
         authService: authService,
         clock: () => currentTime,
       );
 
+      // Switch user from /till/sales?ticket=42
+      lockManager.lockCurrentSession(currentRoute: '/till/sales?ticket=42');
+      expect(lockManager.isLocked, isTrue);
+      expect(lockManager.lockedRoute, '/till/sales?ticket=42');
+
+      // Same user (Carlos) logs back in
+      final destination = lockManager.onLoginSuccess(staff: staff1);
+      expect(destination, '/till/sales?ticket=42');
+      expect(lockManager.isLocked, isFalse);
+
+      lockManager.dispose();
+    });
+
+    test('user activity resets inactivity countdown', () async {
+      await authService.loginWithPin(staff: staff1, pin: '1234');
+      final stopwatch = TestStopwatch();
+      final lockManager = SessionLockManager(
+        authService: authService,
+        clock: () => currentTime,
+        stopwatch: stopwatch,
+      );
+
       // Advance to 1:30
       currentTime = currentTime.add(const Duration(minutes: 1, seconds: 30));
+      stopwatch.advance(const Duration(minutes: 1, seconds: 30));
       expect(lockManager.checkInactivity(), isFalse);
 
       // Touch / key activity occurs
@@ -214,11 +308,13 @@ void main() {
 
       // Advance by another 1:30 (total 3:00 from start, but 1:30 from activity)
       currentTime = currentTime.add(const Duration(minutes: 1, seconds: 30));
+      stopwatch.advance(const Duration(minutes: 1, seconds: 30));
       expect(lockManager.checkInactivity(), isFalse);
       expect(lockManager.isLocked, isFalse);
 
       // Advance 31 more seconds (now 2:01 since activity) -> locks
       currentTime = currentTime.add(const Duration(seconds: 31));
+      stopwatch.advance(const Duration(seconds: 31));
       expect(lockManager.checkInactivity(), isTrue);
       expect(lockManager.isLocked, isTrue);
 
@@ -294,6 +390,125 @@ void main() {
       // Discarded! Starts fresh at /till
       expect(destination, '/till');
       expect(lockManager.savedState, isEmpty);
+      expect(lockManager.lockedStaffId, isNull);
+
+      lockManager.dispose();
+    });
+
+    test(
+      'when a different user logs in, user A is logged out on the server first',
+      () async {
+        await authService.loginWithPin(staff: staff1, pin: '1234');
+        expect(authService.currentSession?.staff.id, staff1.id);
+
+        final lockManager = SessionLockManager(
+          authService: authService,
+          clock: () => currentTime,
+        );
+        lockManager.lockCurrentSession(currentRoute: '/till/sales');
+
+        // Now user B logs in: loginWithPin logs out user A first
+        await authService.loginWithPin(staff: staff2, pin: '1234');
+        expect(authService.currentSession?.staff.id, staff2.id);
+
+        final destination = lockManager.onLoginSuccess(staff: staff2);
+        expect(destination, '/till');
+        expect(lockManager.lockedStaffId, isNull);
+
+        lockManager.dispose();
+      },
+    );
+
+    testWidgets('30-minute state hold timer automatically logs out user A', (
+      tester,
+    ) async {
+      await tester.runAsync(() async {
+        await authService.loginWithPin(staff: staff1, pin: '1234');
+      });
+
+      final lockManager = SessionLockManager(
+        authService: authService,
+        clock: () => currentTime,
+      );
+
+      lockManager.lockCurrentSession(currentRoute: '/till/sales');
+      expect(lockManager.isLocked, isTrue);
+
+      // Advance 30 minutes
+      currentTime = currentTime.add(const Duration(minutes: 30));
+      await tester.pump(const Duration(minutes: 30));
+
+      expect(lockManager.lockedStaffId, isNull);
+      expect(lockManager.isLocked, isFalse);
+      expect(authService.currentSession, isNull);
+
+      lockManager.dispose();
+    });
+
+    test(
+      'user B does not see user A provider state on switch user or 30m timeout',
+      () async {
+        final dummyCartProvider =
+            NotifierProvider<_TestCartNotifier, List<String>>(
+              _TestCartNotifier.new,
+            );
+        void resetCallback(Ref ref) => ref.invalidate(dummyCartProvider);
+        userScopedResetCallbacks.add(resetCallback);
+
+        final container = ProviderContainer(
+          overrides: [tillAuthServiceProvider.overrideWithValue(authService)],
+        );
+
+        final manager = container.read(sessionLockManagerProvider);
+
+        await authService.loginWithPin(staff: staff1, pin: '1234');
+        container.read(dummyCartProvider.notifier).setItems([
+          'concha',
+          'bolillo',
+        ]);
+        expect(container.read(dummyCartProvider), ['concha', 'bolillo']);
+
+        // Switch user
+        manager.lockCurrentSession(currentRoute: '/till');
+
+        // User B logs in
+        await authService.loginWithPin(staff: staff2, pin: '1234');
+        manager.onLoginSuccess(staff: staff2);
+
+        // User B sees empty cart
+        expect(container.read(dummyCartProvider), isEmpty);
+
+        // User B adds an item
+        container.read(dummyCartProvider.notifier).setItems(['pastel']);
+        expect(container.read(dummyCartProvider), ['pastel']);
+
+        // Lock User B
+        manager.lockCurrentSession(currentRoute: '/till');
+
+        // Discard state via clearLockedState
+        manager.clearLockedState();
+        expect(container.read(dummyCartProvider), isEmpty);
+
+        container.dispose();
+        userScopedResetCallbacks.remove(resetCallback);
+      },
+    );
+
+    test('clearing session automatically clears held locked state', () async {
+      await authService.loginWithPin(staff: staff1, pin: '1234');
+      final lockManager = SessionLockManager(
+        authService: authService,
+        clock: () => currentTime,
+      );
+
+      lockManager.lockCurrentSession(currentRoute: '/till/sales');
+      expect(lockManager.isLocked, isTrue);
+      expect(lockManager.lockedStaffId, staff1.id);
+
+      // Session ends (e.g. logout or refresh fail)
+      await authService.logout();
+
+      expect(lockManager.isLocked, isFalse);
       expect(lockManager.lockedStaffId, isNull);
 
       lockManager.dispose();

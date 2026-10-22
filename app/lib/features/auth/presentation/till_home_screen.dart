@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimensions.dart';
@@ -9,9 +10,7 @@ import '../data/till_auth_service.dart';
 import '../domain/session_lock_manager.dart';
 
 class TillHomeScreen extends ConsumerWidget {
-  const TillHomeScreen({super.key, this.routeName = 'till-home'});
-
-  final String routeName;
+  const TillHomeScreen({super.key});
 
   Future<void> _handleSync(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
@@ -82,12 +81,10 @@ class TillHomeScreen extends ConsumerWidget {
                     AppDimensions.radiusMedium,
                   ),
                   onTap: () {
-                    final normalizedRoute = routeName.startsWith('/')
-                        ? routeName
-                        : '/$routeName';
+                    final uri = GoRouterState.of(context).uri.toString();
                     ref
                         .read(sessionLockManagerProvider)
-                        .lockCurrentSession(currentRoute: normalizedRoute);
+                        .lockCurrentSession(currentRoute: uri);
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -153,7 +150,7 @@ class TillHomeScreen extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    routeName,
+                    l10n.appTitle,
                     key: const Key('mode-label'),
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),

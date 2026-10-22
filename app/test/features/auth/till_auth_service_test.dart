@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bakery_pos/core/api/api_client_provider.dart';
 import 'package:bakery_pos/core/api/fake/fake_api_interceptor.dart';
 import 'package:bakery_pos/core/api/generated/rest_client.dart';
+import 'package:bakery_pos/core/api/till_auth_interceptor.dart';
 import 'package:bakery_pos/core/storage/local_database.dart';
 import 'package:bakery_pos/core/storage/secure_storage.dart';
 import 'package:bakery_pos/features/auth/data/till_auth_service.dart';
@@ -612,6 +613,7 @@ void main() {
 
     test('logout calls POST /v1/auth/logout and clears tokens', () async {
       bool logoutEndpointCalled = false;
+      String? capturedAuthHeader;
       final logoutDio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'))
         ..interceptors.add(
           InterceptorsWrapper(
@@ -619,6 +621,61 @@ void main() {
               if (options.path.endsWith('/v1/auth/logout') &&
                   options.method == 'POST') {
                 logoutEndpointCalled = true;
+                capturedAuthHeader =
+                    options.headers['Authorization'] as String?;
+              }
+              handler.next(options);
+            },
+          ),
+        )
+        ..interceptors.add(FakeApiInterceptor());
+
+      final auth = TillAuthService(
+        restClient: RestClient(logoutDio),
+        dio: logoutDio,
+        database: db,
+        secureStorage: secureStorage,
+        clock: () => currentTime,
+      );
+
+      final session = await auth.loginWithPin(staff: testStaff, pin: '1234');
+      final expectedToken = session.accessToken;
+      expect(auth.currentSession, isNotNull);
+      expect(expectedToken, isNotNull);
+
+      await auth.logout();
+      expect(logoutEndpointCalled, isTrue);
+      // Assert Authorization: Bearer header in logout test (Reviewer Item 2)
+      expect(capturedAuthHeader, 'Bearer $expectedToken');
+      expect(auth.currentSession, isNull);
+      expect(await secureStorage.getRefreshToken(), isNull);
+      auth.dispose();
+    });
+
+    test('TillAuthInterceptor retries once on 401 AUTH_TOKEN_EXPIRED and updates header', () async {
+      int attempts = 0;
+      final interceptorDio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'))
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              if (options.path.endsWith('/v1/auth/logout')) {
+                attempts++;
+                if (attempts == 1) {
+                  return handler.reject(
+                    DioException(
+                      requestOptions: options,
+                      response: Response(
+                        requestOptions: options,
+                        statusCode: 401,
+                        data: {
+                          'code': 'AUTH_TOKEN_EXPIRED',
+                          'message': 'Access token expired',
+                        },
+                      ),
+                    ),
+                    true,
+                  );
+                }
                 return handler.resolve(
                   Response(requestOptions: options, statusCode: 204),
                 );
@@ -630,7 +687,8 @@ void main() {
         ..interceptors.add(FakeApiInterceptor());
 
       final auth = TillAuthService(
-        restClient: RestClient(logoutDio),
+        restClient: RestClient(interceptorDio),
+        dio: interceptorDio,
         database: db,
         secureStorage: secureStorage,
         clock: () => currentTime,
@@ -640,9 +698,74 @@ void main() {
       expect(auth.currentSession, isNotNull);
 
       await auth.logout();
-      expect(logoutEndpointCalled, isTrue);
+      expect(attempts, 2); // 1st expired, 2nd succeeded after refresh
       expect(auth.currentSession, isNull);
-      expect(await secureStorage.getRefreshToken(), isNull);
+      auth.dispose();
+    });
+
+    test(
+      'TillAuthInterceptor blocks authenticated calls when offline',
+      () async {
+        final offlineAuth = TillAuthService(
+          restClient: restClient,
+          dio: dio,
+          database: db,
+          secureStorage: secureStorage,
+          clock: () => currentTime,
+        );
+
+        // Force offline session
+        await offlineAuth.loginWithPin(staff: testStaff, pin: '1234');
+        // Simulate network going down, then logging in offline
+        offlineAuth.clearLocalSession();
+
+        // Create an offline session
+        final offlineSession = TillSession(
+          staff: testStaff,
+          permissions: ['sale.create'],
+          isOffline: true,
+        );
+
+        // Verify that calling an authenticated endpoint while offline is rejected by interceptor
+        final authInterceptor = TillAuthInterceptor(
+          dio: dio,
+          getAccessToken: () => offlineSession.accessToken,
+          isSessionOffline: () => offlineSession.isOffline,
+          refreshAccessToken: offlineAuth.silentRefresh,
+        );
+
+        final testDio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'))
+          ..interceptors.add(authInterceptor);
+
+        expect(
+          () => testDio.post('/v1/auth/logout'),
+          throwsA(
+            isA<DioException>().having(
+              (e) => e.error,
+              'error',
+              isA<TillAuthGenericException>(),
+            ),
+          ),
+        );
+
+        offlineAuth.dispose();
+      },
+    );
+
+    test('clearLocalSession clears session without API call', () async {
+      final auth = TillAuthService(
+        restClient: restClient,
+        dio: dio,
+        database: db,
+        secureStorage: secureStorage,
+        clock: () => currentTime,
+      );
+
+      await auth.loginWithPin(staff: testStaff, pin: '1234');
+      expect(auth.currentSession, isNotNull);
+
+      auth.clearLocalSession();
+      expect(auth.currentSession, isNull);
       auth.dispose();
     });
   });
