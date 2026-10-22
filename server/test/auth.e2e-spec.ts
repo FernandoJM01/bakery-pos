@@ -580,4 +580,20 @@ describe('Auth & Session Management (e2e)', () => {
     const meBody = getBody(meRes);
     expect(meBody.code).toBe('AUTH_REQUIRED');
   });
+
+  it('the auth guard follows the app clock: a back office session ends after 12 hours', async () => {
+    const loginRes = await request(server)
+      .post('/v1/auth/password-login')
+      .send({ email: testEmail, password: testPassword });
+    const accessToken = getBody(loginRes).accessToken;
+    expect(accessToken).toBeDefined();
+
+    clock.setNow(new Date(Date.now() + 12 * 60 * 60 * 1000 + 60_000));
+    const meRes = await request(server)
+      .get('/v1/me')
+      .set('Authorization', `Bearer ${accessToken!}`);
+
+    expect(meRes.status).toBe(401);
+    expect(getBody(meRes).code).toBe('AUTH_REQUIRED');
+  });
 });

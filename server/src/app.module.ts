@@ -6,7 +6,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthGuard } from './auth/guards/auth.guard';
-import { ClockService } from './common/clock.service';
+import { ClockModule } from './common/clock.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { PermissionsGuard } from './common/guards/permissions.guard';
 import { validateEnv } from './config/env.validation';
@@ -58,13 +58,13 @@ import { PrismaModule } from './prisma/prisma.module';
             : undefined,
       },
     }),
+    ClockModule,
     PrismaModule,
     AuditModule,
     AuthModule,
     HealthModule,
   ],
   providers: [
-    ClockService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
