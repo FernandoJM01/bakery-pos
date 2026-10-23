@@ -54,6 +54,7 @@ void main() {
       await appDb.recordOfflineApproval(
         id: 'approval-1',
         approverStaffId: 'staff-1',
+        requesterStaffId: 'staff-9',
         action: 'cash.open_drawer_no_sale',
         createdAt: DateTime.utc(2026, 1, 1),
       );
@@ -105,6 +106,7 @@ void main() {
         await appDb.recordOfflineApproval(
           id: 'approval-2',
           approverStaffId: 'staff-2',
+          requesterStaffId: 'staff-9',
           action: 'cash.open_drawer_no_sale',
           reference: 'drawer-ref',
           createdAt: DateTime.utc(2026, 1, 2),

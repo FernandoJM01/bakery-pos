@@ -16,6 +16,9 @@ import '../data/till_auth_service.dart';
 import '../domain/approval_models.dart';
 import '../domain/offline_pin_verifier.dart';
 
+/// Only these roles can approve (brief 5.4, A12), matching the server.
+const approverRoles = {'OWNER', 'BRANCH_MANAGER'};
+
 Future<ApprovalResult?> requestApproval(
   BuildContext context, {
   required String action,
@@ -63,7 +66,11 @@ class _ManagerApprovalDialogState extends ConsumerState<ManagerApprovalDialog> {
     final currentSession = ref.read(tillSessionProvider);
     final staffWithPerm = await db.getStaffWithPermission(widget.action);
     final eligible = staffWithPerm
-        .where((s) => s.id != currentSession?.staff.id)
+        .where(
+          (s) =>
+              s.id != currentSession?.staff.id &&
+              approverRoles.contains(s.role),
+        )
         .toList();
 
     if (mounted) {
@@ -181,6 +188,11 @@ class _ManagerApprovalDialogState extends ConsumerState<ManagerApprovalDialog> {
     DateTime now,
   ) async {
     final approver = _selectedApprover!;
+    final requester = ref.read(tillSessionProvider)?.staff;
+    if (requester == null) {
+      if (mounted) Navigator.of(context).pop();
+      return;
+    }
 
     // Check active lockout
     final activeLockout = await db.getActiveLockout(approver.id, now);
@@ -220,6 +232,7 @@ class _ManagerApprovalDialogState extends ConsumerState<ManagerApprovalDialog> {
     await db.recordOfflineApproval(
       id: id,
       approverStaffId: approver.id,
+      requesterStaffId: requester.id,
       action: widget.action,
       reference: widget.reference,
       createdAt: now,

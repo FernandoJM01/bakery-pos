@@ -50,6 +50,8 @@ class StaffLockoutEntries extends Table {
 class OfflineApprovalEntries extends Table {
   TextColumn get id => text()();
   TextColumn get approverStaffId => text()();
+  // Who asked for the approval; brief 5.4 audits both actor and approver.
+  TextColumn get requesterStaffId => text()();
   TextColumn get action => text()();
   TextColumn get reference => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
@@ -132,6 +134,7 @@ class AppDatabase extends _$AppDatabase {
   Future<void> recordOfflineApproval({
     required String id,
     required String approverStaffId,
+    required String requesterStaffId,
     required String action,
     String? reference,
     required DateTime createdAt,
@@ -140,6 +143,7 @@ class AppDatabase extends _$AppDatabase {
       OfflineApprovalEntriesCompanion(
         id: Value(id),
         approverStaffId: Value(approverStaffId),
+        requesterStaffId: Value(requesterStaffId),
         action: Value(action),
         reference: Value(reference),
         createdAt: Value(createdAt),

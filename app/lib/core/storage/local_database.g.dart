@@ -1117,6 +1117,17 @@ class $OfflineApprovalEntriesTable extends OfflineApprovalEntries
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _requesterStaffIdMeta = const VerificationMeta(
+    'requesterStaffId',
+  );
+  @override
+  late final GeneratedColumn<String> requesterStaffId = GeneratedColumn<String>(
+    'requester_staff_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _actionMeta = const VerificationMeta('action');
   @override
   late final GeneratedColumn<String> action = GeneratedColumn<String>(
@@ -1152,6 +1163,7 @@ class $OfflineApprovalEntriesTable extends OfflineApprovalEntries
   List<GeneratedColumn> get $columns => [
     id,
     approverStaffId,
+    requesterStaffId,
     action,
     reference,
     createdAt,
@@ -1183,6 +1195,17 @@ class $OfflineApprovalEntriesTable extends OfflineApprovalEntries
       );
     } else if (isInserting) {
       context.missing(_approverStaffIdMeta);
+    }
+    if (data.containsKey('requester_staff_id')) {
+      context.handle(
+        _requesterStaffIdMeta,
+        requesterStaffId.isAcceptableOrUnknown(
+          data['requester_staff_id']!,
+          _requesterStaffIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_requesterStaffIdMeta);
     }
     if (data.containsKey('action')) {
       context.handle(
@@ -1223,6 +1246,10 @@ class $OfflineApprovalEntriesTable extends OfflineApprovalEntries
         DriftSqlType.string,
         data['${effectivePrefix}approver_staff_id'],
       )!,
+      requesterStaffId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}requester_staff_id'],
+      )!,
       action: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}action'],
@@ -1248,12 +1275,14 @@ class OfflineApprovalEntry extends DataClass
     implements Insertable<OfflineApprovalEntry> {
   final String id;
   final String approverStaffId;
+  final String requesterStaffId;
   final String action;
   final String? reference;
   final DateTime createdAt;
   const OfflineApprovalEntry({
     required this.id,
     required this.approverStaffId,
+    required this.requesterStaffId,
     required this.action,
     this.reference,
     required this.createdAt,
@@ -1263,6 +1292,7 @@ class OfflineApprovalEntry extends DataClass
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['approver_staff_id'] = Variable<String>(approverStaffId);
+    map['requester_staff_id'] = Variable<String>(requesterStaffId);
     map['action'] = Variable<String>(action);
     if (!nullToAbsent || reference != null) {
       map['reference'] = Variable<String>(reference);
@@ -1275,6 +1305,7 @@ class OfflineApprovalEntry extends DataClass
     return OfflineApprovalEntriesCompanion(
       id: Value(id),
       approverStaffId: Value(approverStaffId),
+      requesterStaffId: Value(requesterStaffId),
       action: Value(action),
       reference: reference == null && nullToAbsent
           ? const Value.absent()
@@ -1291,6 +1322,7 @@ class OfflineApprovalEntry extends DataClass
     return OfflineApprovalEntry(
       id: serializer.fromJson<String>(json['id']),
       approverStaffId: serializer.fromJson<String>(json['approverStaffId']),
+      requesterStaffId: serializer.fromJson<String>(json['requesterStaffId']),
       action: serializer.fromJson<String>(json['action']),
       reference: serializer.fromJson<String?>(json['reference']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -1302,6 +1334,7 @@ class OfflineApprovalEntry extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'approverStaffId': serializer.toJson<String>(approverStaffId),
+      'requesterStaffId': serializer.toJson<String>(requesterStaffId),
       'action': serializer.toJson<String>(action),
       'reference': serializer.toJson<String?>(reference),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -1311,12 +1344,14 @@ class OfflineApprovalEntry extends DataClass
   OfflineApprovalEntry copyWith({
     String? id,
     String? approverStaffId,
+    String? requesterStaffId,
     String? action,
     Value<String?> reference = const Value.absent(),
     DateTime? createdAt,
   }) => OfflineApprovalEntry(
     id: id ?? this.id,
     approverStaffId: approverStaffId ?? this.approverStaffId,
+    requesterStaffId: requesterStaffId ?? this.requesterStaffId,
     action: action ?? this.action,
     reference: reference.present ? reference.value : this.reference,
     createdAt: createdAt ?? this.createdAt,
@@ -1327,6 +1362,9 @@ class OfflineApprovalEntry extends DataClass
       approverStaffId: data.approverStaffId.present
           ? data.approverStaffId.value
           : this.approverStaffId,
+      requesterStaffId: data.requesterStaffId.present
+          ? data.requesterStaffId.value
+          : this.requesterStaffId,
       action: data.action.present ? data.action.value : this.action,
       reference: data.reference.present ? data.reference.value : this.reference,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -1338,6 +1376,7 @@ class OfflineApprovalEntry extends DataClass
     return (StringBuffer('OfflineApprovalEntry(')
           ..write('id: $id, ')
           ..write('approverStaffId: $approverStaffId, ')
+          ..write('requesterStaffId: $requesterStaffId, ')
           ..write('action: $action, ')
           ..write('reference: $reference, ')
           ..write('createdAt: $createdAt')
@@ -1346,14 +1385,21 @@ class OfflineApprovalEntry extends DataClass
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, approverStaffId, action, reference, createdAt);
+  int get hashCode => Object.hash(
+    id,
+    approverStaffId,
+    requesterStaffId,
+    action,
+    reference,
+    createdAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is OfflineApprovalEntry &&
           other.id == this.id &&
           other.approverStaffId == this.approverStaffId &&
+          other.requesterStaffId == this.requesterStaffId &&
           other.action == this.action &&
           other.reference == this.reference &&
           other.createdAt == this.createdAt);
@@ -1363,6 +1409,7 @@ class OfflineApprovalEntriesCompanion
     extends UpdateCompanion<OfflineApprovalEntry> {
   final Value<String> id;
   final Value<String> approverStaffId;
+  final Value<String> requesterStaffId;
   final Value<String> action;
   final Value<String?> reference;
   final Value<DateTime> createdAt;
@@ -1370,6 +1417,7 @@ class OfflineApprovalEntriesCompanion
   const OfflineApprovalEntriesCompanion({
     this.id = const Value.absent(),
     this.approverStaffId = const Value.absent(),
+    this.requesterStaffId = const Value.absent(),
     this.action = const Value.absent(),
     this.reference = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -1378,17 +1426,20 @@ class OfflineApprovalEntriesCompanion
   OfflineApprovalEntriesCompanion.insert({
     required String id,
     required String approverStaffId,
+    required String requesterStaffId,
     required String action,
     this.reference = const Value.absent(),
     required DateTime createdAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        approverStaffId = Value(approverStaffId),
+       requesterStaffId = Value(requesterStaffId),
        action = Value(action),
        createdAt = Value(createdAt);
   static Insertable<OfflineApprovalEntry> custom({
     Expression<String>? id,
     Expression<String>? approverStaffId,
+    Expression<String>? requesterStaffId,
     Expression<String>? action,
     Expression<String>? reference,
     Expression<DateTime>? createdAt,
@@ -1397,6 +1448,7 @@ class OfflineApprovalEntriesCompanion
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (approverStaffId != null) 'approver_staff_id': approverStaffId,
+      if (requesterStaffId != null) 'requester_staff_id': requesterStaffId,
       if (action != null) 'action': action,
       if (reference != null) 'reference': reference,
       if (createdAt != null) 'created_at': createdAt,
@@ -1407,6 +1459,7 @@ class OfflineApprovalEntriesCompanion
   OfflineApprovalEntriesCompanion copyWith({
     Value<String>? id,
     Value<String>? approverStaffId,
+    Value<String>? requesterStaffId,
     Value<String>? action,
     Value<String?>? reference,
     Value<DateTime>? createdAt,
@@ -1415,6 +1468,7 @@ class OfflineApprovalEntriesCompanion
     return OfflineApprovalEntriesCompanion(
       id: id ?? this.id,
       approverStaffId: approverStaffId ?? this.approverStaffId,
+      requesterStaffId: requesterStaffId ?? this.requesterStaffId,
       action: action ?? this.action,
       reference: reference ?? this.reference,
       createdAt: createdAt ?? this.createdAt,
@@ -1430,6 +1484,9 @@ class OfflineApprovalEntriesCompanion
     }
     if (approverStaffId.present) {
       map['approver_staff_id'] = Variable<String>(approverStaffId.value);
+    }
+    if (requesterStaffId.present) {
+      map['requester_staff_id'] = Variable<String>(requesterStaffId.value);
     }
     if (action.present) {
       map['action'] = Variable<String>(action.value);
@@ -1451,6 +1508,7 @@ class OfflineApprovalEntriesCompanion
     return (StringBuffer('OfflineApprovalEntriesCompanion(')
           ..write('id: $id, ')
           ..write('approverStaffId: $approverStaffId, ')
+          ..write('requesterStaffId: $requesterStaffId, ')
           ..write('action: $action, ')
           ..write('reference: $reference, ')
           ..write('createdAt: $createdAt, ')
@@ -2228,6 +2286,7 @@ typedef $$OfflineApprovalEntriesTableCreateCompanionBuilder =
     OfflineApprovalEntriesCompanion Function({
       required String id,
       required String approverStaffId,
+      required String requesterStaffId,
       required String action,
       Value<String?> reference,
       required DateTime createdAt,
@@ -2237,6 +2296,7 @@ typedef $$OfflineApprovalEntriesTableUpdateCompanionBuilder =
     OfflineApprovalEntriesCompanion Function({
       Value<String> id,
       Value<String> approverStaffId,
+      Value<String> requesterStaffId,
       Value<String> action,
       Value<String?> reference,
       Value<DateTime> createdAt,
@@ -2259,6 +2319,11 @@ class $$OfflineApprovalEntriesTableFilterComposer
 
   ColumnFilters<String> get approverStaffId => $composableBuilder(
     column: $table.approverStaffId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get requesterStaffId => $composableBuilder(
+    column: $table.requesterStaffId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2297,6 +2362,11 @@ class $$OfflineApprovalEntriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get requesterStaffId => $composableBuilder(
+    column: $table.requesterStaffId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get action => $composableBuilder(
     column: $table.action,
     builder: (column) => ColumnOrderings(column),
@@ -2327,6 +2397,11 @@ class $$OfflineApprovalEntriesTableAnnotationComposer
 
   GeneratedColumn<String> get approverStaffId => $composableBuilder(
     column: $table.approverStaffId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get requesterStaffId => $composableBuilder(
+    column: $table.requesterStaffId,
     builder: (column) => column,
   );
 
@@ -2388,6 +2463,7 @@ class $$OfflineApprovalEntriesTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> approverStaffId = const Value.absent(),
+                Value<String> requesterStaffId = const Value.absent(),
                 Value<String> action = const Value.absent(),
                 Value<String?> reference = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -2395,6 +2471,7 @@ class $$OfflineApprovalEntriesTableTableManager
               }) => OfflineApprovalEntriesCompanion(
                 id: id,
                 approverStaffId: approverStaffId,
+                requesterStaffId: requesterStaffId,
                 action: action,
                 reference: reference,
                 createdAt: createdAt,
@@ -2404,6 +2481,7 @@ class $$OfflineApprovalEntriesTableTableManager
               ({
                 required String id,
                 required String approverStaffId,
+                required String requesterStaffId,
                 required String action,
                 Value<String?> reference = const Value.absent(),
                 required DateTime createdAt,
@@ -2411,6 +2489,7 @@ class $$OfflineApprovalEntriesTableTableManager
               }) => OfflineApprovalEntriesCompanion.insert(
                 id: id,
                 approverStaffId: approverStaffId,
+                requesterStaffId: requesterStaffId,
                 action: action,
                 reference: reference,
                 createdAt: createdAt,

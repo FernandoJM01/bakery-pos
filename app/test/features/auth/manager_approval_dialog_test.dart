@@ -472,5 +472,69 @@ void main() {
         findsNothing,
       );
     });
+
+    testWidgets(
+      "A12: a cashier is never listed as an approver, even if their role holds the action",
+      (tester) async {
+        tester.view.physicalSize = const Size(1280, 800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+
+        // Both roles hold sale.create; only the manager may approve it.
+        await db.replaceStaffBundle(
+          staff: [managerStaff, cashierStaff],
+          permissions: [
+            RolePermissionsCompanion.insert(
+              role: 'BRANCH_MANAGER',
+              permissionKey: 'sale.create',
+            ),
+            RolePermissionsCompanion.insert(
+              role: 'CASHIER',
+              permissionKey: 'sale.create',
+            ),
+          ],
+        );
+        final bakerSession = TillSession(
+          staff: StaffEntry(
+            id: '0192e2b0-0040-7000-8000-000000000040',
+            displayName: 'Beto (Panadero)',
+            role: 'BAKER',
+            offlinePinVerifier: validVerifier,
+            pinUpdatedAt: DateTime.utc(2026, 1, 1),
+          ),
+          permissions: const [],
+          isOffline: true,
+        );
+
+        await tester.pumpWidget(
+          createApprovalTestApp(
+            database: db,
+            secureStorage: secureStorage,
+            restClient: restClient,
+            session: bakerSession,
+            builder: (context) {
+              return ElevatedButton(
+                key: const Key('open-dialog-btn'),
+                onPressed: () =>
+                    requestApproval(context, action: 'sale.create'),
+                child: const Text('Open'),
+              );
+            },
+          ),
+        );
+
+        await tester.tap(find.byKey(const Key('open-dialog-btn')));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byKey(Key('approval-staff-${managerStaff.id.value}')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(Key('approval-staff-${cashierStaff.id.value}')),
+          findsNothing,
+        );
+      },
+    );
   });
 }
