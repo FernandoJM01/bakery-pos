@@ -14,6 +14,7 @@ describe('AuthService', () => {
   let findUniqueStaffSpy: jest.Mock<Promise<unknown>, [unknown]>;
   let findUniqueBranchSpy: jest.Mock<Promise<unknown>, [unknown]>;
   let updateStaffSpy: jest.Mock<Promise<unknown>, [unknown]>;
+  let updateManyStaffSpy: jest.Mock<Promise<unknown>, [unknown]>;
   let createSessionSpy: jest.Mock<Promise<unknown>, [unknown]>;
   let findUniqueSessionSpy: jest.Mock<Promise<unknown>, [unknown]>;
   let findFirstSessionSpy: jest.Mock<Promise<unknown>, [unknown]>;
@@ -26,6 +27,9 @@ describe('AuthService', () => {
     findUniqueStaffSpy = jest.fn<Promise<unknown>, [unknown]>();
     findUniqueBranchSpy = jest.fn<Promise<unknown>, [unknown]>();
     updateStaffSpy = jest.fn<Promise<unknown>, [unknown]>();
+    updateManyStaffSpy = jest
+      .fn<Promise<unknown>, [unknown]>()
+      .mockResolvedValue({ count: 0 });
     createSessionSpy = jest.fn<Promise<unknown>, [unknown]>();
     findUniqueSessionSpy = jest.fn<Promise<unknown>, [unknown]>();
     findFirstSessionSpy = jest.fn<Promise<unknown>, [unknown]>();
@@ -45,6 +49,7 @@ describe('AuthService', () => {
         findFirst: findFirstStaffSpy,
         findUnique: findUniqueStaffSpy,
         update: updateStaffSpy,
+        updateMany: updateManyStaffSpy,
       },
       authSession: {
         create: createSessionSpy,
@@ -142,6 +147,12 @@ describe('AuthService', () => {
         staffBranches: [],
       });
 
+      updateStaffSpy.mockResolvedValue({
+        failedPasswordAttempts: 10,
+        passwordLockedUntil: null,
+        email: 'staff@bakery.local',
+      });
+
       await expect(
         service.passwordLogin({
           email: 'staff@bakery.local',
@@ -149,13 +160,28 @@ describe('AuthService', () => {
         }),
       ).rejects.toThrow(HttpException);
 
-      const updateArgs = updateStaffSpy.mock.calls[0][0] as {
-        where: { id: string };
-        data: { failedPasswordAttempts: number; passwordLockedUntil?: Date };
+      expect(updateStaffSpy).toHaveBeenCalledWith({
+        where: { id: 'staff-uuid' },
+        data: { failedPasswordAttempts: { increment: 1 } },
+        select: {
+          failedPasswordAttempts: true,
+          passwordLockedUntil: true,
+          email: true,
+        },
+      });
+
+      const lockCall = updateManyStaffSpy.mock.calls.find(
+        (c) =>
+          (c[0] as { data?: { passwordLockedUntil?: Date } }).data
+            ?.passwordLockedUntil,
+      )?.[0] as {
+        where: { id: string; passwordLockedUntil: null };
+        data: { passwordLockedUntil: Date; passwordFailureWindowStart: null };
       };
-      expect(updateArgs.where.id).toBe('staff-uuid');
-      expect(updateArgs.data.failedPasswordAttempts).toBe(0);
-      expect(updateArgs.data.passwordLockedUntil).toBeInstanceOf(Date);
+      expect(lockCall).toBeDefined();
+      expect(lockCall.where.id).toBe('staff-uuid');
+      expect(lockCall.where.passwordLockedUntil).toBeNull();
+      expect(lockCall.data.passwordLockedUntil).toBeInstanceOf(Date);
 
       expect(auditLogSpy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -384,17 +410,31 @@ describe('AuthService', () => {
         staffBranches: [{ branchId }],
       });
 
+      updateStaffSpy.mockResolvedValue({
+        failedPinAttempts: 5,
+        lockedUntil: null,
+      });
+
       await expect(
         service.pinLogin({ staffId: 'staff-id', pin: '9999' }, mockDevice),
       ).rejects.toThrow(HttpException);
 
-      const updateArgs = updateStaffSpy.mock.calls[0][0] as {
-        where: { id: string };
-        data: { failedPinAttempts: number; lockedUntil?: Date };
+      expect(updateStaffSpy).toHaveBeenCalledWith({
+        where: { id: 'staff-id' },
+        data: { failedPinAttempts: { increment: 1 } },
+        select: { failedPinAttempts: true, lockedUntil: true },
+      });
+
+      const lockCall = updateManyStaffSpy.mock.calls.find(
+        (c) => (c[0] as { data?: { lockedUntil?: Date } }).data?.lockedUntil,
+      )?.[0] as {
+        where: { id: string; lockedUntil: null };
+        data: { lockedUntil: Date };
       };
-      expect(updateArgs.where.id).toBe('staff-id');
-      expect(updateArgs.data.failedPinAttempts).toBe(0);
-      expect(updateArgs.data.lockedUntil).toBeInstanceOf(Date);
+      expect(lockCall).toBeDefined();
+      expect(lockCall.where.id).toBe('staff-id');
+      expect(lockCall.where.lockedUntil).toBeNull();
+      expect(lockCall.data.lockedUntil).toBeInstanceOf(Date);
 
       const lockAuditArgs = auditLogSpy.mock.calls[1][0] as {
         action: string;

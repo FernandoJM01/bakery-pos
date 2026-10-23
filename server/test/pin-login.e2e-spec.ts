@@ -289,6 +289,7 @@ describe('PIN Login & Manager Approvals (e2e)', () => {
     configureApp(app);
     await app.init();
     server = app.getHttpServer() as Server;
+    server.setMaxListeners(30);
     clock = app.get(ClockService);
     approvalService = app.get(ApprovalService);
   });
@@ -432,6 +433,39 @@ describe('PIN Login & Manager Approvals (e2e)', () => {
       expect(getBody(unlockRes).accessToken).toBeDefined();
     });
 
+    it('parallel wrong PINs cannot bypass lockout; locks account with failed_pin_attempts >= 5', async () => {
+      const promises = Array.from({ length: 10 }).map(() =>
+        request(server)
+          .post('/v1/auth/pin-login')
+          .set('X-Device-Token', device1Token)
+          .send({
+            staffId: cashier1Id,
+            pin: '9999',
+          }),
+      );
+
+      const responses = await Promise.all(promises);
+      for (const res of responses) {
+        expect([401, 423]).toContain(res.status);
+      }
+
+      const staff = await prisma.staff.findUnique({
+        where: { id: cashier1Id },
+      });
+      expect(staff?.lockedUntil).not.toBeNull();
+      expect(staff?.failedPinAttempts).toBeGreaterThanOrEqual(5);
+
+      const nextRes = await request(server)
+        .post('/v1/auth/pin-login')
+        .set('X-Device-Token', device1Token)
+        .send({
+          staffId: cashier1Id,
+          pin: cashier1Pin,
+        });
+      expect(nextRes.status).toBe(423);
+      expect(getBody(nextRes).code).toBe('AUTH_LOCKED');
+    });
+
     it('session expires at 04:00 local time: tests login at 23:00 and at 03:00', async () => {
       // Test 1: Login at 23:00 local (Oct 23 23:00 CST -> Oct 24 05:00 UTC)
       const lateTime = new Date('2026-10-24T05:00:00.000Z');
@@ -519,6 +553,28 @@ describe('PIN Login & Manager Approvals (e2e)', () => {
           pin: cashier1Pin,
         });
       cashier1Token = getBody(loginRes).accessToken!;
+    });
+
+    it('refuses an approval request when session does not belong to the sending device (403 PERMISSION_DENIED)', async () => {
+      // cashier1Token belongs to device1Id. Send it with device2Token.
+      const res = await request(server)
+        .post('/v1/auth/approvals')
+        .set('Authorization', `Bearer ${cashier1Token}`)
+        .set('X-Device-Token', device2Token)
+        .send({
+          approverStaffId: managerId,
+          pin: managerPin,
+          action: 'sale.discount_over_limit',
+        });
+
+      expect(res.status).toBe(403);
+      expect(getBody(res).code).toBe('PERMISSION_DENIED');
+
+      // Assert it added no strike to the manager's PIN
+      const dbManager = await prisma.staff.findUnique({
+        where: { id: managerId },
+      });
+      expect(dbManager?.failedPinAttempts).toBe(0);
     });
 
     it('rejects self-approval (403 PERMISSION_DENIED)', async () => {

@@ -20,6 +20,7 @@ describe('ApprovalService', () => {
 
   let findUniqueStaffMock: jest.Mock<Promise<unknown>, [unknown]>;
   let updateStaffMock: jest.Mock<Promise<unknown>, [unknown]>;
+  let updateManyStaffMock: jest.Mock<Promise<unknown>, [unknown]>;
   let findUniqueRolePermMock: jest.Mock<Promise<unknown>, [unknown]>;
   let createApprovalMock: jest.Mock<Promise<unknown>, [unknown]>;
   let findUniqueApprovalMock: jest.Mock<Promise<unknown>, [unknown]>;
@@ -60,6 +61,9 @@ describe('ApprovalService', () => {
 
     findUniqueStaffMock = jest.fn<Promise<unknown>, [unknown]>();
     updateStaffMock = jest.fn<Promise<unknown>, [unknown]>();
+    updateManyStaffMock = jest
+      .fn<Promise<unknown>, [unknown]>()
+      .mockResolvedValue({ count: 0 });
     findUniqueRolePermMock = jest.fn<Promise<unknown>, [unknown]>();
     createApprovalMock = jest.fn<Promise<unknown>, [unknown]>();
     findUniqueApprovalMock = jest.fn<Promise<unknown>, [unknown]>();
@@ -74,6 +78,7 @@ describe('ApprovalService', () => {
       staff: {
         findUnique: findUniqueStaffMock,
         update: updateStaffMock,
+        updateMany: updateManyStaffMock,
       },
       rolePermission: {
         findUnique: findUniqueRolePermMock,
@@ -226,7 +231,7 @@ describe('ApprovalService', () => {
           { ...mockRequester, deviceId: uuidv7() },
           mockDevice,
         ),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(ForbiddenException);
       expect(findUniqueStaffMock).not.toHaveBeenCalled();
     });
 
@@ -246,6 +251,11 @@ describe('ApprovalService', () => {
         role: Role.BRANCH_MANAGER,
         permissionKey: 'sale.discount_over_limit',
       });
+      updateStaffMock.mockResolvedValue({
+        id: approverId,
+        failedPinAttempts: 5,
+        lockedUntil: null,
+      });
 
       await expect(
         service.createApproval(
@@ -259,13 +269,22 @@ describe('ApprovalService', () => {
         ),
       ).rejects.toThrow(HttpException);
 
-      const updateArgs = updateStaffMock.mock.calls[0][0] as {
-        where: { id: string };
-        data: { failedPinAttempts: number; lockedUntil?: Date };
+      expect(updateStaffMock).toHaveBeenCalledWith({
+        where: { id: approverId },
+        data: { failedPinAttempts: { increment: 1 } },
+        select: { failedPinAttempts: true, lockedUntil: true },
+      });
+
+      const lockCall = updateManyStaffMock.mock.calls.find(
+        (c) => (c[0] as { data?: { lockedUntil?: Date } }).data?.lockedUntil,
+      )?.[0] as {
+        where: { id: string; lockedUntil: null };
+        data: { lockedUntil: Date };
       };
-      expect(updateArgs.where.id).toBe(approverId);
-      expect(updateArgs.data.failedPinAttempts).toBe(0);
-      expect(updateArgs.data.lockedUntil).toBeInstanceOf(Date);
+      expect(lockCall).toBeDefined();
+      expect(lockCall.where.id).toBe(approverId);
+      expect(lockCall.where.lockedUntil).toBeNull();
+      expect(lockCall.data.lockedUntil).toBeInstanceOf(Date);
 
       const lockAudit = auditLogMock.mock.calls[1][0] as {
         action: string;

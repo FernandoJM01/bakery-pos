@@ -54,8 +54,8 @@ export class ApprovalService {
 
     // The access token must belong to the till sending the device token.
     if (requester.deviceId !== device.id) {
-      throw new UnauthorizedException({
-        code: 'AUTH_REQUIRED',
+      throw new ForbiddenException({
+        code: 'PERMISSION_DENIED',
         message: 'Session does not belong to this device',
       });
     }
@@ -194,17 +194,32 @@ export class ApprovalService {
     // Verify PIN
     const isValidPin = await verifyHash(approver.pinHash, dto.pin);
     if (!isValidPin) {
-      const attempts =
-        approver.lockedUntil && approver.lockedUntil <= now
-          ? 1
-          : approver.failedPinAttempts + 1;
+      // 1. Reset if old lock expired
+      await this.prisma.staff.updateMany({
+        where: { id: approver.id, lockedUntil: { lte: now } },
+        data: { failedPinAttempts: 0, lockedUntil: null },
+      });
 
-      if (attempts >= 5) {
-        const lockedUntil = new Date(now.getTime() + 5 * 60 * 1000);
-        await this.prisma.staff.update({
-          where: { id: approver.id },
-          data: { failedPinAttempts: 0, lockedUntil },
-        });
+      // 2. Atomically increment failed attempts
+      const updated = await this.prisma.staff.update({
+        where: { id: approver.id },
+        data: { failedPinAttempts: { increment: 1 } },
+        select: { failedPinAttempts: true, lockedUntil: true },
+      });
+
+      // 3. If attempts >= 5, lock for 5 minutes
+      if (
+        updated.failedPinAttempts >= 5 ||
+        (updated.lockedUntil && updated.lockedUntil > now)
+      ) {
+        let lockedUntil = updated.lockedUntil;
+        if (!lockedUntil || lockedUntil <= now) {
+          lockedUntil = new Date(now.getTime() + 5 * 60 * 1000);
+          await this.prisma.staff.updateMany({
+            where: { id: approver.id, lockedUntil: null },
+            data: { lockedUntil },
+          });
+        }
 
         await this.auditService.log({
           action: 'auth.approval_denied',
@@ -216,7 +231,7 @@ export class ApprovalService {
             action: dto.action,
             reference: dto.reference,
             reason: 'invalid_pin',
-            attempts,
+            attempts: updated.failedPinAttempts,
           },
         });
 
@@ -239,31 +254,26 @@ export class ApprovalService {
           },
           HttpStatus.LOCKED,
         );
-      } else {
-        await this.prisma.staff.update({
-          where: { id: approver.id },
-          data: { failedPinAttempts: attempts, lockedUntil: null },
-        });
-
-        await this.auditService.log({
-          action: 'auth.approval_denied',
-          branchId: device.branchId,
-          deviceId: device.id,
-          actorStaffId: requester.staffId,
-          approverStaffId: approver.id,
-          data: {
-            action: dto.action,
-            reference: dto.reference,
-            reason: 'invalid_pin',
-            attempts,
-          },
-        });
-
-        throw new UnauthorizedException({
-          code: 'AUTH_INVALID_PIN',
-          message: 'Invalid PIN',
-        });
       }
+
+      await this.auditService.log({
+        action: 'auth.approval_denied',
+        branchId: device.branchId,
+        deviceId: device.id,
+        actorStaffId: requester.staffId,
+        approverStaffId: approver.id,
+        data: {
+          action: dto.action,
+          reference: dto.reference,
+          reason: 'invalid_pin',
+          attempts: updated.failedPinAttempts,
+        },
+      });
+
+      throw new UnauthorizedException({
+        code: 'AUTH_INVALID_PIN',
+        message: 'Invalid PIN',
+      });
     }
 
     // PIN is valid: reset attempts

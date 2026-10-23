@@ -21,7 +21,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PasswordLoginDto } from './dto/password-login.dto';
 import { PinLoginDto } from './dto/pin-login.dto';
 import { AuthenticatedUser, JwtPayload } from './interfaces/auth.interface';
-import { recordPasswordFailure } from './password-lockout';
 import { getNextFourAm } from './session-expiry';
 
 export interface TokenPairResponse {
@@ -117,21 +116,74 @@ export class AuthService {
         );
 
     if (!isValidPassword) {
-      const next = recordPasswordFailure(staff, now);
-      const lockedUntil = next.passwordLockedUntil;
+      // 1. Reset if old lock expired
+      await this.prisma.staff.updateMany({
+        where: { id: staff.id, passwordLockedUntil: { lte: now } },
+        data: {
+          failedPasswordAttempts: 0,
+          passwordFailureWindowStart: null,
+          passwordLockedUntil: null,
+        },
+      });
 
-      await this.prisma.staff.update({
+      // 2. Reset if window expired (15 minutes)
+      const windowCutoff = new Date(now.getTime() - 15 * 60 * 1000);
+      await this.prisma.staff.updateMany({
+        where: {
+          id: staff.id,
+          passwordFailureWindowStart: { lt: windowCutoff },
+        },
+        data: {
+          failedPasswordAttempts: 0,
+          passwordFailureWindowStart: null,
+        },
+      });
+
+      // 3. Initialize window start if null
+      await this.prisma.staff.updateMany({
+        where: {
+          id: staff.id,
+          passwordFailureWindowStart: null,
+        },
+        data: {
+          passwordFailureWindowStart: now,
+        },
+      });
+
+      // 4. Atomically increment failed password attempts
+      const updated = await this.prisma.staff.update({
         where: { id: staff.id },
-        data: next,
+        data: { failedPasswordAttempts: { increment: 1 } },
+        select: {
+          failedPasswordAttempts: true,
+          passwordLockedUntil: true,
+          email: true,
+        },
       });
 
-      await this.auditService.log({
-        action: 'auth.login_failure',
-        actorStaffId: staff.id,
-        data: { email: staff.email, reason: 'invalid_password' },
-      });
+      // 5. Check if attempts >= 10
+      if (
+        updated.failedPasswordAttempts >= 10 ||
+        (updated.passwordLockedUntil && updated.passwordLockedUntil > now)
+      ) {
+        let lockedUntil = updated.passwordLockedUntil;
+        if (!lockedUntil || lockedUntil <= now) {
+          lockedUntil = new Date(now.getTime() + 15 * 60 * 1000);
+          await this.prisma.staff.updateMany({
+            where: { id: staff.id, passwordLockedUntil: null },
+            data: {
+              passwordLockedUntil: lockedUntil,
+              passwordFailureWindowStart: null,
+            },
+          });
+        }
 
-      if (lockedUntil) {
+        await this.auditService.log({
+          action: 'auth.login_failure',
+          actorStaffId: staff.id,
+          data: { email: staff.email, reason: 'invalid_password' },
+        });
+
         await this.auditService.log({
           action: 'auth.locked',
           actorStaffId: staff.id,
@@ -147,6 +199,12 @@ export class AuthService {
           HttpStatus.LOCKED,
         );
       }
+
+      await this.auditService.log({
+        action: 'auth.login_failure',
+        actorStaffId: staff.id,
+        data: { email: staff.email, reason: 'invalid_password' },
+      });
 
       throw new UnauthorizedException({
         code: 'AUTH_INVALID_CREDENTIALS',
@@ -295,24 +353,39 @@ export class AuthService {
     // Verify PIN
     const isValidPin = await verifyHash(staff.pinHash, dto.pin);
     if (!isValidPin) {
-      const attempts =
-        staff.lockedUntil && staff.lockedUntil <= now
-          ? 1
-          : staff.failedPinAttempts + 1;
+      // 1. Reset if old lock expired
+      await this.prisma.staff.updateMany({
+        where: { id: staff.id, lockedUntil: { lte: now } },
+        data: { failedPinAttempts: 0, lockedUntil: null },
+      });
 
-      if (attempts >= 5) {
-        const lockedUntil = new Date(now.getTime() + 5 * 60 * 1000);
-        await this.prisma.staff.update({
-          where: { id: staff.id },
-          data: { failedPinAttempts: 0, lockedUntil },
-        });
+      // 2. Atomically increment failed attempts
+      const updated = await this.prisma.staff.update({
+        where: { id: staff.id },
+        data: { failedPinAttempts: { increment: 1 } },
+        select: { failedPinAttempts: true, lockedUntil: true },
+      });
+
+      // 3. If attempts >= 5, lock for 5 minutes
+      if (
+        updated.failedPinAttempts >= 5 ||
+        (updated.lockedUntil && updated.lockedUntil > now)
+      ) {
+        let lockedUntil = updated.lockedUntil;
+        if (!lockedUntil || lockedUntil <= now) {
+          lockedUntil = new Date(now.getTime() + 5 * 60 * 1000);
+          await this.prisma.staff.updateMany({
+            where: { id: staff.id, lockedUntil: null },
+            data: { lockedUntil },
+          });
+        }
 
         await this.auditService.log({
           action: 'auth.login_failure',
           branchId: device.branchId,
           deviceId: device.id,
           actorStaffId: staff.id,
-          data: { reason: 'invalid_pin', attempts },
+          data: { reason: 'invalid_pin', attempts: updated.failedPinAttempts },
         });
 
         await this.auditService.log({
@@ -334,25 +407,20 @@ export class AuthService {
           },
           HttpStatus.LOCKED,
         );
-      } else {
-        await this.prisma.staff.update({
-          where: { id: staff.id },
-          data: { failedPinAttempts: attempts, lockedUntil: null },
-        });
-
-        await this.auditService.log({
-          action: 'auth.login_failure',
-          branchId: device.branchId,
-          deviceId: device.id,
-          actorStaffId: staff.id,
-          data: { reason: 'invalid_pin', attempts },
-        });
-
-        throw new UnauthorizedException({
-          code: 'AUTH_INVALID_PIN',
-          message: 'Invalid PIN',
-        });
       }
+
+      await this.auditService.log({
+        action: 'auth.login_failure',
+        branchId: device.branchId,
+        deviceId: device.id,
+        actorStaffId: staff.id,
+        data: { reason: 'invalid_pin', attempts: updated.failedPinAttempts },
+      });
+
+      throw new UnauthorizedException({
+        code: 'AUTH_INVALID_PIN',
+        message: 'Invalid PIN',
+      });
     }
 
     // PIN is valid: reset attempts
