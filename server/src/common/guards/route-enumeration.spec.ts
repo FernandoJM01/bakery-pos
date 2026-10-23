@@ -3,6 +3,8 @@ import { PATH_METADATA } from '@nestjs/common/constants';
 import { ModulesContainer, Reflector } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../../app.module';
+import { REQUIRE_DEVICE_KEY } from '../../devices/decorators/require-device.decorator';
+import { DevicesController } from '../../devices/devices.controller';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { PERMISSIONS_KEY } from '../decorators/require-permission.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -105,5 +107,18 @@ describe('Route Enumeration (Acceptance Test A4)', () => {
     const violations = getUndecoratedRoutes([rogueController]);
 
     expect(violations).toContain('UndecoratedTestController.rogueRoute');
+  });
+
+  it('verifies routes marked x-device: required have @RequireDevice() metadata', () => {
+    const devicesController = app.get(DevicesController);
+    const prototype = Object.getPrototypeOf(devicesController) as Record<
+      string,
+      (...args: unknown[]) => unknown
+    >;
+    const hasRequireDevice = reflector.get<boolean>(
+      REQUIRE_DEVICE_KEY,
+      prototype.getDeviceStaffBundle,
+    );
+    expect(hasRequireDevice).toBe(true);
   });
 });
