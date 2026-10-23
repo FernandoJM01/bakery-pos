@@ -14,6 +14,10 @@ class FakeApiInterceptor extends Interceptor {
   final String bakerId = '0192e2b0-0040-7000-8000-000000000040';
   final String deviceId = '0192e2b0-0100-7000-8000-000000000100';
 
+  String? currentStaffId;
+  String? currentStaffRole;
+  List<String>? currentStaffPermissions;
+
   @override
   Future<void> onRequest(
     RequestOptions options,
@@ -187,22 +191,62 @@ class FakeApiInterceptor extends Interceptor {
             ],
             'roles': {
               'OWNER': [
+                'sale.create',
+                'sale.void_line_before_payment',
+                'sale.void_after_payment',
+                'sale.refund',
+                'sale.discount_within_limit',
+                'sale.discount_over_limit',
+                'cash.open_shift',
+                'cash.close_shift',
+                'cash.movement',
+                'cash.open_drawer_no_sale',
+                'stock.production_entry',
+                'stock.waste',
+                'stock.count_adjust',
+                'stock.transfer',
+                'orders.manage',
+                'orders.pickup',
+                'oven.intake_pickup',
+                'oven.board',
+                'catalog.manage',
                 'staff.manage',
                 'devices.manage',
                 'branches.manage',
+                'reports.branch',
+                'reports.all',
                 'audit.view',
-                'sale.create',
+                'settings.manage',
               ],
               'BRANCH_MANAGER': [
                 'sale.create',
+                'sale.void_line_before_payment',
+                'sale.void_after_payment',
                 'sale.refund',
+                'sale.discount_within_limit',
+                'sale.discount_over_limit',
+                'cash.open_shift',
+                'cash.close_shift',
+                'cash.movement',
+                'cash.open_drawer_no_sale',
+                'stock.production_entry',
+                'stock.waste',
+                'stock.count_adjust',
+                'stock.transfer',
+                'orders.manage',
+                'orders.pickup',
+                'oven.intake_pickup',
+                'oven.board',
                 'reports.branch',
               ],
               'CASHIER': [
                 'sale.create',
+                'sale.void_line_before_payment',
                 'sale.discount_within_limit',
                 'cash.open_shift',
                 'cash.close_shift',
+                'orders.pickup',
+                'oven.intake_pickup',
               ],
               'BAKER': ['stock.production_entry', 'stock.waste', 'oven.board'],
             },
@@ -275,15 +319,42 @@ class FakeApiInterceptor extends Interceptor {
           : 'CASHIER';
 
       final permissions = role == 'BRANCH_MANAGER'
-          ? ['sale.create', 'sale.refund', 'reports.branch']
+          ? [
+              'sale.create',
+              'sale.void_line_before_payment',
+              'sale.void_after_payment',
+              'sale.refund',
+              'sale.discount_within_limit',
+              'sale.discount_over_limit',
+              'cash.open_shift',
+              'cash.close_shift',
+              'cash.movement',
+              'cash.open_drawer_no_sale',
+              'stock.production_entry',
+              'stock.waste',
+              'stock.count_adjust',
+              'stock.transfer',
+              'orders.manage',
+              'orders.pickup',
+              'oven.intake_pickup',
+              'oven.board',
+              'reports.branch',
+            ]
           : role == 'BAKER'
           ? ['stock.production_entry', 'stock.waste', 'oven.board']
           : [
               'sale.create',
+              'sale.void_line_before_payment',
               'sale.discount_within_limit',
               'cash.open_shift',
               'cash.close_shift',
+              'orders.pickup',
+              'oven.intake_pickup',
             ];
+
+      currentStaffId = staffId;
+      currentStaffRole = role;
+      currentStaffPermissions = permissions;
 
       return handler.resolve(
         Response(
@@ -446,33 +517,126 @@ class FakeApiInterceptor extends Interceptor {
       );
     }
 
+    // 5b. /v1/auth/approvals
+    if (path.endsWith('/v1/auth/approvals') && method == 'POST') {
+      final body = options.data as Map<String, dynamic>? ?? {};
+      final approverStaffId = body['approverStaffId'] as String? ?? '';
+      final pin = body['pin'] as String? ?? '';
+      final action = body['action'] as String? ?? '';
+
+      if (pin == 'locked') {
+        return handler.reject(
+          DioException(
+            requestOptions: options,
+            response: Response(
+              requestOptions: options,
+              statusCode: 423,
+              data: {
+                'code': 'AUTH_LOCKED',
+                'message': 'Approver is locked',
+                'details': {
+                  'lockedUntil': DateTime.now()
+                      .add(const Duration(minutes: 5))
+                      .toUtc()
+                      .toIso8601String(),
+                },
+              },
+            ),
+          ),
+        );
+      }
+
+      if (pin != '1234') {
+        return handler.reject(
+          DioException(
+            requestOptions: options,
+            response: Response(
+              requestOptions: options,
+              statusCode: 401,
+              data: {'code': 'AUTH_INVALID_PIN', 'message': 'Invalid PIN'},
+            ),
+          ),
+        );
+      }
+
+      if (approverStaffId == cashierId &&
+          action == 'cash.open_drawer_no_sale') {
+        return handler.reject(
+          DioException(
+            requestOptions: options,
+            response: Response(
+              requestOptions: options,
+              statusCode: 403,
+              data: {
+                'code': 'PERMISSION_DENIED',
+                'message': 'Approver lacks permission',
+              },
+            ),
+          ),
+        );
+      }
+
+      return handler.resolve(
+        Response(
+          requestOptions: options,
+          statusCode: 201,
+          data: {
+            'approvalToken': 'fake-approval-token-xyz',
+            'expiresAt': DateTime.now()
+                .add(const Duration(minutes: 2))
+                .toUtc()
+                .toIso8601String(),
+            'approverStaffId': approverStaffId,
+            'action': action,
+          },
+        ),
+      );
+    }
+
     // 6. /v1/me
     if (path.endsWith('/v1/me') && method == 'GET') {
+      final authHeader = options.headers['Authorization'] as String?;
+      final isTillStaff = authHeader == 'Bearer fake-access-token-jwt';
+      final role = isTillStaff ? (currentStaffRole ?? 'CASHIER') : 'OWNER';
+      final staffId = isTillStaff ? (currentStaffId ?? cashierId) : ownerId;
+      final permissions = isTillStaff
+          ? (currentStaffPermissions ??
+                [
+                  'sale.create',
+                  'sale.discount_within_limit',
+                  'cash.open_shift',
+                  'cash.close_shift',
+                  'orders.pickup',
+                  'oven.intake_pickup',
+                ])
+          : [
+              'staff.manage',
+              'devices.manage',
+              'branches.manage',
+              'audit.view',
+              'sale.create',
+            ];
+      final isOwner = role == 'OWNER';
+
       return handler.resolve(
         Response(
           requestOptions: options,
           statusCode: 200,
           data: {
             'staff': {
-              'id': ownerId,
-              'fullName': 'Fernando Dueño',
-              'displayName': 'Fernando',
-              'role': 'OWNER',
-              'email': 'owner@bakery.com',
-              'branchIds': [branchId1, branchId2],
+              'id': staffId,
+              'fullName': isOwner ? 'Fernando Dueño' : 'Empleado $role',
+              'displayName': isOwner ? 'Fernando' : 'Empleado',
+              'role': role,
+              'email': isOwner ? 'owner@bakery.com' : null,
+              'branchIds': isOwner ? [branchId1, branchId2] : [branchId1],
               'isActive': true,
-              'hasPassword': true,
+              'hasPassword': isOwner,
               'createdAt': DateTime.now().toUtc().toIso8601String(),
               'updatedAt': DateTime.now().toUtc().toIso8601String(),
             },
-            'permissions': [
-              'staff.manage',
-              'devices.manage',
-              'branches.manage',
-              'audit.view',
-              'sale.create',
-            ],
-            'deviceId': null,
+            'permissions': permissions,
+            'deviceId': isOwner ? null : deviceId,
           },
         ),
       );

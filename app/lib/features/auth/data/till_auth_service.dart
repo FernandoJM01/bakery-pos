@@ -70,6 +70,13 @@ class TillSessionNotifier extends Notifier<TillSession?> {
     state = session;
     return session;
   }
+
+  Future<List<String>> refreshPermissions() async {
+    final service = ref.read(tillAuthServiceProvider);
+    final perms = await service.refreshPermissions();
+    state = service.currentSession;
+    return perms;
+  }
 }
 
 class TillAuthService extends ChangeNotifier {
@@ -230,6 +237,31 @@ class TillAuthService extends ChangeNotifier {
     _currentSession = session;
     notifyListeners();
     return session;
+  }
+
+  Future<List<String>> refreshPermissions() async {
+    if (_currentSession == null) return [];
+    if (!_currentSession!.isOffline && _currentSession!.accessToken != null) {
+      try {
+        final me = await restClient.auth.getMe();
+        final permissions = me.permissions
+            .map((p) => p.json ?? p.name)
+            .toList();
+        _currentSession = _currentSession!.copyWith(permissions: permissions);
+        notifyListeners();
+        return permissions;
+      } on DioException catch (e) {
+        if (!_isUnreachable(e)) {
+          rethrow;
+        }
+      }
+    }
+    final permissions = await database.getPermissionsForRole(
+      _currentSession!.staff.role,
+    );
+    _currentSession = _currentSession!.copyWith(permissions: permissions);
+    notifyListeners();
+    return permissions;
   }
 
   void pauseForLock() {

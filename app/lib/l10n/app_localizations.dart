@@ -166,6 +166,12 @@ abstract class AppLocalizations {
   /// **'Ventas'**
   String get navSales;
 
+  /// No description provided for @navCash.
+  ///
+  /// In es, this message translates to:
+  /// **'Caja'**
+  String get navCash;
+
   /// No description provided for @navShift.
   ///
   /// In es, this message translates to:
@@ -178,10 +184,16 @@ abstract class AppLocalizations {
   /// **'Producción'**
   String get navProduction;
 
+  /// No description provided for @navOrders.
+  ///
+  /// In es, this message translates to:
+  /// **'Pedidos'**
+  String get navOrders;
+
   /// No description provided for @navOven.
   ///
   /// In es, this message translates to:
-  /// **'Hornos'**
+  /// **'Horno'**
   String get navOven;
 
   /// No description provided for @navCatalog.
@@ -441,6 +453,48 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Aprobación denegada'**
   String get approvalDenied;
+
+  /// No description provided for @approvalSelectApprover.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona quién autoriza'**
+  String get approvalSelectApprover;
+
+  /// No description provided for @approvalNoApprovers.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay personal con permiso para autorizar esta acción'**
+  String get approvalNoApprovers;
+
+  /// No description provided for @approvalPermissionDenied.
+  ///
+  /// In es, this message translates to:
+  /// **'El usuario no tiene permiso para autorizar esta acción'**
+  String get approvalPermissionDenied;
+
+  /// No description provided for @approvalInvalidPin.
+  ///
+  /// In es, this message translates to:
+  /// **'PIN incorrecto'**
+  String get approvalInvalidPin;
+
+  /// No description provided for @approvalLocked.
+  ///
+  /// In es, this message translates to:
+  /// **'Demasiados intentos. Bloqueado temporalmente.'**
+  String get approvalLocked;
+
+  /// Mensaje de bloqueo temporal en aprobación con hora
+  ///
+  /// In es, this message translates to:
+  /// **'Demasiados intentos. Bloqueado hasta las {time}.'**
+  String approvalLockedUntil(String time);
+
+  /// No description provided for @debugOpenDrawerNoSale.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir cajón sin venta (demo)'**
+  String get debugOpenDrawerNoSale;
 
   /// No description provided for @deviceRevokedTitle.
   ///

@@ -47,12 +47,24 @@ class StaffLockoutEntries extends Table {
   Set<Column> get primaryKey => {staffId};
 }
 
+class OfflineApprovalEntries extends Table {
+  TextColumn get id => text()();
+  TextColumn get approverStaffId => text()();
+  TextColumn get action => text()();
+  TextColumn get reference => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 @DriftDatabase(
   tables: [
     StaffEntries,
     RolePermissions,
     SessionStateEntries,
     StaffLockoutEntries,
+    OfflineApprovalEntries,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -61,7 +73,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -69,6 +81,9 @@ class AppDatabase extends _$AppDatabase {
     onUpgrade: (m, from, to) async {
       if (from < 2) {
         await m.createTable(staffLockoutEntries);
+      }
+      if (from < 3) {
+        await m.createTable(offlineApprovalEntries);
       }
     },
   );
@@ -100,6 +115,40 @@ class AppDatabase extends _$AppDatabase {
       rolePermissions,
     )..where((tbl) => tbl.role.equals(role))).get();
     return rows.map((r) => r.permissionKey).toList();
+  }
+
+  Future<List<StaffEntry>> getStaffWithPermission(String permission) async {
+    final rolesWithPermission =
+        await (select(rolePermissions)
+              ..where((tbl) => tbl.permissionKey.equals(permission)))
+            .map((row) => row.role)
+            .get();
+    if (rolesWithPermission.isEmpty) return [];
+    return (select(
+      staffEntries,
+    )..where((tbl) => tbl.role.isIn(rolesWithPermission))).get();
+  }
+
+  Future<void> recordOfflineApproval({
+    required String id,
+    required String approverStaffId,
+    required String action,
+    String? reference,
+    required DateTime createdAt,
+  }) async {
+    await into(offlineApprovalEntries).insert(
+      OfflineApprovalEntriesCompanion(
+        id: Value(id),
+        approverStaffId: Value(approverStaffId),
+        action: Value(action),
+        reference: Value(reference),
+        createdAt: Value(createdAt),
+      ),
+    );
+  }
+
+  Future<List<OfflineApprovalEntry>> getOfflineApprovals() {
+    return select(offlineApprovalEntries).get();
   }
 
   Future<void> setSessionValue(String key, String value) async {
@@ -173,6 +222,7 @@ class AppDatabase extends _$AppDatabase {
     await delete(rolePermissions).go();
     await delete(sessionStateEntries).go();
     await delete(staffLockoutEntries).go();
+    await delete(offlineApprovalEntries).go();
   }
 
   static Future<void> deleteDatabaseFile() async {
