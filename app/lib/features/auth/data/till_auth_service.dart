@@ -70,6 +70,13 @@ class TillSessionNotifier extends Notifier<TillSession?> {
     state = session;
     return session;
   }
+
+  Future<List<String>> refreshPermissions() async {
+    final service = ref.read(tillAuthServiceProvider);
+    final perms = await service.refreshPermissions();
+    state = service.currentSession;
+    return perms;
+  }
 }
 
 class TillAuthService extends ChangeNotifier {
@@ -230,6 +237,46 @@ class TillAuthService extends ChangeNotifier {
     _currentSession = session;
     notifyListeners();
     return session;
+  }
+
+  Future<List<String>> refreshPermissions() async {
+    final captured = _currentSession;
+    if (captured == null) return [];
+
+    if (!captured.isOffline && captured.accessToken != null) {
+      try {
+        final me = await restClient.auth.getMe();
+        if (!identical(_currentSession, captured)) {
+          return _currentSession?.permissions ?? [];
+        }
+        final permissions = me.permissions
+            .map((p) => p.json ?? p.name)
+            .toList();
+        _currentSession = _currentSession!.copyWith(permissions: permissions);
+        notifyListeners();
+        return permissions;
+      } on DioException catch (e) {
+        if (!_isUnreachable(e)) {
+          rethrow;
+        }
+      }
+    }
+
+    if (!identical(_currentSession, captured)) {
+      return _currentSession?.permissions ?? [];
+    }
+
+    final permissions = await database.getPermissionsForRole(
+      captured.staff.role,
+    );
+
+    if (!identical(_currentSession, captured)) {
+      return _currentSession?.permissions ?? [];
+    }
+
+    _currentSession = _currentSession!.copyWith(permissions: permissions);
+    notifyListeners();
+    return permissions;
   }
 
   void pauseForLock() {

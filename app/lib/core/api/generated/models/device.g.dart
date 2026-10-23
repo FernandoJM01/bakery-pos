@@ -28,10 +28,10 @@ Map<String, dynamic> _$DeviceToJson(Device instance) => <String, dynamic>{
   'name': instance.name,
   'type': _$DeviceTypeEnumMap[instance.type]!,
   'status': _$DeviceStatusEnumMap[instance.status]!,
-  'lastSeenAt': instance.lastSeenAt?.toIso8601String(),
-  'appVersion': instance.appVersion,
+  'lastSeenAt': ?instance.lastSeenAt?.toIso8601String(),
+  'appVersion': ?instance.appVersion,
   'createdAt': instance.createdAt.toIso8601String(),
-  'revokedAt': instance.revokedAt?.toIso8601String(),
+  'revokedAt': ?instance.revokedAt?.toIso8601String(),
 };
 
 const _$DeviceTypeEnumMap = {

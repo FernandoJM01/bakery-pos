@@ -1091,6 +1091,482 @@ class StaffLockoutEntriesCompanion extends UpdateCompanion<StaffLockoutEntry> {
   }
 }
 
+class $OfflineApprovalEntriesTable extends OfflineApprovalEntries
+    with TableInfo<$OfflineApprovalEntriesTable, OfflineApprovalEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $OfflineApprovalEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _approverStaffIdMeta = const VerificationMeta(
+    'approverStaffId',
+  );
+  @override
+  late final GeneratedColumn<String> approverStaffId = GeneratedColumn<String>(
+    'approver_staff_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _requesterStaffIdMeta = const VerificationMeta(
+    'requesterStaffId',
+  );
+  @override
+  late final GeneratedColumn<String> requesterStaffId = GeneratedColumn<String>(
+    'requester_staff_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _actionMeta = const VerificationMeta('action');
+  @override
+  late final GeneratedColumn<String> action = GeneratedColumn<String>(
+    'action',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _referenceMeta = const VerificationMeta(
+    'reference',
+  );
+  @override
+  late final GeneratedColumn<String> reference = GeneratedColumn<String>(
+    'reference',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
+    'syncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+    'synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    approverStaffId,
+    requesterStaffId,
+    action,
+    reference,
+    createdAt,
+    syncedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'offline_approval_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<OfflineApprovalEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('approver_staff_id')) {
+      context.handle(
+        _approverStaffIdMeta,
+        approverStaffId.isAcceptableOrUnknown(
+          data['approver_staff_id']!,
+          _approverStaffIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_approverStaffIdMeta);
+    }
+    if (data.containsKey('requester_staff_id')) {
+      context.handle(
+        _requesterStaffIdMeta,
+        requesterStaffId.isAcceptableOrUnknown(
+          data['requester_staff_id']!,
+          _requesterStaffIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_requesterStaffIdMeta);
+    }
+    if (data.containsKey('action')) {
+      context.handle(
+        _actionMeta,
+        action.isAcceptableOrUnknown(data['action']!, _actionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_actionMeta);
+    }
+    if (data.containsKey('reference')) {
+      context.handle(
+        _referenceMeta,
+        reference.isAcceptableOrUnknown(data['reference']!, _referenceMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('synced_at')) {
+      context.handle(
+        _syncedAtMeta,
+        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  OfflineApprovalEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return OfflineApprovalEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      approverStaffId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}approver_staff_id'],
+      )!,
+      requesterStaffId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}requester_staff_id'],
+      )!,
+      action: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}action'],
+      )!,
+      reference: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reference'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      syncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}synced_at'],
+      ),
+    );
+  }
+
+  @override
+  $OfflineApprovalEntriesTable createAlias(String alias) {
+    return $OfflineApprovalEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class OfflineApprovalEntry extends DataClass
+    implements Insertable<OfflineApprovalEntry> {
+  final String id;
+  final String approverStaffId;
+  final String requesterStaffId;
+  final String action;
+  final String? reference;
+  final DateTime createdAt;
+  final DateTime? syncedAt;
+  const OfflineApprovalEntry({
+    required this.id,
+    required this.approverStaffId,
+    required this.requesterStaffId,
+    required this.action,
+    this.reference,
+    required this.createdAt,
+    this.syncedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['approver_staff_id'] = Variable<String>(approverStaffId);
+    map['requester_staff_id'] = Variable<String>(requesterStaffId);
+    map['action'] = Variable<String>(action);
+    if (!nullToAbsent || reference != null) {
+      map['reference'] = Variable<String>(reference);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
+    return map;
+  }
+
+  OfflineApprovalEntriesCompanion toCompanion(bool nullToAbsent) {
+    return OfflineApprovalEntriesCompanion(
+      id: Value(id),
+      approverStaffId: Value(approverStaffId),
+      requesterStaffId: Value(requesterStaffId),
+      action: Value(action),
+      reference: reference == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reference),
+      createdAt: Value(createdAt),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
+    );
+  }
+
+  factory OfflineApprovalEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return OfflineApprovalEntry(
+      id: serializer.fromJson<String>(json['id']),
+      approverStaffId: serializer.fromJson<String>(json['approverStaffId']),
+      requesterStaffId: serializer.fromJson<String>(json['requesterStaffId']),
+      action: serializer.fromJson<String>(json['action']),
+      reference: serializer.fromJson<String?>(json['reference']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'approverStaffId': serializer.toJson<String>(approverStaffId),
+      'requesterStaffId': serializer.toJson<String>(requesterStaffId),
+      'action': serializer.toJson<String>(action),
+      'reference': serializer.toJson<String?>(reference),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
+    };
+  }
+
+  OfflineApprovalEntry copyWith({
+    String? id,
+    String? approverStaffId,
+    String? requesterStaffId,
+    String? action,
+    Value<String?> reference = const Value.absent(),
+    DateTime? createdAt,
+    Value<DateTime?> syncedAt = const Value.absent(),
+  }) => OfflineApprovalEntry(
+    id: id ?? this.id,
+    approverStaffId: approverStaffId ?? this.approverStaffId,
+    requesterStaffId: requesterStaffId ?? this.requesterStaffId,
+    action: action ?? this.action,
+    reference: reference.present ? reference.value : this.reference,
+    createdAt: createdAt ?? this.createdAt,
+    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
+  );
+  OfflineApprovalEntry copyWithCompanion(OfflineApprovalEntriesCompanion data) {
+    return OfflineApprovalEntry(
+      id: data.id.present ? data.id.value : this.id,
+      approverStaffId: data.approverStaffId.present
+          ? data.approverStaffId.value
+          : this.approverStaffId,
+      requesterStaffId: data.requesterStaffId.present
+          ? data.requesterStaffId.value
+          : this.requesterStaffId,
+      action: data.action.present ? data.action.value : this.action,
+      reference: data.reference.present ? data.reference.value : this.reference,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OfflineApprovalEntry(')
+          ..write('id: $id, ')
+          ..write('approverStaffId: $approverStaffId, ')
+          ..write('requesterStaffId: $requesterStaffId, ')
+          ..write('action: $action, ')
+          ..write('reference: $reference, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('syncedAt: $syncedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    approverStaffId,
+    requesterStaffId,
+    action,
+    reference,
+    createdAt,
+    syncedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is OfflineApprovalEntry &&
+          other.id == this.id &&
+          other.approverStaffId == this.approverStaffId &&
+          other.requesterStaffId == this.requesterStaffId &&
+          other.action == this.action &&
+          other.reference == this.reference &&
+          other.createdAt == this.createdAt &&
+          other.syncedAt == this.syncedAt);
+}
+
+class OfflineApprovalEntriesCompanion
+    extends UpdateCompanion<OfflineApprovalEntry> {
+  final Value<String> id;
+  final Value<String> approverStaffId;
+  final Value<String> requesterStaffId;
+  final Value<String> action;
+  final Value<String?> reference;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> syncedAt;
+  final Value<int> rowid;
+  const OfflineApprovalEntriesCompanion({
+    this.id = const Value.absent(),
+    this.approverStaffId = const Value.absent(),
+    this.requesterStaffId = const Value.absent(),
+    this.action = const Value.absent(),
+    this.reference = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  OfflineApprovalEntriesCompanion.insert({
+    required String id,
+    required String approverStaffId,
+    required String requesterStaffId,
+    required String action,
+    this.reference = const Value.absent(),
+    required DateTime createdAt,
+    this.syncedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       approverStaffId = Value(approverStaffId),
+       requesterStaffId = Value(requesterStaffId),
+       action = Value(action),
+       createdAt = Value(createdAt);
+  static Insertable<OfflineApprovalEntry> custom({
+    Expression<String>? id,
+    Expression<String>? approverStaffId,
+    Expression<String>? requesterStaffId,
+    Expression<String>? action,
+    Expression<String>? reference,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? syncedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (approverStaffId != null) 'approver_staff_id': approverStaffId,
+      if (requesterStaffId != null) 'requester_staff_id': requesterStaffId,
+      if (action != null) 'action': action,
+      if (reference != null) 'reference': reference,
+      if (createdAt != null) 'created_at': createdAt,
+      if (syncedAt != null) 'synced_at': syncedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  OfflineApprovalEntriesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? approverStaffId,
+    Value<String>? requesterStaffId,
+    Value<String>? action,
+    Value<String?>? reference,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? syncedAt,
+    Value<int>? rowid,
+  }) {
+    return OfflineApprovalEntriesCompanion(
+      id: id ?? this.id,
+      approverStaffId: approverStaffId ?? this.approverStaffId,
+      requesterStaffId: requesterStaffId ?? this.requesterStaffId,
+      action: action ?? this.action,
+      reference: reference ?? this.reference,
+      createdAt: createdAt ?? this.createdAt,
+      syncedAt: syncedAt ?? this.syncedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (approverStaffId.present) {
+      map['approver_staff_id'] = Variable<String>(approverStaffId.value);
+    }
+    if (requesterStaffId.present) {
+      map['requester_staff_id'] = Variable<String>(requesterStaffId.value);
+    }
+    if (action.present) {
+      map['action'] = Variable<String>(action.value);
+    }
+    if (reference.present) {
+      map['reference'] = Variable<String>(reference.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OfflineApprovalEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('approverStaffId: $approverStaffId, ')
+          ..write('requesterStaffId: $requesterStaffId, ')
+          ..write('action: $action, ')
+          ..write('reference: $reference, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1102,6 +1578,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $SessionStateEntriesTable(this);
   late final $StaffLockoutEntriesTable staffLockoutEntries =
       $StaffLockoutEntriesTable(this);
+  late final $OfflineApprovalEntriesTable offlineApprovalEntries =
+      $OfflineApprovalEntriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1111,6 +1589,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     rolePermissions,
     sessionStateEntries,
     staffLockoutEntries,
+    offlineApprovalEntries,
   ];
 }
 
@@ -1852,6 +2331,279 @@ typedef $$StaffLockoutEntriesTableProcessedTableManager =
       StaffLockoutEntry,
       PrefetchHooks Function()
     >;
+typedef $$OfflineApprovalEntriesTableCreateCompanionBuilder =
+    OfflineApprovalEntriesCompanion Function({
+      required String id,
+      required String approverStaffId,
+      required String requesterStaffId,
+      required String action,
+      Value<String?> reference,
+      required DateTime createdAt,
+      Value<DateTime?> syncedAt,
+      Value<int> rowid,
+    });
+typedef $$OfflineApprovalEntriesTableUpdateCompanionBuilder =
+    OfflineApprovalEntriesCompanion Function({
+      Value<String> id,
+      Value<String> approverStaffId,
+      Value<String> requesterStaffId,
+      Value<String> action,
+      Value<String?> reference,
+      Value<DateTime> createdAt,
+      Value<DateTime?> syncedAt,
+      Value<int> rowid,
+    });
+
+class $$OfflineApprovalEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $OfflineApprovalEntriesTable> {
+  $$OfflineApprovalEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get approverStaffId => $composableBuilder(
+    column: $table.approverStaffId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get requesterStaffId => $composableBuilder(
+    column: $table.requesterStaffId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get action => $composableBuilder(
+    column: $table.action,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reference => $composableBuilder(
+    column: $table.reference,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$OfflineApprovalEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $OfflineApprovalEntriesTable> {
+  $$OfflineApprovalEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get approverStaffId => $composableBuilder(
+    column: $table.approverStaffId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get requesterStaffId => $composableBuilder(
+    column: $table.requesterStaffId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get action => $composableBuilder(
+    column: $table.action,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reference => $composableBuilder(
+    column: $table.reference,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$OfflineApprovalEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $OfflineApprovalEntriesTable> {
+  $$OfflineApprovalEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get approverStaffId => $composableBuilder(
+    column: $table.approverStaffId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get requesterStaffId => $composableBuilder(
+    column: $table.requesterStaffId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get action =>
+      $composableBuilder(column: $table.action, builder: (column) => column);
+
+  GeneratedColumn<String> get reference =>
+      $composableBuilder(column: $table.reference, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
+}
+
+class $$OfflineApprovalEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $OfflineApprovalEntriesTable,
+          OfflineApprovalEntry,
+          $$OfflineApprovalEntriesTableFilterComposer,
+          $$OfflineApprovalEntriesTableOrderingComposer,
+          $$OfflineApprovalEntriesTableAnnotationComposer,
+          $$OfflineApprovalEntriesTableCreateCompanionBuilder,
+          $$OfflineApprovalEntriesTableUpdateCompanionBuilder,
+          (
+            OfflineApprovalEntry,
+            BaseReferences<
+              _$AppDatabase,
+              $OfflineApprovalEntriesTable,
+              OfflineApprovalEntry
+            >,
+          ),
+          OfflineApprovalEntry,
+          PrefetchHooks Function()
+        > {
+  $$OfflineApprovalEntriesTableTableManager(
+    _$AppDatabase db,
+    $OfflineApprovalEntriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$OfflineApprovalEntriesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$OfflineApprovalEntriesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$OfflineApprovalEntriesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> approverStaffId = const Value.absent(),
+                Value<String> requesterStaffId = const Value.absent(),
+                Value<String> action = const Value.absent(),
+                Value<String?> reference = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => OfflineApprovalEntriesCompanion(
+                id: id,
+                approverStaffId: approverStaffId,
+                requesterStaffId: requesterStaffId,
+                action: action,
+                reference: reference,
+                createdAt: createdAt,
+                syncedAt: syncedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String approverStaffId,
+                required String requesterStaffId,
+                required String action,
+                Value<String?> reference = const Value.absent(),
+                required DateTime createdAt,
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => OfflineApprovalEntriesCompanion.insert(
+                id: id,
+                approverStaffId: approverStaffId,
+                requesterStaffId: requesterStaffId,
+                action: action,
+                reference: reference,
+                createdAt: createdAt,
+                syncedAt: syncedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $OfflineApprovalEntriesTable,
+                    OfflineApprovalEntry
+                  >(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $OfflineApprovalEntriesTable,
+                    OfflineApprovalEntry
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$OfflineApprovalEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $OfflineApprovalEntriesTable,
+      OfflineApprovalEntry,
+      $$OfflineApprovalEntriesTableFilterComposer,
+      $$OfflineApprovalEntriesTableOrderingComposer,
+      $$OfflineApprovalEntriesTableAnnotationComposer,
+      $$OfflineApprovalEntriesTableCreateCompanionBuilder,
+      $$OfflineApprovalEntriesTableUpdateCompanionBuilder,
+      (
+        OfflineApprovalEntry,
+        BaseReferences<
+          _$AppDatabase,
+          $OfflineApprovalEntriesTable,
+          OfflineApprovalEntry
+        >,
+      ),
+      OfflineApprovalEntry,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1864,4 +2616,9 @@ class $AppDatabaseManager {
       $$SessionStateEntriesTableTableManager(_db, _db.sessionStateEntries);
   $$StaffLockoutEntriesTableTableManager get staffLockoutEntries =>
       $$StaffLockoutEntriesTableTableManager(_db, _db.staffLockoutEntries);
+  $$OfflineApprovalEntriesTableTableManager get offlineApprovalEntries =>
+      $$OfflineApprovalEntriesTableTableManager(
+        _db,
+        _db.offlineApprovalEntries,
+      );
 }

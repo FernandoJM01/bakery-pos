@@ -121,12 +121,19 @@ void main() {
       await service.saveEnrolledDevice(
         deviceToken: 'token-xyz',
         deviceJson: '{"id":"dev-1"}',
-        branchJson: '{"id":"br-1"}',
+        branchJson: '{"id":"br-1","name":"Sucursal Centro"}',
       );
 
       expect(await service.getDeviceToken(), 'token-xyz');
       expect(await service.getEnrolledDevice(), '{"id":"dev-1"}');
-      expect(await service.getEnrolledBranch(), '{"id":"br-1"}');
+      expect(
+        await service.getEnrolledBranch(),
+        '{"id":"br-1","name":"Sucursal Centro"}',
+      );
+      expect(await service.getEnrolledBranchName(), 'Sucursal Centro');
+
+      await service.saveBranchName('Sucursal Norte');
+      expect(await service.getEnrolledBranchName(), 'Sucursal Norte');
     });
   });
 }

@@ -29,11 +29,11 @@ Map<String, dynamic> _$StaffToJson(Staff instance) => <String, dynamic>{
   'fullName': instance.fullName,
   'displayName': instance.displayName,
   'role': _$RoleEnumMap[instance.role]!,
-  'email': instance.email,
+  'email': ?instance.email,
   'branchIds': instance.branchIds,
   'isActive': instance.isActive,
   'hasPassword': instance.hasPassword,
-  'lockedUntil': instance.lockedUntil?.toIso8601String(),
+  'lockedUntil': ?instance.lockedUntil?.toIso8601String(),
   'createdAt': instance.createdAt.toIso8601String(),
   'updatedAt': instance.updatedAt.toIso8601String(),
 };

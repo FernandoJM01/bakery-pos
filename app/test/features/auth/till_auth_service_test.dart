@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:bakery_pos/core/api/api_client_provider.dart';
@@ -766,6 +767,112 @@ void main() {
 
       auth.clearLocalSession();
       expect(auth.currentSession, isNull);
+      auth.dispose();
+    });
+
+    test('delayed getMe from user A does not overwrite user B permissions after user switch', () async {
+      final cashierStaff = StaffEntry(
+        id: '0192e2b0-0030-7000-8000-000000000030',
+        displayName: 'Ana (Cajera)',
+        role: 'CASHIER',
+        offlinePinVerifier: validVerifier,
+        pinUpdatedAt: DateTime.utc(2026, 1, 1),
+      );
+
+      await db.replaceStaffBundle(
+        staff: [
+          StaffEntriesCompanion.insert(
+            id: testStaff.id,
+            displayName: testStaff.displayName,
+            role: testStaff.role,
+            offlinePinVerifier: testStaff.offlinePinVerifier,
+            pinUpdatedAt: testStaff.pinUpdatedAt,
+          ),
+          StaffEntriesCompanion.insert(
+            id: cashierStaff.id,
+            displayName: cashierStaff.displayName,
+            role: cashierStaff.role,
+            offlinePinVerifier: cashierStaff.offlinePinVerifier,
+            pinUpdatedAt: cashierStaff.pinUpdatedAt,
+          ),
+        ],
+        permissions: [
+          RolePermissionsCompanion.insert(
+            role: 'BRANCH_MANAGER',
+            permissionKey: 'reports.branch',
+          ),
+          RolePermissionsCompanion.insert(
+            role: 'CASHIER',
+            permissionKey: 'sale.create',
+          ),
+        ],
+      );
+
+      final getMeCompleter = Completer<Response>();
+      final customDio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
+      customDio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) async {
+            if (options.path.endsWith('/v1/me') && options.method == 'GET') {
+              final res = await getMeCompleter.future;
+              return handler.resolve(res);
+            }
+            return handler.next(options);
+          },
+        ),
+      );
+      customDio.interceptors.add(FakeApiInterceptor());
+
+      final auth = TillAuthService(
+        restClient: RestClient(customDio),
+        dio: customDio,
+        database: db,
+        secureStorage: secureStorage,
+        clock: () => currentTime,
+      );
+
+      // A (Manager) logs in
+      await auth.loginWithPin(staff: testStaff, pin: '1234');
+      expect(auth.currentSession?.staff.id, testStaff.id);
+
+      // A triggers refreshPermissions, which hangs on /v1/me
+      final aRefreshFuture = auth.refreshPermissions();
+
+      // While A's getMe is in flight, B (Cashier) logs in
+      await auth.loginWithPin(staff: cashierStaff, pin: '1234');
+      expect(auth.currentSession?.staff.id, cashierStaff.id);
+      expect(auth.currentSession?.hasPermission('reports.branch'), isFalse);
+
+      // Now A's /v1/me response arrives with manager permissions
+      getMeCompleter.complete(
+        Response(
+          requestOptions: RequestOptions(path: '/v1/me'),
+          statusCode: 200,
+          data: {
+            'staff': {
+              'id': testStaff.id,
+              'fullName': 'Carlos Gerente',
+              'displayName': 'Carlos',
+              'role': 'BRANCH_MANAGER',
+              'branchIds': ['0192e2b0-0001-7000-8000-000000000001'],
+              'isActive': true,
+              'hasPassword': false,
+              'createdAt': DateTime.now().toUtc().toIso8601String(),
+              'updatedAt': DateTime.now().toUtc().toIso8601String(),
+            },
+            'permissions': ['reports.branch', 'sale.create'],
+            'deviceId': null,
+          },
+        ),
+      );
+
+      await aRefreshFuture;
+
+      // B must STILL have B's permissions and NOT A's manager permissions
+      expect(auth.currentSession?.staff.id, cashierStaff.id);
+      expect(auth.currentSession?.hasPermission('reports.branch'), isFalse);
+      expect(auth.currentSession?.hasPermission('sale.create'), isTrue);
+
       auth.dispose();
     });
   });

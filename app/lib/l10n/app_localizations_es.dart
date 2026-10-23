@@ -46,13 +46,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navSales => 'Ventas';
 
   @override
-  String get navShift => 'Turno';
+  String get navCash => 'Caja';
 
   @override
   String get navProduction => 'Producción';
 
   @override
-  String get navOven => 'Hornos';
+  String get navOrders => 'Pedidos';
+
+  @override
+  String get navOven => 'Horno';
 
   @override
   String get navCatalog => 'Catálogo';
@@ -193,6 +196,26 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get approvalDenied => 'Aprobación denegada';
+
+  @override
+  String get approvalSelectApprover => 'Selecciona quién autoriza';
+
+  @override
+  String get approvalNoApprovers =>
+      'No hay personal con permiso para autorizar esta acción';
+
+  @override
+  String get approvalPermissionDenied =>
+      'El usuario no tiene permiso para autorizar esta acción';
+
+  @override
+  String get approvalInvalidPin => 'PIN incorrecto';
+
+  @override
+  String get approvalLocked => 'Demasiados intentos. Bloqueado temporalmente.';
+
+  @override
+  String get debugOpenDrawerNoSale => 'Abrir cajón sin venta (demo)';
 
   @override
   String get deviceRevokedTitle => 'Dispositivo revocado';

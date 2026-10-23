@@ -23,14 +23,14 @@ Map<String, dynamic> _$AuditEntryToJson(AuditEntry instance) =>
     <String, dynamic>{
       'id': instance.id,
       'occurredAt': instance.occurredAt.toIso8601String(),
-      'branchId': instance.branchId,
-      'deviceId': instance.deviceId,
-      'actorStaffId': instance.actorStaffId,
-      'approverStaffId': instance.approverStaffId,
+      'branchId': ?instance.branchId,
+      'deviceId': ?instance.deviceId,
+      'actorStaffId': ?instance.actorStaffId,
+      'approverStaffId': ?instance.approverStaffId,
       'action': _$AuditActionEnumMap[instance.action]!,
-      'entityType': instance.entityType,
-      'entityId': instance.entityId,
-      'data': instance.data,
+      'entityType': ?instance.entityType,
+      'entityId': ?instance.entityId,
+      'data': ?instance.data,
     };
 
 const _$AuditActionEnumMap = {

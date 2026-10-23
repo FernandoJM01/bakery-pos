@@ -19,7 +19,7 @@ Map<String, dynamic> _$ApprovalRequestToJson(ApprovalRequest instance) =>
       'approverStaffId': instance.approverStaffId,
       'pin': instance.pin,
       'action': _$PermissionKeyEnumMap[instance.action]!,
-      'reference': instance.reference,
+      'reference': ?instance.reference,
     };
 
 const _$PermissionKeyEnumMap = {

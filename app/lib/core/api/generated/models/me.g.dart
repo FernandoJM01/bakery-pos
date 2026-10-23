@@ -19,7 +19,7 @@ Map<String, dynamic> _$MeToJson(Me instance) => <String, dynamic>{
   'permissions': instance.permissions
       .map((e) => _$PermissionKeyEnumMap[e]!)
       .toList(),
-  'deviceId': instance.deviceId,
+  'deviceId': ?instance.deviceId,
 };
 
 const _$PermissionKeyEnumMap = {

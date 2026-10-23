@@ -15,5 +15,5 @@ AuditPage _$AuditPageFromJson(Map<String, dynamic> json) => AuditPage(
 
 Map<String, dynamic> _$AuditPageToJson(AuditPage instance) => <String, dynamic>{
   'items': instance.items,
-  'nextCursor': instance.nextCursor,
+  'nextCursor': ?instance.nextCursor,
 };

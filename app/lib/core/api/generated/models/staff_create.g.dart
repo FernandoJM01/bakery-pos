@@ -23,8 +23,8 @@ Map<String, dynamic> _$StaffCreateToJson(StaffCreate instance) =>
       'fullName': instance.fullName,
       'displayName': instance.displayName,
       'role': _$RoleEnumMap[instance.role]!,
-      'email': instance.email,
-      'password': instance.password,
+      'email': ?instance.email,
+      'password': ?instance.password,
       'branchIds': instance.branchIds,
       'pin': instance.pin,
     };

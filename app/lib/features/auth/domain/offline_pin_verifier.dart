@@ -3,6 +3,11 @@ import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:argon2/argon2.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final offlinePinVerifierProvider = Provider<OfflinePinVerifier>((ref) {
+  return const OfflinePinVerifier();
+});
 
 class OfflinePinVerifier {
   const OfflinePinVerifier();
