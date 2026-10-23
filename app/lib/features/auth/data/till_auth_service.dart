@@ -240,10 +240,15 @@ class TillAuthService extends ChangeNotifier {
   }
 
   Future<List<String>> refreshPermissions() async {
-    if (_currentSession == null) return [];
-    if (!_currentSession!.isOffline && _currentSession!.accessToken != null) {
+    final captured = _currentSession;
+    if (captured == null) return [];
+
+    if (!captured.isOffline && captured.accessToken != null) {
       try {
         final me = await restClient.auth.getMe();
+        if (!identical(_currentSession, captured)) {
+          return _currentSession?.permissions ?? [];
+        }
         final permissions = me.permissions
             .map((p) => p.json ?? p.name)
             .toList();
@@ -256,9 +261,19 @@ class TillAuthService extends ChangeNotifier {
         }
       }
     }
+
+    if (!identical(_currentSession, captured)) {
+      return _currentSession?.permissions ?? [];
+    }
+
     final permissions = await database.getPermissionsForRole(
-      _currentSession!.staff.role,
+      captured.staff.role,
     );
+
+    if (!identical(_currentSession, captured)) {
+      return _currentSession?.permissions ?? [];
+    }
+
     _currentSession = _currentSession!.copyWith(permissions: permissions);
     notifyListeners();
     return permissions;

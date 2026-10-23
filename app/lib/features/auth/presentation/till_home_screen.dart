@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/router/app_router.dart';
+import '../../../core/storage/secure_storage.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimensions.dart';
 import '../../../l10n/app_localizations.dart';
@@ -12,7 +14,17 @@ import '../domain/session_lock_manager.dart';
 import '../domain/till_auth_state.dart';
 import 'approval_dialog.dart';
 
-enum TillSection { sales, cash, production, orders, oven, reports }
+enum TillSection {
+  sales(AppRoutes.tillSales),
+  cash(AppRoutes.tillCash),
+  production(AppRoutes.tillProduction),
+  orders(AppRoutes.tillOrders),
+  oven(AppRoutes.tillOven),
+  reports(AppRoutes.tillReports);
+
+  const TillSection(this.route);
+  final String route;
+}
 
 class TillSectionConfig {
   const TillSectionConfig({
@@ -24,6 +36,7 @@ class TillSectionConfig {
   });
 
   final TillSection section;
+  String get route => section.route;
   final String primaryPermission;
   final String? secondaryPermission;
   final String Function(AppLocalizations) getLabel;
@@ -80,7 +93,9 @@ final tillSectionsConfig = [
 ];
 
 class TillHomeScreen extends ConsumerStatefulWidget {
-  const TillHomeScreen({super.key});
+  const TillHomeScreen({super.key, this.child});
+
+  final Widget? child;
 
   @override
   ConsumerState<TillHomeScreen> createState() => _TillHomeScreenState();
@@ -149,6 +164,7 @@ class _TillHomeScreenState extends ConsumerState<TillHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(tillSessionProvider);
+    final branchName = ref.watch(enrolledBranchNameProvider).asData?.value;
     final l10n = AppLocalizations.of(context)!;
     final isOffline = session?.isOffline ?? false;
 
@@ -156,14 +172,28 @@ class _TillHomeScreenState extends ConsumerState<TillHomeScreen> {
         ? <TillSectionConfig>[]
         : tillSectionsConfig.where((s) => s.isAllowed(session)).toList();
 
+    String? currentRoute;
+    try {
+      currentRoute = GoRouterState.of(context).matchedLocation;
+    } catch (_) {}
+
+    final activeConfig = permittedSections
+        .cast<TillSectionConfig?>()
+        .firstWhere(
+          (s) => s != null && s.route == currentRoute,
+          orElse: () => null,
+        );
+
     TillSection currentSection;
-    if (permittedSections.isEmpty) {
-      currentSection = TillSection.sales;
+    if (activeConfig != null) {
+      currentSection = activeConfig.section;
     } else if (_selectedSection != null &&
         permittedSections.any((s) => s.section == _selectedSection)) {
       currentSection = _selectedSection!;
-    } else {
+    } else if (permittedSections.isNotEmpty) {
       currentSection = permittedSections.first.section;
+    } else {
+      currentSection = TillSection.sales;
     }
 
     final selectedIndex = permittedSections.isEmpty
@@ -176,6 +206,21 @@ class _TillHomeScreenState extends ConsumerState<TillHomeScreen> {
       appBar: AppBar(
         title: Text(l10n.appTitle, key: const Key('mode-label')),
         actions: [
+          // Branch name
+          if (branchName != null && branchName.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Center(
+                child: Text(
+                  branchName,
+                  key: const Key('branch-name-label'),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
           // Online / Offline Status
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -305,9 +350,14 @@ class _TillHomeScreenState extends ConsumerState<TillHomeScreen> {
                         key: const Key('till-navigation-rail'),
                         selectedIndex: selectedIndex,
                         onDestinationSelected: (index) {
-                          setState(() {
-                            _selectedSection = permittedSections[index].section;
-                          });
+                          final target = permittedSections[index];
+                          try {
+                            context.go(target.route);
+                          } catch (_) {
+                            setState(() {
+                              _selectedSection = target.section;
+                            });
+                          }
                         },
                         backgroundColor: AppColors.surfaceCard,
                         selectedIconTheme: const IconThemeData(
@@ -341,10 +391,12 @@ class _TillHomeScreenState extends ConsumerState<TillHomeScreen> {
                         color: AppColors.surfaceHighlight,
                       ),
                       Expanded(
-                        child: _SectionPlaceholder(
-                          key: Key('section-${currentSection.name}'),
-                          section: currentSection,
-                        ),
+                        child:
+                            widget.child ??
+                            TillSectionPlaceholder(
+                              key: Key('section-${currentSection.name}'),
+                              section: currentSection,
+                            ),
                       ),
                     ],
                   ),
@@ -355,10 +407,47 @@ class _TillHomeScreenState extends ConsumerState<TillHomeScreen> {
   }
 }
 
-class _SectionPlaceholder extends ConsumerWidget {
-  const _SectionPlaceholder({super.key, required this.section});
+class TillSectionPlaceholder extends ConsumerWidget {
+  const TillSectionPlaceholder({super.key, required this.section});
 
   final TillSection section;
+
+  static Widget forRoute(String route) {
+    switch (route) {
+      case AppRoutes.tillSales:
+        return const TillSectionPlaceholder(
+          key: Key('section-sales'),
+          section: TillSection.sales,
+        );
+      case AppRoutes.tillCash:
+        return const TillSectionPlaceholder(
+          key: Key('section-cash'),
+          section: TillSection.cash,
+        );
+      case AppRoutes.tillProduction:
+        return const TillSectionPlaceholder(
+          key: Key('section-production'),
+          section: TillSection.production,
+        );
+      case AppRoutes.tillOrders:
+        return const TillSectionPlaceholder(
+          key: Key('section-orders'),
+          section: TillSection.orders,
+        );
+      case AppRoutes.tillOven:
+        return const TillSectionPlaceholder(
+          key: Key('section-oven'),
+          section: TillSection.oven,
+        );
+      case AppRoutes.tillReports:
+        return const TillSectionPlaceholder(
+          key: Key('section-reports'),
+          section: TillSection.reports,
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

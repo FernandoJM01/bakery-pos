@@ -20,13 +20,13 @@ StaffUpdate _$StaffUpdateFromJson(Map<String, dynamic> json) => StaffUpdate(
 
 Map<String, dynamic> _$StaffUpdateToJson(StaffUpdate instance) =>
     <String, dynamic>{
-      'fullName': instance.fullName,
-      'displayName': instance.displayName,
-      'role': _$RoleEnumMap[instance.role],
-      'email': instance.email,
-      'password': instance.password,
-      'branchIds': instance.branchIds,
-      'isActive': instance.isActive,
+      'fullName': ?instance.fullName,
+      'displayName': ?instance.displayName,
+      'role': ?_$RoleEnumMap[instance.role],
+      'email': ?instance.email,
+      'password': ?instance.password,
+      'branchIds': ?instance.branchIds,
+      'isActive': ?instance.isActive,
     };
 
 const _$RoleEnumMap = {

@@ -132,6 +132,8 @@ class _ManagerApprovalDialogState extends ConsumerState<ManagerApprovalDialog> {
         ),
       );
 
+      await db.resetLockout(_selectedApprover!.id);
+
       if (mounted) {
         Navigator.of(context).pop(
           OnlineApprovalResult(
@@ -151,17 +153,48 @@ class _ManagerApprovalDialogState extends ConsumerState<ManagerApprovalDialog> {
       final data = e.response?.data;
       final code = data is Map ? data['code']?.toString() : null;
 
+      if (code == 'AUTH_INVALID_PIN') {
+        final lockedUntil = await db.recordFailedPinAttempt(
+          _selectedApprover!.id,
+          now,
+        );
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _pin = '';
+            if (lockedUntil != null) {
+              _errorMessage = l10n.approvalLocked;
+            } else {
+              _errorMessage = l10n.approvalInvalidPin;
+            }
+          });
+        }
+        return;
+      }
+
+      if (code == 'AUTH_LOCKED') {
+        DateTime? lockedUntil;
+        if (data is Map && data['details'] is Map) {
+          final timeStr = (data['details'] as Map)['lockedUntil'];
+          if (timeStr is String) lockedUntil = DateTime.tryParse(timeStr);
+        }
+        lockedUntil ??= now.add(const Duration(minutes: 5));
+        await db.setLockoutUntil(_selectedApprover!.id, lockedUntil);
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _pin = '';
+            _errorMessage = l10n.approvalLocked;
+          });
+        }
+        return;
+      }
+
       if (mounted) {
         setState(() {
           _isLoading = false;
           _pin = '';
           switch (code) {
-            case 'AUTH_INVALID_PIN':
-              _errorMessage = l10n.approvalInvalidPin;
-              break;
-            case 'AUTH_LOCKED':
-              _errorMessage = l10n.approvalLocked;
-              break;
             case 'PERMISSION_DENIED':
               _errorMessage = l10n.approvalPermissionDenied;
               break;
@@ -243,6 +276,7 @@ class _ManagerApprovalDialogState extends ConsumerState<ManagerApprovalDialog> {
         OfflineApprovalResult(
           id: id,
           approverStaffId: approver.id,
+          requesterStaffId: requester.id,
           action: widget.action,
           reference: widget.reference,
           createdAt: now,

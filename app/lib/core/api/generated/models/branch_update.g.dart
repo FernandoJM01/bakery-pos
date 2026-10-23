@@ -15,8 +15,8 @@ BranchUpdate _$BranchUpdateFromJson(Map<String, dynamic> json) => BranchUpdate(
 
 Map<String, dynamic> _$BranchUpdateToJson(BranchUpdate instance) =>
     <String, dynamic>{
-      'name': instance.name,
-      'address': instance.address,
-      'timezone': instance.timezone,
-      'isActive': instance.isActive,
+      'name': ?instance.name,
+      'address': ?instance.address,
+      'timezone': ?instance.timezone,
+      'isActive': ?instance.isActive,
     };

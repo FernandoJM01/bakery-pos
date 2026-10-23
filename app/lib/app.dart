@@ -17,16 +17,22 @@ class BakeryPosApp extends ConsumerStatefulWidget {
     required this.mode,
     this.refreshListenable,
     this.hasSession,
+    this.getPermissions,
     this.tillLoginBuilder,
     this.tillHomeBuilder,
+    this.tillShellBuilder,
+    this.tillSectionBuilder,
     this.appWrapper,
   });
 
   final AppMode mode;
   final Listenable? refreshListenable;
   final bool Function()? hasSession;
+  final List<String> Function()? getPermissions;
   final WidgetBuilder? tillLoginBuilder;
   final WidgetBuilder? tillHomeBuilder;
+  final TillShellBuilder? tillShellBuilder;
+  final TillSectionBuilder? tillSectionBuilder;
   final TransitionBuilder? appWrapper;
 
   @override
@@ -40,8 +46,11 @@ class _BakeryPosAppState extends ConsumerState<BakeryPosApp> {
     secureStorage: ref.read(secureStorageProvider),
     refreshListenable: widget.refreshListenable,
     hasSession: widget.hasSession,
+    getPermissions: widget.getPermissions,
     tillLoginBuilder: widget.tillLoginBuilder,
     tillHomeBuilder: widget.tillHomeBuilder,
+    tillShellBuilder: widget.tillShellBuilder,
+    tillSectionBuilder: widget.tillSectionBuilder,
   );
 
   @override

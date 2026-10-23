@@ -172,12 +172,6 @@ abstract class AppLocalizations {
   /// **'Caja'**
   String get navCash;
 
-  /// No description provided for @navShift.
-  ///
-  /// In es, this message translates to:
-  /// **'Turno'**
-  String get navShift;
-
   /// No description provided for @navProduction.
   ///
   /// In es, this message translates to:
@@ -483,12 +477,6 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Demasiados intentos. Bloqueado temporalmente.'**
   String get approvalLocked;
-
-  /// Mensaje de bloqueo temporal en aprobación con hora
-  ///
-  /// In es, this message translates to:
-  /// **'Demasiados intentos. Bloqueado hasta las {time}.'**
-  String approvalLockedUntil(String time);
 
   /// No description provided for @debugOpenDrawerNoSale.
   ///

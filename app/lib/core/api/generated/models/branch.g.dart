@@ -21,7 +21,7 @@ Map<String, dynamic> _$BranchToJson(Branch instance) => <String, dynamic>{
   'id': instance.id,
   'code': instance.code,
   'name': instance.name,
-  'address': instance.address,
+  'address': ?instance.address,
   'timezone': instance.timezone,
   'isActive': instance.isActive,
   'createdAt': instance.createdAt.toIso8601String(),

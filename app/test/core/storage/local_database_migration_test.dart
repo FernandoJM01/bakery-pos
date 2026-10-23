@@ -54,13 +54,15 @@ void main() {
       await appDb.recordOfflineApproval(
         id: 'approval-1',
         approverStaffId: 'staff-1',
-        requesterStaffId: 'staff-9',
+        requesterStaffId: 'staff-2',
         action: 'cash.open_drawer_no_sale',
         createdAt: DateTime.utc(2026, 1, 1),
       );
       final approvals = await appDb.getOfflineApprovals();
       expect(approvals.length, 1);
       expect(approvals.first.id, 'approval-1');
+      expect(approvals.first.requesterStaffId, 'staff-2');
+      expect(approvals.first.syncedAt, isNull);
 
       final userVerAfter = sqliteDb
           .select('PRAGMA user_version;')
@@ -106,14 +108,17 @@ void main() {
         await appDb.recordOfflineApproval(
           id: 'approval-2',
           approverStaffId: 'staff-2',
-          requesterStaffId: 'staff-9',
+          requesterStaffId: 'staff-1',
           action: 'cash.open_drawer_no_sale',
           reference: 'drawer-ref',
           createdAt: DateTime.utc(2026, 1, 2),
+          syncedAt: DateTime.utc(2026, 1, 3),
         );
         final approvals = await appDb.getOfflineApprovals();
         expect(approvals.length, 1);
         expect(approvals.first.reference, 'drawer-ref');
+        expect(approvals.first.requesterStaffId, 'staff-1');
+        expect(approvals.first.syncedAt?.toUtc(), DateTime.utc(2026, 1, 3));
 
         final userVer = sqliteDb
             .select('PRAGMA user_version;')

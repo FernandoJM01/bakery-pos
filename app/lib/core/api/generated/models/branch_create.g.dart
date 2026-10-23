@@ -17,6 +17,6 @@ Map<String, dynamic> _$BranchCreateToJson(BranchCreate instance) =>
     <String, dynamic>{
       'code': instance.code,
       'name': instance.name,
-      'address': instance.address,
+      'address': ?instance.address,
       'timezone': instance.timezone,
     };

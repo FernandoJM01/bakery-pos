@@ -6,9 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'app.dart';
 import 'core/api/api_client_provider.dart';
 import 'core/router/app_router.dart';
-import 'core/storage/local_database.dart';
 import 'core/storage/secure_storage.dart';
 import 'features/auth/data/till_auth_service.dart';
+import 'features/auth/data/till_revocation_handler.dart';
 import 'features/auth/domain/session_lock_manager.dart';
 import 'features/auth/presentation/till_home_screen.dart';
 import 'features/auth/presentation/till_login_screen.dart';
@@ -26,19 +26,10 @@ Future<void> main() async {
         serverBaseUrlProvider.overrideWith(
           () => ServerBaseUrlNotifier(savedServerUrl),
         ),
-        deviceRevocationHandlerProvider.overrideWith((ref) {
-          return () async {
-            // Delete the database before the secure storage that holds its
-            // key: opening it after the key is gone would create a new key
-            // and fail on the old file, leaving it behind.
-            await ref.read(tillDatabaseProvider).close();
-            ref.invalidate(tillDatabaseProvider);
-            await AppDatabase.deleteDatabaseFile();
-            await ref.read(secureStorageProvider).clearAll();
-            ref.read(tillAuthServiceProvider).clearLocalSession();
-            ref.read(sessionLockManagerProvider).clearLockedState();
-          };
-        }),
+        deviceRevocationHandlerProvider.overrideWith(
+          (ref) =>
+              () => executeTillDeviceRevocationWipeFromRef(ref),
+        ),
       ],
       child: const TillAppRoot(),
     ),
@@ -73,8 +64,11 @@ class _TillAppRootState extends ConsumerState<TillAppRoot> {
       mode: AppMode.till,
       refreshListenable: Listenable.merge([authService, lockManager]),
       hasSession: () => lockManager.hasActiveSession,
+      getPermissions: () => authService.currentSession?.permissions ?? const [],
       tillLoginBuilder: (context) => const TillLoginScreen(),
-      tillHomeBuilder: (context) => const TillHomeScreen(),
+      tillShellBuilder: (context, state, child) => TillHomeScreen(child: child),
+      tillSectionBuilder: (context, route) =>
+          TillSectionPlaceholder.forRoute(route),
       appWrapper: (context, child) =>
           UserActivityDetector(child: child ?? const SizedBox.shrink()),
     );

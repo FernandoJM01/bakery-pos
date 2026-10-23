@@ -1,24 +1,85 @@
+import 'package:bakery_pos/app.dart';
+import 'package:bakery_pos/core/router/app_router.dart';
 import 'package:bakery_pos/core/storage/local_database.dart';
+import 'package:bakery_pos/core/storage/secure_storage.dart';
 import 'package:bakery_pos/features/auth/data/till_auth_service.dart';
 import 'package:bakery_pos/features/auth/domain/till_auth_state.dart';
 import 'package:bakery_pos/features/auth/presentation/till_home_screen.dart';
 import 'package:bakery_pos/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
-Widget createTillShellTestWidget({required TillSession session}) {
+class _FakeSecureStorageStore extends Fake implements FlutterSecureStorage {
+  final Map<String, String> values = {};
+
+  @override
+  Future<String?> read({
+    required String key,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async => values[key];
+
+  @override
+  Future<void> write({
+    required String key,
+    required String? value,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async {
+    if (value != null) values[key] = value;
+  }
+}
+
+Widget createTillShellTestWidget({
+  required TillSession session,
+  String? branchName,
+}) {
   return ProviderScope(
     overrides: [
       tillSessionProvider.overrideWith(
         () => _StaticTillSessionNotifier(session),
       ),
+      if (branchName != null)
+        enrolledBranchNameProvider.overrideWith((ref) => branchName),
     ],
     child: const MaterialApp(
       locale: Locale('es', 'MX'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: TillHomeScreen(),
+    ),
+  );
+}
+
+Widget createTillRouterTestWidget({
+  required TillSession session,
+  required GoRouter router,
+  String? branchName,
+}) {
+  return ProviderScope(
+    overrides: [
+      tillSessionProvider.overrideWith(
+        () => _StaticTillSessionNotifier(session),
+      ),
+      if (branchName != null)
+        enrolledBranchNameProvider.overrideWith((ref) => branchName),
+    ],
+    child: MaterialApp.router(
+      locale: const Locale('es', 'MX'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      routerConfig: router,
     ),
   );
 }
@@ -191,5 +252,114 @@ void main() {
       expect(find.text(l10n.navBranches), findsNothing);
       expect(find.text(l10n.navSettings), findsNothing);
     });
+
+    testWidgets('Top bar displays enrolled branch name', (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final cashierSession = TillSession(
+        staff: cashierEntry,
+        permissions: const ['sale.create'],
+        isOffline: false,
+      );
+
+      await tester.pumpWidget(
+        createTillShellTestWidget(
+          session: cashierSession,
+          branchName: 'Sucursal Centro',
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('branch-name-label')), findsOneWidget);
+      expect(find.text('Sucursal Centro'), findsOneWidget);
+    });
+
+    testWidgets(
+      'Navigating to unpermitted section redirects to first permitted section',
+      (tester) async {
+        tester.view.physicalSize = const Size(1280, 800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+
+        // Baker only has stock.production_entry and oven.board
+        final bakerSession = TillSession(
+          staff: bakerEntry,
+          permissions: const ['stock.production_entry', 'oven.board'],
+          isOffline: false,
+        );
+
+        final fakeStore = _FakeSecureStorageStore();
+        final secureStorage = SecureStorageService(fakeStore);
+        await secureStorage.saveDeviceToken('active-token');
+
+        final router = createAppRouter(
+          AppMode.till,
+          secureStorage: secureStorage,
+          hasSession: () => true,
+          getPermissions: () => bakerSession.permissions,
+          tillShellBuilder: (context, state, child) =>
+              TillHomeScreen(child: child),
+          tillSectionBuilder: (context, route) =>
+              TillSectionPlaceholder.forRoute(route),
+        );
+
+        await tester.pumpWidget(
+          createTillRouterTestWidget(session: bakerSession, router: router),
+        );
+        await tester.pumpAndSettle();
+
+        // 1. Direct hit on /till redirects to first permitted: /till/produccion
+        router.go(AppRoutes.tillHome);
+        await tester.pumpAndSettle();
+        expect(
+          router.routerDelegate.currentConfiguration.uri.toString(),
+          AppRoutes.tillProduction,
+        );
+        expect(find.byKey(const Key('section-production')), findsOneWidget);
+
+        // 2. Direct hit on unpermitted /till/caja redirects to first permitted: /till/produccion
+        router.go(AppRoutes.tillCash);
+        await tester.pumpAndSettle();
+        expect(
+          router.routerDelegate.currentConfiguration.uri.toString(),
+          AppRoutes.tillProduction,
+        );
+        expect(find.byKey(const Key('section-production')), findsOneWidget);
+
+        // 3. User with no permissions lands on /till with no infinite loop
+        final noPermSession = TillSession(
+          staff: bakerEntry,
+          permissions: const [],
+          isOffline: false,
+        );
+        final noPermRouter = createAppRouter(
+          AppMode.till,
+          secureStorage: secureStorage,
+          hasSession: () => true,
+          getPermissions: () => noPermSession.permissions,
+          tillShellBuilder: (context, state, child) =>
+              TillHomeScreen(child: child),
+          tillSectionBuilder: (context, route) =>
+              TillSectionPlaceholder.forRoute(route),
+        );
+
+        await tester.pumpWidget(
+          createTillRouterTestWidget(
+            session: noPermSession,
+            router: noPermRouter,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        noPermRouter.go(AppRoutes.tillSales);
+        await tester.pumpAndSettle();
+        expect(
+          noPermRouter.routerDelegate.currentConfiguration.uri.toString(),
+          AppRoutes.tillHome,
+        );
+      },
+    );
   });
 }

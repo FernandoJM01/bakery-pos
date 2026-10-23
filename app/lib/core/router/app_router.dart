@@ -10,10 +10,60 @@ class AppRoutes {
   static const String tillEnrollment = '/enrollment';
   static const String tillLogin = '/login';
   static const String tillHome = '/till';
+  static const String tillSales = '/till/ventas';
+  static const String tillCash = '/till/caja';
+  static const String tillProduction = '/till/produccion';
+  static const String tillOrders = '/till/pedidos';
+  static const String tillOven = '/till/horno';
+  static const String tillReports = '/till/reportes';
 
   static const String backofficeLogin = '/backoffice/login';
   static const String backofficeDashboard = '/backoffice/dashboard';
 }
+
+const tillSectionRoutes = [
+  AppRoutes.tillSales,
+  AppRoutes.tillCash,
+  AppRoutes.tillProduction,
+  AppRoutes.tillOrders,
+  AppRoutes.tillOven,
+  AppRoutes.tillReports,
+];
+
+List<String> getPermittedTillRoutes(List<String> permissions) {
+  final permitted = <String>[];
+  if (permissions.contains('sale.create')) {
+    permitted.add(AppRoutes.tillSales);
+  }
+  if (permissions.contains('cash.open_shift')) {
+    permitted.add(AppRoutes.tillCash);
+  }
+  if (permissions.contains('stock.production_entry')) {
+    permitted.add(AppRoutes.tillProduction);
+  }
+  if (permissions.contains('orders.pickup')) {
+    permitted.add(AppRoutes.tillOrders);
+  }
+  if (permissions.contains('oven.intake_pickup') ||
+      permissions.contains('oven.board')) {
+    permitted.add(AppRoutes.tillOven);
+  }
+  if (permissions.contains('reports.branch')) {
+    permitted.add(AppRoutes.tillReports);
+  }
+  return permitted;
+}
+
+typedef TillShellBuilder = Widget Function(
+  BuildContext context,
+  GoRouterState state,
+  Widget child,
+);
+
+typedef TillSectionBuilder = Widget Function(
+  BuildContext context,
+  String route,
+);
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -22,8 +72,11 @@ GoRouter createAppRouter(
   SecureStorageService? secureStorage,
   Listenable? refreshListenable,
   bool Function()? hasSession,
+  List<String> Function()? getPermissions,
   WidgetBuilder? tillLoginBuilder,
   WidgetBuilder? tillHomeBuilder,
+  TillShellBuilder? tillShellBuilder,
+  TillSectionBuilder? tillSectionBuilder,
 }) {
   final initialLocation = mode == AppMode.till
       ? AppRoutes.tillLogin
@@ -58,6 +111,25 @@ GoRouter createAppRouter(
             !isEnrollment) {
           return AppRoutes.tillLogin;
         }
+
+        if (hasToken && (hasSession == null || hasSession())) {
+          if (getPermissions != null) {
+            final permissions = getPermissions();
+            final permittedRoutes = getPermittedTillRoutes(permissions);
+
+            if (state.matchedLocation == AppRoutes.tillHome) {
+              if (permittedRoutes.isNotEmpty) {
+                return permittedRoutes.first;
+              }
+            } else if (tillSectionRoutes.contains(state.matchedLocation)) {
+              if (!permittedRoutes.contains(state.matchedLocation)) {
+                return permittedRoutes.isNotEmpty
+                    ? permittedRoutes.first
+                    : AppRoutes.tillHome;
+              }
+            }
+          }
+        }
       }
       return null;
     },
@@ -78,14 +150,78 @@ GoRouter createAppRouter(
               routeName: 'till-login',
             ),
       ),
-      GoRoute(
-        path: AppRoutes.tillHome,
-        builder: (context, state) =>
-            tillHomeBuilder?.call(context) ??
-            const _RoutePlaceholder(
-              titleKey: 'appTitle',
-              routeName: 'till-home',
-            ),
+      ShellRoute(
+        builder: (context, state, child) {
+          if (tillShellBuilder != null) {
+            return tillShellBuilder(context, state, child);
+          }
+          if (tillHomeBuilder != null) {
+            return tillHomeBuilder(context);
+          }
+          return child;
+        },
+        routes: [
+          GoRoute(
+            path: AppRoutes.tillHome,
+            builder: (context, state) =>
+                tillSectionBuilder?.call(context, AppRoutes.tillHome) ??
+                const SizedBox.shrink(),
+          ),
+          GoRoute(
+            path: AppRoutes.tillSales,
+            builder: (context, state) =>
+                tillSectionBuilder?.call(context, AppRoutes.tillSales) ??
+                const _RoutePlaceholder(
+                  titleKey: 'navSales',
+                  routeName: 'till-sales',
+                ),
+          ),
+          GoRoute(
+            path: AppRoutes.tillCash,
+            builder: (context, state) =>
+                tillSectionBuilder?.call(context, AppRoutes.tillCash) ??
+                const _RoutePlaceholder(
+                  titleKey: 'navCash',
+                  routeName: 'till-cash',
+                ),
+          ),
+          GoRoute(
+            path: AppRoutes.tillProduction,
+            builder: (context, state) =>
+                tillSectionBuilder?.call(context, AppRoutes.tillProduction) ??
+                const _RoutePlaceholder(
+                  titleKey: 'navProduction',
+                  routeName: 'till-production',
+                ),
+          ),
+          GoRoute(
+            path: AppRoutes.tillOrders,
+            builder: (context, state) =>
+                tillSectionBuilder?.call(context, AppRoutes.tillOrders) ??
+                const _RoutePlaceholder(
+                  titleKey: 'navOrders',
+                  routeName: 'till-orders',
+                ),
+          ),
+          GoRoute(
+            path: AppRoutes.tillOven,
+            builder: (context, state) =>
+                tillSectionBuilder?.call(context, AppRoutes.tillOven) ??
+                const _RoutePlaceholder(
+                  titleKey: 'navOven',
+                  routeName: 'till-oven',
+                ),
+          ),
+          GoRoute(
+            path: AppRoutes.tillReports,
+            builder: (context, state) =>
+                tillSectionBuilder?.call(context, AppRoutes.tillReports) ??
+                const _RoutePlaceholder(
+                  titleKey: 'navReports',
+                  routeName: 'till-reports',
+                ),
+          ),
+        ],
       ),
       GoRoute(
         path: AppRoutes.backofficeLogin,

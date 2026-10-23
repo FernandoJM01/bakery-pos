@@ -55,6 +55,7 @@ class OfflineApprovalEntries extends Table {
   TextColumn get action => text()();
   TextColumn get reference => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get syncedAt => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -138,6 +139,7 @@ class AppDatabase extends _$AppDatabase {
     required String action,
     String? reference,
     required DateTime createdAt,
+    DateTime? syncedAt,
   }) async {
     await into(offlineApprovalEntries).insert(
       OfflineApprovalEntriesCompanion(
@@ -147,6 +149,7 @@ class AppDatabase extends _$AppDatabase {
         action: Value(action),
         reference: Value(reference),
         createdAt: Value(createdAt),
+        syncedAt: Value(syncedAt),
       ),
     );
   }
@@ -234,8 +237,8 @@ class AppDatabase extends _$AppDatabase {
     final base = p.join(dbFolder.path, _fileName);
     for (final path in [base, '$base-wal', '$base-shm', '$base-journal']) {
       final file = File(path);
-      if (await file.exists()) {
-        await file.delete();
+      if (file.existsSync()) {
+        file.deleteSync();
       }
     }
   }

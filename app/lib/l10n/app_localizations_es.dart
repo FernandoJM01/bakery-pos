@@ -49,9 +49,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navCash => 'Caja';
 
   @override
-  String get navShift => 'Turno';
-
-  @override
   String get navProduction => 'Producción';
 
   @override
@@ -216,11 +213,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get approvalLocked => 'Demasiados intentos. Bloqueado temporalmente.';
-
-  @override
-  String approvalLockedUntil(String time) {
-    return 'Demasiados intentos. Bloqueado hasta las $time.';
-  }
 
   @override
   String get debugOpenDrawerNoSale => 'Abrir cajón sin venta (demo)';

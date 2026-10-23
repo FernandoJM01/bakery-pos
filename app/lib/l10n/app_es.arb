@@ -16,7 +16,6 @@
   "statusOffline": "Sin conexión",
   "navSales": "Ventas",
   "navCash": "Caja",
-  "navShift": "Turno",
   "navProduction": "Producción",
   "navOrders": "Pedidos",
   "navOven": "Horno",
@@ -76,15 +75,6 @@
   "approvalPermissionDenied": "El usuario no tiene permiso para autorizar esta acción",
   "approvalInvalidPin": "PIN incorrecto",
   "approvalLocked": "Demasiados intentos. Bloqueado temporalmente.",
-  "approvalLockedUntil": "Demasiados intentos. Bloqueado hasta las {time}.",
-  "@approvalLockedUntil": {
-    "description": "Mensaje de bloqueo temporal en aprobación con hora",
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "debugOpenDrawerNoSale": "Abrir cajón sin venta (demo)",
   "deviceRevokedTitle": "Dispositivo revocado",
   "deviceRevokedMessage": "Este dispositivo ha sido revocado. Los datos locales serán eliminados.",

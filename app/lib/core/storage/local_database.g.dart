@@ -1159,6 +1159,17 @@ class $OfflineApprovalEntriesTable extends OfflineApprovalEntries
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
+    'syncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+    'synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1167,6 +1178,7 @@ class $OfflineApprovalEntriesTable extends OfflineApprovalEntries
     action,
     reference,
     createdAt,
+    syncedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1229,6 +1241,12 @@ class $OfflineApprovalEntriesTable extends OfflineApprovalEntries
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
+    if (data.containsKey('synced_at')) {
+      context.handle(
+        _syncedAtMeta,
+        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -1262,6 +1280,10 @@ class $OfflineApprovalEntriesTable extends OfflineApprovalEntries
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
+      syncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}synced_at'],
+      ),
     );
   }
 
@@ -1279,6 +1301,7 @@ class OfflineApprovalEntry extends DataClass
   final String action;
   final String? reference;
   final DateTime createdAt;
+  final DateTime? syncedAt;
   const OfflineApprovalEntry({
     required this.id,
     required this.approverStaffId,
@@ -1286,6 +1309,7 @@ class OfflineApprovalEntry extends DataClass
     required this.action,
     this.reference,
     required this.createdAt,
+    this.syncedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1298,6 +1322,9 @@ class OfflineApprovalEntry extends DataClass
       map['reference'] = Variable<String>(reference);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
     return map;
   }
 
@@ -1311,6 +1338,9 @@ class OfflineApprovalEntry extends DataClass
           ? const Value.absent()
           : Value(reference),
       createdAt: Value(createdAt),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
     );
   }
 
@@ -1326,6 +1356,7 @@ class OfflineApprovalEntry extends DataClass
       action: serializer.fromJson<String>(json['action']),
       reference: serializer.fromJson<String?>(json['reference']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
     );
   }
   @override
@@ -1338,6 +1369,7 @@ class OfflineApprovalEntry extends DataClass
       'action': serializer.toJson<String>(action),
       'reference': serializer.toJson<String?>(reference),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
     };
   }
 
@@ -1348,6 +1380,7 @@ class OfflineApprovalEntry extends DataClass
     String? action,
     Value<String?> reference = const Value.absent(),
     DateTime? createdAt,
+    Value<DateTime?> syncedAt = const Value.absent(),
   }) => OfflineApprovalEntry(
     id: id ?? this.id,
     approverStaffId: approverStaffId ?? this.approverStaffId,
@@ -1355,6 +1388,7 @@ class OfflineApprovalEntry extends DataClass
     action: action ?? this.action,
     reference: reference.present ? reference.value : this.reference,
     createdAt: createdAt ?? this.createdAt,
+    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
   );
   OfflineApprovalEntry copyWithCompanion(OfflineApprovalEntriesCompanion data) {
     return OfflineApprovalEntry(
@@ -1368,6 +1402,7 @@ class OfflineApprovalEntry extends DataClass
       action: data.action.present ? data.action.value : this.action,
       reference: data.reference.present ? data.reference.value : this.reference,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
     );
   }
 
@@ -1379,7 +1414,8 @@ class OfflineApprovalEntry extends DataClass
           ..write('requesterStaffId: $requesterStaffId, ')
           ..write('action: $action, ')
           ..write('reference: $reference, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('syncedAt: $syncedAt')
           ..write(')'))
         .toString();
   }
@@ -1392,6 +1428,7 @@ class OfflineApprovalEntry extends DataClass
     action,
     reference,
     createdAt,
+    syncedAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -1402,7 +1439,8 @@ class OfflineApprovalEntry extends DataClass
           other.requesterStaffId == this.requesterStaffId &&
           other.action == this.action &&
           other.reference == this.reference &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.syncedAt == this.syncedAt);
 }
 
 class OfflineApprovalEntriesCompanion
@@ -1413,6 +1451,7 @@ class OfflineApprovalEntriesCompanion
   final Value<String> action;
   final Value<String?> reference;
   final Value<DateTime> createdAt;
+  final Value<DateTime?> syncedAt;
   final Value<int> rowid;
   const OfflineApprovalEntriesCompanion({
     this.id = const Value.absent(),
@@ -1421,6 +1460,7 @@ class OfflineApprovalEntriesCompanion
     this.action = const Value.absent(),
     this.reference = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.syncedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   OfflineApprovalEntriesCompanion.insert({
@@ -1430,6 +1470,7 @@ class OfflineApprovalEntriesCompanion
     required String action,
     this.reference = const Value.absent(),
     required DateTime createdAt,
+    this.syncedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        approverStaffId = Value(approverStaffId),
@@ -1443,6 +1484,7 @@ class OfflineApprovalEntriesCompanion
     Expression<String>? action,
     Expression<String>? reference,
     Expression<DateTime>? createdAt,
+    Expression<DateTime>? syncedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1452,6 +1494,7 @@ class OfflineApprovalEntriesCompanion
       if (action != null) 'action': action,
       if (reference != null) 'reference': reference,
       if (createdAt != null) 'created_at': createdAt,
+      if (syncedAt != null) 'synced_at': syncedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1463,6 +1506,7 @@ class OfflineApprovalEntriesCompanion
     Value<String>? action,
     Value<String?>? reference,
     Value<DateTime>? createdAt,
+    Value<DateTime?>? syncedAt,
     Value<int>? rowid,
   }) {
     return OfflineApprovalEntriesCompanion(
@@ -1472,6 +1516,7 @@ class OfflineApprovalEntriesCompanion
       action: action ?? this.action,
       reference: reference ?? this.reference,
       createdAt: createdAt ?? this.createdAt,
+      syncedAt: syncedAt ?? this.syncedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1497,6 +1542,9 @@ class OfflineApprovalEntriesCompanion
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1512,6 +1560,7 @@ class OfflineApprovalEntriesCompanion
           ..write('action: $action, ')
           ..write('reference: $reference, ')
           ..write('createdAt: $createdAt, ')
+          ..write('syncedAt: $syncedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2290,6 +2339,7 @@ typedef $$OfflineApprovalEntriesTableCreateCompanionBuilder =
       required String action,
       Value<String?> reference,
       required DateTime createdAt,
+      Value<DateTime?> syncedAt,
       Value<int> rowid,
     });
 typedef $$OfflineApprovalEntriesTableUpdateCompanionBuilder =
@@ -2300,6 +2350,7 @@ typedef $$OfflineApprovalEntriesTableUpdateCompanionBuilder =
       Value<String> action,
       Value<String?> reference,
       Value<DateTime> createdAt,
+      Value<DateTime?> syncedAt,
       Value<int> rowid,
     });
 
@@ -2339,6 +2390,11 @@ class $$OfflineApprovalEntriesTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2381,6 +2437,11 @@ class $$OfflineApprovalEntriesTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$OfflineApprovalEntriesTableAnnotationComposer
@@ -2413,6 +2474,9 @@ class $$OfflineApprovalEntriesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
 }
 
 class $$OfflineApprovalEntriesTableTableManager
@@ -2467,6 +2531,7 @@ class $$OfflineApprovalEntriesTableTableManager
                 Value<String> action = const Value.absent(),
                 Value<String?> reference = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => OfflineApprovalEntriesCompanion(
                 id: id,
@@ -2475,6 +2540,7 @@ class $$OfflineApprovalEntriesTableTableManager
                 action: action,
                 reference: reference,
                 createdAt: createdAt,
+                syncedAt: syncedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2485,6 +2551,7 @@ class $$OfflineApprovalEntriesTableTableManager
                 required String action,
                 Value<String?> reference = const Value.absent(),
                 required DateTime createdAt,
+                Value<DateTime?> syncedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => OfflineApprovalEntriesCompanion.insert(
                 id: id,
@@ -2493,6 +2560,7 @@ class $$OfflineApprovalEntriesTableTableManager
                 action: action,
                 reference: reference,
                 createdAt: createdAt,
+                syncedAt: syncedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

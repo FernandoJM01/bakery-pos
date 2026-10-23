@@ -128,6 +128,10 @@ void main() {
             permissionKey: 'sale.create',
           ),
           RolePermissionsCompanion.insert(
+            role: 'BRANCH_MANAGER',
+            permissionKey: 'cash.open_shift',
+          ),
+          RolePermissionsCompanion.insert(
             role: 'CASHIER',
             permissionKey: 'sale.create',
           ),
@@ -139,8 +143,13 @@ void main() {
         secureStorage: secureStorage,
         refreshListenable: authService,
         hasSession: () => authService.currentSession != null,
+        getPermissions: () =>
+            authService.currentSession?.permissions ?? const [],
         tillLoginBuilder: (context) => const TillLoginScreen(),
-        tillHomeBuilder: (context) => const TillHomeScreen(),
+        tillShellBuilder: (context, state, child) =>
+            TillHomeScreen(child: child),
+        tillSectionBuilder: (context, route) =>
+            TillSectionPlaceholder.forRoute(route),
       );
     });
 
@@ -200,15 +209,20 @@ void main() {
         expect(find.byType(TillHomeScreen), findsOneWidget);
         expect(find.text('Carlos (Gerente)'), findsOneWidget);
 
+        // Navigate to Caja section
+        await tester.tap(find.byKey(const Key('nav-icon-cash')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('section-cash')), findsOneWidget);
+
         // 2. Advance time by 1m 59s -> NOT locked yet
         currentTime = currentTime.add(const Duration(minutes: 1, seconds: 59));
-        lockManager.checkInactivity(currentRoute: AppRoutes.tillHome);
+        lockManager.checkInactivity(currentRoute: AppRoutes.tillCash);
         await tester.pumpAndSettle();
         expect(find.byType(TillHomeScreen), findsOneWidget);
 
         // 3. Advance by 1 more second (2:00 idle) -> AUTO-LOCK FIRES
         currentTime = currentTime.add(const Duration(seconds: 1));
-        lockManager.checkInactivity(currentRoute: AppRoutes.tillHome);
+        lockManager.checkInactivity(currentRoute: AppRoutes.tillCash);
         await tester.pumpAndSettle();
 
         // Returned to login screen, Carlos's work is kept
@@ -218,6 +232,7 @@ void main() {
           lockManager.lockedStaffId,
           '0192e2b0-0020-7000-8000-000000000020',
         );
+        expect(lockManager.lockedRoute, AppRoutes.tillCash);
 
         // 4. Same user (Carlos) logs back in within 30 minutes (e.g. 10 minutes later)
         currentTime = currentTime.add(const Duration(minutes: 10));
@@ -233,9 +248,10 @@ void main() {
         });
         await tester.pumpAndSettle();
 
-        // Restored to Carlos's screen!
+        // Restored to Carlos's screen on Caja!
         expect(find.byType(TillHomeScreen), findsOneWidget);
         expect(find.text('Carlos (Gerente)'), findsOneWidget);
+        expect(find.byKey(const Key('section-cash')), findsOneWidget);
         expect(lockManager.isLocked, isFalse);
 
         // 5. Test switch user: tap Carlos's name in top bar

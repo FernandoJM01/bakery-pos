@@ -1,5 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:bakery_pos/core/api/api_client_provider.dart';
 import 'package:bakery_pos/core/api/fake/fake_api_interceptor.dart';
+import 'package:bakery_pos/core/api/generated/models/approval_request.dart';
+import 'package:bakery_pos/core/api/generated/models/permission_key.dart';
 import 'package:bakery_pos/core/api/generated/rest_client.dart';
 import 'package:bakery_pos/core/storage/local_database.dart';
 import 'package:bakery_pos/core/storage/secure_storage.dart';
@@ -15,6 +19,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+class _StatusAdapter implements HttpClientAdapter {
+  _StatusAdapter(this.statusCode, this.body);
+  final int statusCode;
+  final String body;
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    return ResponseBody.fromString(
+      body,
+      statusCode,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
 
 class FakeSecureStorageStore extends Fake implements FlutterSecureStorage {
   final Map<String, String> values = {};
@@ -534,6 +562,198 @@ void main() {
           find.byKey(Key('approval-staff-${cashierStaff.id.value}')),
           findsNothing,
         );
+      },
+    );
+
+    test('ApprovalRequest.toJson() omits reference when null', () {
+      final req = ApprovalRequest(
+        approverStaffId: '0192e2b0-0020-7000-8000-000000000020',
+        pin: '1234',
+        action: PermissionKey.fromJson('cash.open_drawer_no_sale'),
+      );
+      final json = req.toJson();
+      expect(json.containsKey('reference'), isFalse);
+    });
+
+    testWidgets(
+      'Server 500 shows error and does not fall back to offline approval',
+      (tester) async {
+        tester.view.physicalSize = const Size(1280, 800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+
+        final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'))
+          ..httpClientAdapter = _StatusAdapter(
+            500,
+            '{"code":"INTERNAL_ERROR","message":"Server error"}',
+          );
+        final errorClient = RestClient(dio);
+
+        final cashierEntry = await db.getStaffById(
+          '0192e2b0-0030-7000-8000-000000000030',
+        );
+        final onlineSession = TillSession(
+          staff: cashierEntry!,
+          permissions: const ['sale.create'],
+          isOffline: false,
+          accessToken: 'valid-token',
+        );
+
+        ApprovalResult? result;
+
+        await tester.pumpWidget(
+          createApprovalTestApp(
+            database: db,
+            secureStorage: secureStorage,
+            restClient: errorClient,
+            session: onlineSession,
+            builder: (context) {
+              return ElevatedButton(
+                key: const Key('open-dialog-btn'),
+                onPressed: () async {
+                  result = await requestApproval(
+                    context,
+                    action: 'cash.open_drawer_no_sale',
+                  );
+                },
+                child: const Text('Open'),
+              );
+            },
+          ),
+        );
+
+        await tester.tap(find.byKey(const Key('open-dialog-btn')));
+        await tester.pumpAndSettle();
+
+        for (final digit in ['1', '2', '3', '4']) {
+          await tester.tap(find.byKey(Key('keypad-$digit')));
+          await tester.pump();
+        }
+
+        await tester.tap(find.byKey(const Key('keypad-confirm')));
+        await tester.pumpAndSettle();
+
+        final l10n = await AppLocalizations.delegate.load(
+          const Locale('es', 'MX'),
+        );
+        expect(find.text(l10n.approvalDenied), findsOneWidget);
+        expect(result, isNull);
+
+        final offlineApprovals = await db.getOfflineApprovals();
+        expect(offlineApprovals, isEmpty);
+      },
+    );
+
+    testWidgets(
+      'Server AUTH_LOCKED records lockout locally, so subsequent offline attempt is locked',
+      (tester) async {
+        tester.view.physicalSize = const Size(1280, 800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+
+        final lockedTime = DateTime.now()
+            .toUtc()
+            .add(const Duration(minutes: 5))
+            .toIso8601String();
+        final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'))
+          ..httpClientAdapter = _StatusAdapter(
+            423,
+            '{"code":"AUTH_LOCKED","message":"Locked out","details":{"lockedUntil":"$lockedTime"}}',
+          );
+        final lockedClient = RestClient(dio);
+
+        final cashierEntry = await db.getStaffById(
+          '0192e2b0-0030-7000-8000-000000000030',
+        );
+        final onlineSession = TillSession(
+          staff: cashierEntry!,
+          permissions: const ['sale.create'],
+          isOffline: false,
+          accessToken: 'valid-token',
+        );
+
+        await tester.pumpWidget(
+          createApprovalTestApp(
+            database: db,
+            secureStorage: secureStorage,
+            restClient: lockedClient,
+            session: onlineSession,
+            builder: (context) {
+              return ElevatedButton(
+                key: const Key('open-dialog-btn'),
+                onPressed: () => requestApproval(
+                  context,
+                  action: 'cash.open_drawer_no_sale',
+                ),
+                child: const Text('Open'),
+              );
+            },
+          ),
+        );
+
+        await tester.tap(find.byKey(const Key('open-dialog-btn')));
+        await tester.pumpAndSettle();
+
+        for (final digit in ['1', '2', '3', '4']) {
+          await tester.tap(find.byKey(Key('keypad-$digit')));
+          await tester.pump();
+        }
+        await tester.tap(find.byKey(const Key('keypad-confirm')));
+        await tester.pumpAndSettle();
+
+        final l10n = await AppLocalizations.delegate.load(
+          const Locale('es', 'MX'),
+        );
+        expect(find.text(l10n.approvalLocked), findsOneWidget);
+
+        // Verify database recorded lockout
+        final activeLockout = await db.getActiveLockout(
+          managerStaff.id.value,
+          DateTime.now(),
+        );
+        expect(activeLockout, isNotNull);
+
+        // Now close dialog
+        await tester.tap(find.byKey(const Key('approval-cancel-button')));
+        await tester.pumpAndSettle();
+
+        // Now switch to offline session and try again
+        final offlineSession = TillSession(
+          staff: cashierEntry,
+          permissions: const ['sale.create'],
+          isOffline: true,
+        );
+
+        await tester.pumpWidget(
+          createApprovalTestApp(
+            database: db,
+            secureStorage: secureStorage,
+            restClient: lockedClient,
+            session: offlineSession,
+            builder: (context) {
+              return ElevatedButton(
+                key: const Key('open-dialog-btn'),
+                onPressed: () => requestApproval(
+                  context,
+                  action: 'cash.open_drawer_no_sale',
+                ),
+                child: const Text('Open'),
+              );
+            },
+          ),
+        );
+
+        await tester.tap(find.byKey(const Key('open-dialog-btn')));
+        await tester.pumpAndSettle();
+
+        for (final digit in ['1', '2', '3', '4']) {
+          await tester.tap(find.byKey(Key('keypad-$digit')));
+          await tester.pump();
+        }
+        await tester.tap(find.byKey(const Key('keypad-confirm')));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.approvalLocked), findsOneWidget);
       },
     );
   });

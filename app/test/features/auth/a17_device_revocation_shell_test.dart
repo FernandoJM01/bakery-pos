@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bakery_pos/core/api/api_client_provider.dart';
 import 'package:bakery_pos/core/api/generated/rest_client.dart';
 import 'package:bakery_pos/core/api/till_device_interceptor.dart';
@@ -5,6 +7,7 @@ import 'package:bakery_pos/core/router/app_router.dart';
 import 'package:bakery_pos/core/storage/local_database.dart';
 import 'package:bakery_pos/core/storage/secure_storage.dart';
 import 'package:bakery_pos/features/auth/data/till_auth_service.dart';
+import 'package:bakery_pos/features/auth/data/till_revocation_handler.dart';
 import 'package:bakery_pos/features/auth/domain/till_auth_state.dart';
 import 'package:bakery_pos/features/auth/presentation/till_home_screen.dart';
 import 'package:bakery_pos/features/enrollment/presentation/enrollment_screen.dart';
@@ -12,10 +15,13 @@ import 'package:bakery_pos/l10n/app_localizations.dart';
 import 'package:dio/dio.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 class FakeSecureStorageStore extends Fake implements FlutterSecureStorage {
   final Map<String, String> values = {};
@@ -102,6 +108,13 @@ void main() {
     late GoRouter router;
     late TillAuthService authService;
 
+    setUpAll(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+            const MethodChannel('plugins.flutter.io/path_provider'),
+            (MethodCall methodCall) async => Directory.systemTemp.path,
+          );
+    });
     final staff1 = StaffEntry(
       id: '0192e2b0-0020-7000-8000-000000000020',
       displayName: 'Carlos (Gerente)',
@@ -143,9 +156,11 @@ void main() {
         TillDeviceInterceptor(
           getDeviceToken: secureStorage.getDeviceToken,
           onRevoked: () async {
-            await db.close();
-            await secureStorage.clearAll();
-            authService.clearLocalSession();
+            await executeTillDeviceRevocationWipe(
+              database: db,
+              secureStorage: secureStorage,
+              authService: authService,
+            );
           },
           onNavigateToEnrollment: () {
             router.go('${AppRoutes.tillEnrollment}?revoked=true');
@@ -184,6 +199,17 @@ void main() {
         tester.view.physicalSize = const Size(1280, 800);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
+
+        final dbFolder = await getApplicationDocumentsDirectory();
+        final dbFile = File(p.join(dbFolder.path, 'bakery_pos_local.sqlite'));
+        dbFile.writeAsStringSync('encrypted-sqlite-data');
+        expect(dbFile.existsSync(), isTrue);
+
+        addTearDown(() {
+          if (dbFile.existsSync()) {
+            dbFile.deleteSync();
+          }
+        });
 
         final session = TillSession(
           staff: staff1,
@@ -235,9 +261,15 @@ void main() {
         );
         expect(find.text(l10n.deviceRevokedMessage), findsOneWidget);
 
+        // Full revocation wipe: database file deleted
+        expect(dbFile.existsSync(), isFalse);
+
         // Secure storage has been wiped
         final deviceToken = await secureStorage.getDeviceToken();
         expect(deviceToken, isNull);
+
+        // Session cleared
+        expect(authService.currentSession, isNull);
       },
     );
   });
