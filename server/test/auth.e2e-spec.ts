@@ -112,6 +112,7 @@ describe('Auth & Session Management (e2e)', () => {
     configureApp(app);
     await app.init();
     server = app.getHttpServer() as Server;
+    server.setMaxListeners(30);
     clock = app.get(ClockService);
   });
 
@@ -223,6 +224,58 @@ describe('Auth & Session Management (e2e)', () => {
     expect(locked.passwordLockedUntil).not.toBeNull();
     expect(locked.lockedUntil).toBeNull();
     expect(locked.failedPinAttempts).toBe(0);
+  });
+
+  it('parallel wrong passwords cannot bypass lockout; locks account with failed_password_attempts >= 10', async () => {
+    const parallelEmail = 'parallel-lockout@bakery.local';
+    const passwordHash = await hashPassword('ValidPass123!');
+    const { pinHash, offlinePinVerifier } = await hashPin('1234');
+
+    await prisma.staff.upsert({
+      where: { email: parallelEmail },
+      update: {
+        failedPasswordAttempts: 0,
+        passwordFailureWindowStart: null,
+        passwordLockedUntil: null,
+      },
+      create: {
+        id: uuidv7(),
+        fullName: 'Parallel Lockout Tester',
+        displayName: 'ParallelLock',
+        role: Role.OWNER,
+        email: parallelEmail,
+        passwordHash,
+        pinHash,
+        offlinePinVerifier,
+        pinUpdatedAt: new Date(),
+        isActive: true,
+        staffBranches: { create: [{ branchId: actualBranchId }] },
+      },
+    });
+
+    const promises = Array.from({ length: 10 }).map(() =>
+      request(server)
+        .post('/v1/auth/password-login')
+        .send({ email: parallelEmail, password: 'WrongPassword999!' }),
+    );
+
+    const responses = await Promise.all(promises);
+    for (const res of responses) {
+      expect([401, 423]).toContain(res.status);
+    }
+
+    const staff = await prisma.staff.findUniqueOrThrow({
+      where: { email: parallelEmail },
+    });
+    expect(staff.passwordLockedUntil).not.toBeNull();
+    expect(staff.failedPasswordAttempts).toBeGreaterThanOrEqual(10);
+
+    // 11th request returns 423
+    const nextRes = await request(server)
+      .post('/v1/auth/password-login')
+      .send({ email: parallelEmail, password: 'ValidPass123!' });
+    expect(nextRes.status).toBe(423);
+    expect(getBody(nextRes).code).toBe('AUTH_LOCKED');
   });
 
   it('lock expires, then one wrong password does not re-lock (controllable clock)', async () => {
