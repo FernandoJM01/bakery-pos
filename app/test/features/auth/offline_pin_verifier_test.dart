@@ -1,3 +1,6 @@
+@Timeout(Duration(minutes: 1))
+library;
+
 import 'dart:convert';
 import 'dart:typed_data';
 

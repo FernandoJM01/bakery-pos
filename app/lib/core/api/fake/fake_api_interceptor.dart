@@ -359,6 +359,29 @@ class FakeApiInterceptor extends Interceptor {
       );
     }
 
+    // 4c. /v1/auth/logout
+    if (path.endsWith('/v1/auth/logout') && method == 'POST') {
+      final authHeader = options.headers['Authorization'] as String?;
+      if (authHeader == null || !authHeader.startsWith('Bearer ')) {
+        return handler.reject(
+          DioException(
+            requestOptions: options,
+            response: Response(
+              requestOptions: options,
+              statusCode: 401,
+              data: {
+                'code': 'AUTH_REQUIRED',
+                'message': 'Authentication required',
+              },
+            ),
+          ),
+        );
+      }
+      return handler.resolve(
+        Response(requestOptions: options, statusCode: 204),
+      );
+    }
+
     // 5. /v1/auth/password-login
     if (path.endsWith('/v1/auth/password-login') && method == 'POST') {
       final body = options.data as Map<String, dynamic>? ?? {};

@@ -15,13 +15,19 @@ class BakeryPosApp extends ConsumerStatefulWidget {
   const BakeryPosApp({
     super.key,
     required this.mode,
+    this.refreshListenable,
+    this.hasSession,
     this.tillLoginBuilder,
     this.tillHomeBuilder,
+    this.appWrapper,
   });
 
   final AppMode mode;
+  final Listenable? refreshListenable;
+  final bool Function()? hasSession;
   final WidgetBuilder? tillLoginBuilder;
   final WidgetBuilder? tillHomeBuilder;
+  final TransitionBuilder? appWrapper;
 
   @override
   ConsumerState<BakeryPosApp> createState() => _BakeryPosAppState();
@@ -32,6 +38,8 @@ class _BakeryPosAppState extends ConsumerState<BakeryPosApp> {
   late final GoRouter _router = createAppRouter(
     widget.mode,
     secureStorage: ref.read(secureStorageProvider),
+    refreshListenable: widget.refreshListenable,
+    hasSession: widget.hasSession,
     tillLoginBuilder: widget.tillLoginBuilder,
     tillHomeBuilder: widget.tillHomeBuilder,
   );
@@ -53,6 +61,7 @@ class _BakeryPosAppState extends ConsumerState<BakeryPosApp> {
       locale: const Locale('es', 'MX'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      builder: widget.appWrapper,
     );
   }
 }
