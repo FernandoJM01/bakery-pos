@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { v7 as uuidv7 } from 'uuid';
+import { ClockService } from '../common/clock.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { ListAuditQueryDto } from './dto/list-audit-query.dto';
 
 export interface AuditEntry {
   action: string;
@@ -11,17 +13,22 @@ export interface AuditEntry {
   deviceId?: string | null;
   entityType?: string | null;
   entityId?: string | null;
+  occurredAt?: Date;
   data?: Record<string, unknown>;
 }
 
 @Injectable()
 export class AuditService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly clock: ClockService,
+  ) {}
 
   async log(entry: AuditEntry): Promise<void> {
     await this.prisma.auditLog.create({
       data: {
         id: uuidv7(),
+        occurredAt: entry.occurredAt ?? this.clock.now(),
         action: entry.action,
         actorStaffId: entry.actorStaffId ?? null,
         approverStaffId: entry.approverStaffId ?? null,
@@ -32,5 +39,86 @@ export class AuditService {
         data: (entry.data ?? {}) as Prisma.InputJsonValue,
       },
     });
+  }
+
+  async list(query: ListAuditQueryDto) {
+    const andConditions: Prisma.AuditLogWhereInput[] = [];
+
+    if (query.from) {
+      andConditions.push({ occurredAt: { gte: new Date(query.from) } });
+    }
+    if (query.to) {
+      andConditions.push({ occurredAt: { lte: new Date(query.to) } });
+    }
+    if (query.branchId) {
+      andConditions.push({ branchId: query.branchId });
+    }
+    if (query.staffId) {
+      andConditions.push({
+        OR: [
+          { actorStaffId: query.staffId },
+          { approverStaffId: query.staffId },
+        ],
+      });
+    }
+    if (query.action) {
+      andConditions.push({ action: query.action });
+    }
+
+    if (query.cursor) {
+      try {
+        const decoded = Buffer.from(query.cursor, 'base64').toString('utf8');
+        const [occurredAtStr, id] = decoded.split('|');
+        if (occurredAtStr && id) {
+          const cursorOccurredAt = new Date(occurredAtStr);
+          andConditions.push({
+            OR: [
+              { occurredAt: { lt: cursorOccurredAt } },
+              {
+                occurredAt: cursorOccurredAt,
+                id: { lt: id },
+              },
+            ],
+          });
+        }
+      } catch {
+        // Ignore invalid cursor
+      }
+    }
+
+    const where: Prisma.AuditLogWhereInput =
+      andConditions.length > 0 ? { AND: andConditions } : {};
+
+    const limit = query.limit ?? 50;
+    const rows = await this.prisma.auditLog.findMany({
+      where,
+      orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }],
+      take: limit + 1,
+    });
+
+    let nextCursor: string | null = null;
+    if (rows.length > limit) {
+      rows.pop();
+      const last = rows[rows.length - 1];
+      nextCursor = Buffer.from(
+        `${last.occurredAt.toISOString()}|${last.id}`,
+      ).toString('base64');
+    }
+
+    return {
+      items: rows.map((r) => ({
+        id: r.id,
+        occurredAt: r.occurredAt.toISOString(),
+        branchId: r.branchId,
+        deviceId: r.deviceId,
+        actorStaffId: r.actorStaffId,
+        approverStaffId: r.approverStaffId,
+        action: r.action,
+        entityType: r.entityType,
+        entityId: r.entityId,
+        data: (r.data as Record<string, unknown>) ?? {},
+      })),
+      nextCursor,
+    };
   }
 }

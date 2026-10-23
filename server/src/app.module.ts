@@ -14,6 +14,8 @@ import { DevicesModule } from './devices/devices.module';
 import { DeviceGuard } from './devices/guards/device.guard';
 import { HealthModule } from './health/health.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { BranchesModule } from './branches/branches.module';
+import { StaffModule } from './staff/staff.module';
 
 @Module({
   imports: [
@@ -65,6 +67,8 @@ import { PrismaModule } from './prisma/prisma.module';
     AuditModule,
     AuthModule,
     DevicesModule,
+    BranchesModule,
+    StaffModule,
     HealthModule,
   ],
   providers: [
