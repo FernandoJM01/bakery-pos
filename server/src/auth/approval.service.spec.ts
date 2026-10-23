@@ -165,7 +165,7 @@ describe('ApprovalService', () => {
       const { pinHash } = await hashPin('1234');
       findUniqueStaffMock.mockResolvedValue({
         id: uuidv7(),
-        role: Role.CASHIER,
+        role: Role.BRANCH_MANAGER,
         isActive: true,
         pinHash,
         failedPinAttempts: 0,
@@ -179,12 +179,55 @@ describe('ApprovalService', () => {
           {
             approverStaffId: uuidv7(),
             pin: '1234',
-            action: 'sale.discount_over_limit',
+            action: 'catalog.manage',
           },
           mockRequester,
           mockDevice,
         ),
       ).rejects.toThrow(ForbiddenException);
+    });
+
+    it("A12: a cashier's PIN cannot approve, even an action cashiers hold", async () => {
+      const { pinHash } = await hashPin('1234');
+      findUniqueStaffMock.mockResolvedValue({
+        id: uuidv7(),
+        role: Role.CASHIER,
+        isActive: true,
+        pinHash,
+        failedPinAttempts: 0,
+        lockedUntil: null,
+        staffBranches: [{ branchId }],
+      });
+      findUniqueRolePermMock.mockResolvedValue({
+        role: Role.CASHIER,
+        permissionKey: 'sale.create',
+      });
+
+      await expect(
+        service.createApproval(
+          { approverStaffId: uuidv7(), pin: '1234', action: 'sale.create' },
+          mockRequester,
+          mockDevice,
+        ),
+      ).rejects.toThrow(ForbiddenException);
+      expect(createApprovalMock).not.toHaveBeenCalled();
+      const audit = auditLogMock.mock.calls[0][0] as {
+        action: string;
+        data: { reason: string };
+      };
+      expect(audit.action).toBe('auth.approval_denied');
+      expect(audit.data.reason).toBe('role_cannot_approve');
+    });
+
+    it('refuses a session that belongs to a different device', async () => {
+      await expect(
+        service.createApproval(
+          { approverStaffId: uuidv7(), pin: '1234', action: 'sale.refund' },
+          { ...mockRequester, deviceId: uuidv7() },
+          mockDevice,
+        ),
+      ).rejects.toThrow(UnauthorizedException);
+      expect(findUniqueStaffMock).not.toHaveBeenCalled();
     });
 
     it('locks approver after 5 wrong PIN attempts (AUTH_LOCKED)', async () => {

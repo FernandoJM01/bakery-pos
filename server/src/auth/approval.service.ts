@@ -22,6 +22,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ApprovalDto } from './dto/approval.dto';
 import { AuthenticatedUser } from './interfaces/auth.interface';
 
+/** Only these roles can approve (brief 5.4, A12: a cashier's PIN never can). */
+const APPROVER_ROLES: readonly Role[] = [Role.OWNER, Role.BRANCH_MANAGER];
+
 export interface ApprovalResponse {
   approvalToken: string;
   expiresAt: string;
@@ -48,6 +51,14 @@ export class ApprovalService {
     device: Device,
   ): Promise<ApprovalResponse> {
     const now = this.clock.now();
+
+    // The access token must belong to the till sending the device token.
+    if (requester.deviceId !== device.id) {
+      throw new UnauthorizedException({
+        code: 'AUTH_REQUIRED',
+        message: 'Session does not belong to this device',
+      });
+    }
 
     // Requester cannot approve their own action
     if (dto.approverStaffId === requester.staffId) {
@@ -116,6 +127,25 @@ export class ApprovalService {
       throw new ForbiddenException({
         code: 'PERMISSION_DENIED',
         message: 'Approver is not assigned to this branch',
+      });
+    }
+
+    if (!APPROVER_ROLES.includes(approver.role)) {
+      await this.auditService.log({
+        action: 'auth.approval_denied',
+        branchId: device.branchId,
+        deviceId: device.id,
+        actorStaffId: requester.staffId,
+        approverStaffId: approver.id,
+        data: {
+          action: dto.action,
+          reference: dto.reference,
+          reason: 'role_cannot_approve',
+        },
+      });
+      throw new ForbiddenException({
+        code: 'PERMISSION_DENIED',
+        message: 'Only owners and branch managers can approve',
       });
     }
 
