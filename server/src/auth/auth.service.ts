@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Role, Staff, StaffBranch } from '@prisma/client';
+import { Device, Role, Staff, StaffBranch } from '@prisma/client';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service';
 import { ClockService } from '../common/clock.service';
@@ -19,8 +19,10 @@ import {
 import { PERMISSION_KEYS, PermissionKey } from '../common/permissions';
 import { PrismaService } from '../prisma/prisma.service';
 import { PasswordLoginDto } from './dto/password-login.dto';
-import { recordPasswordFailure } from './password-lockout';
+import { PinLoginDto } from './dto/pin-login.dto';
 import { AuthenticatedUser, JwtPayload } from './interfaces/auth.interface';
+import { recordPasswordFailure } from './password-lockout';
+import { getNextFourAm } from './session-expiry';
 
 export interface TokenPairResponse {
   accessToken: string;
@@ -180,7 +182,7 @@ export class AuthService {
       rawRefreshToken,
       this.deviceTokenPepper,
     );
-    const refreshTokenExpiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000); // 12 hours
+    const refreshTokenExpiresAt = new Date(now.getTime() + 12 * 60 * 60 * 1000); // 12 hours
 
     const session = await this.prisma.authSession.create({
       data: {
@@ -209,7 +211,7 @@ export class AuthService {
       secret: this.jwtSecret,
       expiresIn: '15m',
     });
-    const accessTokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    const accessTokenExpiresAt = new Date(now.getTime() + 15 * 60 * 1000);
 
     const permissions = await this.getStaffPermissions(staff.role);
 
@@ -222,6 +224,196 @@ export class AuthService {
         staff: this.formatStaff(staff),
         permissions,
         deviceId: null,
+      },
+    };
+  }
+
+  async pinLogin(dto: PinLoginDto, device: Device): Promise<LoginResponse> {
+    const now = this.clock.now();
+
+    const branch = await this.prisma.branch.findUnique({
+      where: { id: device.branchId },
+    });
+    if (!branch || !branch.isActive) {
+      throw new UnauthorizedException({
+        code: 'AUTH_NOT_ALLOWED',
+        message: 'Branch not found or inactive',
+      });
+    }
+
+    const staff = await this.prisma.staff.findUnique({
+      where: { id: dto.staffId },
+      include: { staffBranches: true },
+    });
+
+    if (!staff || !staff.isActive) {
+      const dummy = await getDummyArgon2Hash();
+      await verifyHash(dummy, dto.pin);
+      await this.auditService.log({
+        action: 'auth.login_failure',
+        branchId: device.branchId,
+        deviceId: device.id,
+        actorStaffId: staff ? staff.id : null,
+        data: { reason: 'unknown_or_inactive' },
+      });
+      throw new UnauthorizedException({
+        code: 'AUTH_NOT_ALLOWED',
+        message: 'Staff member is not allowed in this branch or is inactive',
+      });
+    }
+
+    const isOwner = staff.role === Role.OWNER;
+    const isAssigned = staff.staffBranches.some(
+      (sb) => sb.branchId === device.branchId,
+    );
+    if (!isOwner && !isAssigned) {
+      await this.auditService.log({
+        action: 'auth.login_failure',
+        branchId: device.branchId,
+        deviceId: device.id,
+        actorStaffId: staff.id,
+        data: { reason: 'branch_not_allowed' },
+      });
+      throw new UnauthorizedException({
+        code: 'AUTH_NOT_ALLOWED',
+        message: 'Staff member is not allowed in this branch or is inactive',
+      });
+    }
+
+    // Check PIN lockout
+    if (staff.lockedUntil && staff.lockedUntil > now) {
+      throw new HttpException(
+        {
+          code: 'AUTH_LOCKED',
+          message: 'Account is locked due to too many failed PIN attempts',
+          details: { lockedUntil: staff.lockedUntil.toISOString() },
+        },
+        HttpStatus.LOCKED,
+      );
+    }
+
+    // Verify PIN
+    const isValidPin = await verifyHash(staff.pinHash, dto.pin);
+    if (!isValidPin) {
+      const attempts =
+        staff.lockedUntil && staff.lockedUntil <= now
+          ? 1
+          : staff.failedPinAttempts + 1;
+
+      if (attempts >= 5) {
+        const lockedUntil = new Date(now.getTime() + 5 * 60 * 1000);
+        await this.prisma.staff.update({
+          where: { id: staff.id },
+          data: { failedPinAttempts: 0, lockedUntil },
+        });
+
+        await this.auditService.log({
+          action: 'auth.login_failure',
+          branchId: device.branchId,
+          deviceId: device.id,
+          actorStaffId: staff.id,
+          data: { reason: 'invalid_pin', attempts },
+        });
+
+        await this.auditService.log({
+          action: 'auth.locked',
+          branchId: device.branchId,
+          deviceId: device.id,
+          actorStaffId: staff.id,
+          data: {
+            lockedUntil: lockedUntil.toISOString(),
+            reason: 'pin_attempts',
+          },
+        });
+
+        throw new HttpException(
+          {
+            code: 'AUTH_LOCKED',
+            message: 'Account is locked due to too many failed PIN attempts',
+            details: { lockedUntil: lockedUntil.toISOString() },
+          },
+          HttpStatus.LOCKED,
+        );
+      } else {
+        await this.prisma.staff.update({
+          where: { id: staff.id },
+          data: { failedPinAttempts: attempts, lockedUntil: null },
+        });
+
+        await this.auditService.log({
+          action: 'auth.login_failure',
+          branchId: device.branchId,
+          deviceId: device.id,
+          actorStaffId: staff.id,
+          data: { reason: 'invalid_pin', attempts },
+        });
+
+        throw new UnauthorizedException({
+          code: 'AUTH_INVALID_PIN',
+          message: 'Invalid PIN',
+        });
+      }
+    }
+
+    // PIN is valid: reset attempts
+    if (staff.failedPinAttempts > 0 || staff.lockedUntil !== null) {
+      await this.prisma.staff.update({
+        where: { id: staff.id },
+        data: { failedPinAttempts: 0, lockedUntil: null },
+      });
+    }
+
+    const sessionId = uuidv7();
+    const rawRefreshToken = generateToken();
+    const refreshTokenHash = hashTokenWithPepper(
+      rawRefreshToken,
+      this.deviceTokenPepper,
+    );
+    const refreshTokenExpiresAt = getNextFourAm(now, branch.timezone);
+
+    const session = await this.prisma.authSession.create({
+      data: {
+        id: sessionId,
+        staffId: staff.id,
+        deviceId: device.id,
+        refreshTokenHash,
+        expiresAt: refreshTokenExpiresAt,
+        createdAt: now,
+      },
+    });
+
+    await this.auditService.log({
+      action: 'auth.login_success',
+      branchId: device.branchId,
+      deviceId: device.id,
+      actorStaffId: staff.id,
+      data: { method: 'pin', sessionId: session.id },
+    });
+
+    const payload: JwtPayload = {
+      sub: staff.id,
+      sid: session.id,
+      did: device.id,
+      branchIds: staff.staffBranches.map((sb) => sb.branchId),
+    };
+
+    const accessToken = await this.jwtService.signAsync(payload, {
+      secret: this.jwtSecret,
+      expiresIn: '15m',
+    });
+    const accessTokenExpiresAt = new Date(now.getTime() + 15 * 60 * 1000);
+
+    const permissions = await this.getStaffPermissions(staff.role);
+
+    return {
+      accessToken,
+      accessTokenExpiresAt: accessTokenExpiresAt.toISOString(),
+      refreshToken: rawRefreshToken,
+      refreshTokenExpiresAt: refreshTokenExpiresAt.toISOString(),
+      me: {
+        staff: this.formatStaff(staff),
+        permissions,
+        deviceId: device.id,
       },
     };
   }
@@ -328,7 +520,8 @@ export class AuthService {
       secret: this.jwtSecret,
       expiresIn: '15m',
     });
-    const accessTokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    const now = this.clock.now();
+    const accessTokenExpiresAt = new Date(now.getTime() + 15 * 60 * 1000);
 
     return {
       accessToken,
@@ -339,9 +532,10 @@ export class AuthService {
   }
 
   async logout(user: AuthenticatedUser): Promise<void> {
+    const now = this.clock.now();
     await this.prisma.authSession.update({
       where: { id: user.sessionId },
-      data: { revokedAt: new Date() },
+      data: { revokedAt: now },
     });
 
     await this.auditService.log({

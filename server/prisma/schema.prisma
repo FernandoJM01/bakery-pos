@@ -73,6 +73,8 @@ model Staff {
   authSessions      AuthSession[]
   actorAuditLogs    AuditLog[]    @relation("AuditLogActor")
   approverAuditLogs AuditLog[]    @relation("AuditLogApprover")
+  approverApprovals Approval[]    @relation("ApprovalApprover")
+  requesterApprovals Approval[]   @relation("ApprovalRequester")
 
   @@map("staff")
 }
@@ -127,6 +129,7 @@ model Device {
   creator      Staff?        @relation("DeviceCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
   authSessions AuthSession[]
   auditLogs    AuditLog[]
+  approvals    Approval[]
 
   @@map("device")
 }
@@ -172,3 +175,24 @@ model AuditLog {
   @@index([branchId, occurredAt])
   @@map("audit_log")
 }
+
+model Approval {
+  id               String    @id @db.Uuid
+  tokenHash        String    @unique @map("token_hash") @db.VarChar(255)
+  action           String    @db.VarChar(100)
+  approverStaffId  String    @map("approver_staff_id") @db.Uuid
+  requesterStaffId String    @map("requester_staff_id") @db.Uuid
+  deviceId         String    @map("device_id") @db.Uuid
+  expiresAt        DateTime  @map("expires_at") @db.Timestamptz(6)
+  usedAt           DateTime? @map("used_at") @db.Timestamptz(6)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  approver  Staff  @relation("ApprovalApprover", fields: [approverStaffId], references: [id], onDelete: Cascade)
+  requester Staff  @relation("ApprovalRequester", fields: [requesterStaffId], references: [id], onDelete: Cascade)
+  device    Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([approverStaffId])
+  @@index([requesterStaffId])
+  @@map("approval")
+}
+

@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { AuditModule } from '../audit/audit.module';
 import { PrismaModule } from '../prisma/prisma.module';
+import { ApprovalService } from './approval.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './guards/auth.guard';
@@ -23,7 +24,7 @@ import { MeController } from './me.controller';
     }),
   ],
   controllers: [AuthController, MeController],
-  providers: [AuthService, AuthGuard],
-  exports: [AuthService, AuthGuard, JwtModule],
+  providers: [AuthService, ApprovalService, AuthGuard],
+  exports: [AuthService, ApprovalService, AuthGuard, JwtModule],
 })
 export class AuthModule {}

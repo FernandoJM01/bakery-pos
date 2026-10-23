@@ -1,16 +1,18 @@
 import { HttpException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Role } from '@prisma/client';
+import { Device, DeviceStatus, DeviceType, Role } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { ClockService } from '../common/clock.service';
-import { hashPassword } from '../common/crypto';
+import { hashPassword, hashPin } from '../common/crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
   let service: AuthService;
   let findFirstStaffSpy: jest.Mock<Promise<unknown>, [unknown]>;
+  let findUniqueStaffSpy: jest.Mock<Promise<unknown>, [unknown]>;
+  let findUniqueBranchSpy: jest.Mock<Promise<unknown>, [unknown]>;
   let updateStaffSpy: jest.Mock<Promise<unknown>, [unknown]>;
   let createSessionSpy: jest.Mock<Promise<unknown>, [unknown]>;
   let findUniqueSessionSpy: jest.Mock<Promise<unknown>, [unknown]>;
@@ -21,6 +23,8 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     findFirstStaffSpy = jest.fn<Promise<unknown>, [unknown]>();
+    findUniqueStaffSpy = jest.fn<Promise<unknown>, [unknown]>();
+    findUniqueBranchSpy = jest.fn<Promise<unknown>, [unknown]>();
     updateStaffSpy = jest.fn<Promise<unknown>, [unknown]>();
     createSessionSpy = jest.fn<Promise<unknown>, [unknown]>();
     findUniqueSessionSpy = jest.fn<Promise<unknown>, [unknown]>();
@@ -34,9 +38,12 @@ describe('AuthService', () => {
       .mockResolvedValue(undefined);
 
     const prisma = {
+      branch: {
+        findUnique: findUniqueBranchSpy,
+      },
       staff: {
         findFirst: findFirstStaffSpy,
-        findUnique: jest.fn(),
+        findUnique: findUniqueStaffSpy,
         update: updateStaffSpy,
       },
       authSession: {
@@ -301,6 +308,152 @@ describe('AuthService', () => {
 
       await expect(service.refreshToken('valid-token')).rejects.toThrow(
         UnauthorizedException,
+      );
+    });
+  });
+
+  describe('pinLogin', () => {
+    const branchId = 'suc-branch-id';
+    const mockDevice: Device = {
+      id: 'dev-1',
+      branchId,
+      name: 'Till 1',
+      type: DeviceType.TILL,
+      status: DeviceStatus.ACTIVE,
+      enrollmentCodeHash: null,
+      enrollmentExpiresAt: null,
+      tokenHash: 'tok',
+      lastSeenAt: null,
+      appVersion: '1.0.0',
+      createdBy: null,
+      createdAt: new Date(),
+      revokedAt: null,
+    };
+
+    it('rejects if branch is inactive or not found (AUTH_NOT_ALLOWED)', async () => {
+      findUniqueBranchSpy.mockResolvedValue(null);
+
+      await expect(
+        service.pinLogin({ staffId: 'staff-id', pin: '1234' }, mockDevice),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('rejects if staff is not assigned to branch and not owner (AUTH_NOT_ALLOWED)', async () => {
+      findUniqueBranchSpy.mockResolvedValue({
+        id: branchId,
+        isActive: true,
+        timezone: 'America/Mexico_City',
+      });
+      const { pinHash } = await hashPin('1234');
+      findUniqueStaffSpy.mockResolvedValue({
+        id: 'staff-id',
+        role: Role.CASHIER,
+        isActive: true,
+        pinHash,
+        failedPinAttempts: 0,
+        lockedUntil: null,
+        staffBranches: [{ branchId: 'different-branch' }],
+      });
+
+      await expect(
+        service.pinLogin({ staffId: 'staff-id', pin: '1234' }, mockDevice),
+      ).rejects.toThrow(UnauthorizedException);
+
+      const auditArgs = auditLogSpy.mock.calls[0][0] as {
+        action: string;
+        data?: { reason?: string };
+      };
+      expect(auditArgs.action).toBe('auth.login_failure');
+      expect(auditArgs.data?.reason).toBe('branch_not_allowed');
+    });
+
+    it('locks staff after 5 wrong PIN attempts (AUTH_LOCKED)', async () => {
+      findUniqueBranchSpy.mockResolvedValue({
+        id: branchId,
+        isActive: true,
+        timezone: 'America/Mexico_City',
+      });
+      const { pinHash } = await hashPin('1234');
+      findUniqueStaffSpy.mockResolvedValue({
+        id: 'staff-id',
+        role: Role.CASHIER,
+        isActive: true,
+        pinHash,
+        failedPinAttempts: 4,
+        lockedUntil: null,
+        staffBranches: [{ branchId }],
+      });
+
+      await expect(
+        service.pinLogin({ staffId: 'staff-id', pin: '9999' }, mockDevice),
+      ).rejects.toThrow(HttpException);
+
+      const updateArgs = updateStaffSpy.mock.calls[0][0] as {
+        where: { id: string };
+        data: { failedPinAttempts: number; lockedUntil?: Date };
+      };
+      expect(updateArgs.where.id).toBe('staff-id');
+      expect(updateArgs.data.failedPinAttempts).toBe(0);
+      expect(updateArgs.data.lockedUntil).toBeInstanceOf(Date);
+
+      const lockAuditArgs = auditLogSpy.mock.calls[1][0] as {
+        action: string;
+        actorStaffId: string;
+      };
+      expect(lockAuditArgs.action).toBe('auth.locked');
+      expect(lockAuditArgs.actorStaffId).toBe('staff-id');
+    });
+
+    it('logs in successfully with valid PIN and sets did in token and response', async () => {
+      findUniqueBranchSpy.mockResolvedValue({
+        id: branchId,
+        isActive: true,
+        timezone: 'America/Mexico_City',
+      });
+      const { pinHash } = await hashPin('1234');
+      findUniqueStaffSpy.mockResolvedValue({
+        id: 'staff-id',
+        fullName: 'Juan Perez',
+        displayName: 'Juan',
+        role: Role.CASHIER,
+        email: null,
+        isActive: true,
+        passwordHash: null,
+        pinHash,
+        failedPinAttempts: 2,
+        lockedUntil: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        staffBranches: [{ branchId }],
+      });
+      createSessionSpy.mockResolvedValue({
+        id: 'session-id',
+        expiresAt: new Date('2026-10-24T10:00:00Z'),
+      });
+
+      const res = await service.pinLogin(
+        { staffId: 'staff-id', pin: '1234' },
+        mockDevice,
+      );
+
+      expect(res.accessToken).toBe('mock-jwt-token');
+      expect(res.me.deviceId).toBe(mockDevice.id);
+      expect(res.refreshTokenExpiresAt).toBeDefined();
+
+      // Lockout reset
+      expect(updateStaffSpy).toHaveBeenCalledWith({
+        where: { id: 'staff-id' },
+        data: { failedPinAttempts: 0, lockedUntil: null },
+      });
+
+      // Audit row
+      expect(auditLogSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'auth.login_success',
+          actorStaffId: 'staff-id',
+          deviceId: mockDevice.id,
+          branchId,
+        }),
       );
     });
   });
