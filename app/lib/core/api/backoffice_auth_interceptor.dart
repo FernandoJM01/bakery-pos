@@ -15,6 +15,10 @@ class BackofficeAuthInterceptor extends Interceptor {
   final Future<String?> Function() silentRefresh;
   final Dio? dio;
 
+  /// Set on a request after its one refresh-and-retry, so a second 401
+  /// (clock skew, a revoked session) is returned instead of looping.
+  static const retriedKey = 'backofficeAuthRetried';
+
   static bool isPublicRoute(String path) {
     final clean = path.split('?').first;
     return clean.endsWith('/v1/auth/password-login') ||
@@ -44,11 +48,13 @@ class BackofficeAuthInterceptor extends Interceptor {
 
     if (status == 401 &&
         (code == 'AUTH_TOKEN_EXPIRED' || code == 'AUTH_REQUIRED') &&
-        !isPublicRoute(err.requestOptions.path)) {
+        !isPublicRoute(err.requestOptions.path) &&
+        err.requestOptions.extra[retriedKey] != true) {
       final newToken = await silentRefresh();
       if (newToken != null && dio != null) {
         final opts = err.requestOptions;
         opts.headers['Authorization'] = 'Bearer $newToken';
+        opts.extra[retriedKey] = true;
         try {
           final res = await dio!.fetch(opts);
           return handler.resolve(res);
