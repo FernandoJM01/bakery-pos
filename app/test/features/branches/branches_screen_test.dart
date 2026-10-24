@@ -50,6 +50,7 @@ void main() {
       expect(find.text('Sucursal Centro'), findsOneWidget);
       expect(find.text('SUC2'), findsOneWidget);
       expect(find.text('Sucursal Norte'), findsOneWidget);
+      expect(find.text('Centro (Ciudad de México)'), findsNWidgets(2));
       expect(find.text('Activa'), findsNWidgets(2));
     });
 
@@ -94,6 +95,20 @@ void main() {
         find.text('Ya existe una sucursal con ese código'),
         findsOneWidget,
       );
+
+      // Server validation failure (400) -> 'Revisa los datos.'
+      await tester.enterText(
+        find.byKey(const Key('branch-code-input')),
+        'SUC9',
+      );
+      await tester.enterText(
+        find.byKey(const Key('branch-name-input')),
+        'Trigger400',
+      );
+      await tester.tap(find.byKey(const Key('save-branch-button')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Revisa los datos.'), findsOneWidget);
 
       // Enter unique code and save
       await tester.enterText(

@@ -1,6 +1,7 @@
 import 'package:bakery_pos/core/theme/app_colors.dart';
 import 'package:bakery_pos/core/theme/app_dimensions.dart';
 import 'package:bakery_pos/features/branches/data/branches_service.dart';
+import 'package:bakery_pos/features/branches/domain/mexico_timezones.dart';
 import 'package:bakery_pos/features/branches/presentation/branch_form_dialog.dart';
 import 'package:bakery_pos/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -106,7 +107,9 @@ class BranchesScreen extends ConsumerWidget {
                           ),
                           DataCell(Text(branch.name)),
                           DataCell(Text(branch.address ?? '')),
-                          DataCell(Text(branch.timezone)),
+                          DataCell(
+                            Text(formatMexicoTimezone(branch.timezone, l10n)),
+                          ),
                           DataCell(
                             Chip(
                               label: Text(

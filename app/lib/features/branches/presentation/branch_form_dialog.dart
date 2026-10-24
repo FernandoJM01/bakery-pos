@@ -4,6 +4,7 @@ import 'package:bakery_pos/core/api/generated/models/branch_update.dart';
 import 'package:bakery_pos/core/theme/app_colors.dart';
 import 'package:bakery_pos/core/theme/app_dimensions.dart';
 import 'package:bakery_pos/features/branches/data/branches_service.dart';
+import 'package:bakery_pos/features/branches/domain/mexico_timezones.dart';
 import 'package:bakery_pos/l10n/app_localizations.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -21,9 +22,7 @@ class _BranchCreateDialogState extends ConsumerState<BranchCreateDialog> {
   final _codeController = TextEditingController();
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
-  final _timezoneController = TextEditingController(
-    text: 'America/Mexico_City',
-  );
+  String _selectedTimezone = 'America/Mexico_City';
 
   bool _isSaving = false;
   String? _errorMessage;
@@ -33,7 +32,6 @@ class _BranchCreateDialogState extends ConsumerState<BranchCreateDialog> {
     _codeController.dispose();
     _nameController.dispose();
     _addressController.dispose();
-    _timezoneController.dispose();
     super.dispose();
   }
 
@@ -50,7 +48,6 @@ class _BranchCreateDialogState extends ConsumerState<BranchCreateDialog> {
       final code = _codeController.text.trim().toUpperCase();
       final name = _nameController.text.trim();
       final address = _addressController.text.trim();
-      final timezone = _timezoneController.text.trim();
 
       await ref
           .read(branchesServiceProvider.notifier)
@@ -59,7 +56,7 @@ class _BranchCreateDialogState extends ConsumerState<BranchCreateDialog> {
               code: code,
               name: name,
               address: address.isEmpty ? null : address,
-              timezone: timezone.isEmpty ? 'America/Mexico_City' : timezone,
+              timezone: _selectedTimezone,
             ),
           );
 
@@ -71,11 +68,13 @@ class _BranchCreateDialogState extends ConsumerState<BranchCreateDialog> {
         final data = e.response?.data;
         final code = data is Map ? data['code']?.toString() : null;
         setState(() {
-          if (code == 'DUPLICATE_BRANCH_CODE' ||
-              e.response?.statusCode == 409) {
+          if (code == 'CONFLICT' || e.response?.statusCode == 409) {
             _errorMessage = l10n.branchesCodeConflict;
+          } else if (code == 'VALIDATION_FAILED' ||
+              e.response?.statusCode == 400) {
+            _errorMessage = l10n.validationFailed;
           } else {
-            _errorMessage = l10n.enrollmentValidationFailed;
+            _errorMessage = l10n.enrollmentNetworkError;
           }
         });
       }
@@ -162,15 +161,24 @@ class _BranchCreateDialogState extends ConsumerState<BranchCreateDialog> {
                   maxLines: 2,
                 ),
                 const SizedBox(height: AppDimensions.paddingMedium),
-                TextFormField(
+                DropdownButtonFormField<String>(
                   key: const Key('branch-timezone-input'),
-                  controller: _timezoneController,
+                  isExpanded: true,
+                  initialValue: _selectedTimezone,
                   decoration: InputDecoration(labelText: l10n.branchesTimezone),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return l10n.branchesTimezoneRequired;
+                  items: [
+                    for (final tz in mexicoTimezones)
+                      DropdownMenuItem(
+                        value: tz,
+                        child: Text(formatMexicoTimezone(tz, l10n)),
+                      ),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) {
+                      setState(() {
+                        _selectedTimezone = val;
+                      });
                     }
-                    return null;
                   },
                 ),
               ],
@@ -213,7 +221,7 @@ class _BranchEditDialogState extends ConsumerState<BranchEditDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   late final TextEditingController _addressController;
-  late final TextEditingController _timezoneController;
+  late String _selectedTimezone;
   late bool _isActive;
 
   bool _isSaving = false;
@@ -226,7 +234,7 @@ class _BranchEditDialogState extends ConsumerState<BranchEditDialog> {
     _addressController = TextEditingController(
       text: widget.branch.address ?? '',
     );
-    _timezoneController = TextEditingController(text: widget.branch.timezone);
+    _selectedTimezone = widget.branch.timezone;
     _isActive = widget.branch.isActive;
   }
 
@@ -234,7 +242,6 @@ class _BranchEditDialogState extends ConsumerState<BranchEditDialog> {
   void dispose() {
     _nameController.dispose();
     _addressController.dispose();
-    _timezoneController.dispose();
     super.dispose();
   }
 
@@ -250,7 +257,6 @@ class _BranchEditDialogState extends ConsumerState<BranchEditDialog> {
     try {
       final name = _nameController.text.trim();
       final address = _addressController.text.trim();
-      final timezone = _timezoneController.text.trim();
 
       await ref
           .read(branchesServiceProvider.notifier)
@@ -259,13 +265,28 @@ class _BranchEditDialogState extends ConsumerState<BranchEditDialog> {
             BranchUpdate(
               name: name,
               address: address.isEmpty ? null : address,
-              timezone: timezone,
+              timezone: _selectedTimezone,
               isActive: _isActive,
             ),
           );
 
       if (mounted) {
         Navigator.of(context).pop(true);
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        final data = e.response?.data;
+        final code = data is Map ? data['code']?.toString() : null;
+        setState(() {
+          if (code == 'CONFLICT' || e.response?.statusCode == 409) {
+            _errorMessage = l10n.branchesCodeConflict;
+          } else if (code == 'VALIDATION_FAILED' ||
+              e.response?.statusCode == 400) {
+            _errorMessage = l10n.validationFailed;
+          } else {
+            _errorMessage = l10n.enrollmentNetworkError;
+          }
+        });
       }
     } catch (_) {
       if (mounted) {
@@ -346,15 +367,26 @@ class _BranchEditDialogState extends ConsumerState<BranchEditDialog> {
                   maxLines: 2,
                 ),
                 const SizedBox(height: AppDimensions.paddingMedium),
-                TextFormField(
+                DropdownButtonFormField<String>(
                   key: const Key('branch-timezone-input'),
-                  controller: _timezoneController,
+                  isExpanded: true,
+                  initialValue: mexicoTimezones.contains(_selectedTimezone)
+                      ? _selectedTimezone
+                      : 'America/Mexico_City',
                   decoration: InputDecoration(labelText: l10n.branchesTimezone),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return l10n.branchesTimezoneRequired;
+                  items: [
+                    for (final tz in mexicoTimezones)
+                      DropdownMenuItem(
+                        value: tz,
+                        child: Text(formatMexicoTimezone(tz, l10n)),
+                      ),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) {
+                      setState(() {
+                        _selectedTimezone = val;
+                      });
                     }
-                    return null;
                   },
                 ),
                 const SizedBox(height: AppDimensions.paddingMedium),

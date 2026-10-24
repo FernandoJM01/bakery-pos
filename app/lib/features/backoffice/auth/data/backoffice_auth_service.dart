@@ -54,6 +54,7 @@ class BackofficeAuthService extends ChangeNotifier {
         dio: dio,
         getAccessToken: () => _currentSession?.accessToken,
         silentRefresh: silentRefresh,
+        onSessionExpired: clearLocalSession,
       );
       dio!.interceptors.insert(0, _authInterceptor!);
     }
@@ -159,7 +160,7 @@ class BackofficeAuthService extends ChangeNotifier {
       return pair.accessToken;
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        await logout();
+        clearLocalSession();
       }
       completer.complete(null);
       return null;
@@ -169,6 +170,13 @@ class BackofficeAuthService extends ChangeNotifier {
     } finally {
       _refreshCompleter = null;
     }
+  }
+
+  void clearLocalSession() {
+    _refreshTimer?.cancel();
+    _refreshTimer = null;
+    _currentSession = null;
+    notifyListeners();
   }
 
   Future<void> logout() async {

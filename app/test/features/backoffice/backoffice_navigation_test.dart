@@ -14,13 +14,15 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Backoffice Navigation and Permissions', () {
+    late FakeApiInterceptor fakeApi;
     late Dio dio;
     late RestClient restClient;
     late BackofficeAuthService authService;
 
     setUp(() {
+      fakeApi = FakeApiInterceptor();
       dio = Dio();
-      dio.interceptors.add(FakeApiInterceptor());
+      dio.interceptors.add(fakeApi);
       restClient = RestClient(dio);
       authService = BackofficeAuthService(restClient: restClient, dio: dio);
       addTearDown(() => authService.dispose());
@@ -145,5 +147,35 @@ void main() {
       expect(find.byType(BackofficeLoginScreen), findsOneWidget);
       expect(authService.isAuthenticated, isFalse);
     });
+
+    testWidgets(
+      'expired access token with refused refresh lands on login screen',
+      (tester) async {
+        await tester.runAsync(
+          () => authService.login('owner@panaderia.com', 'Admin123456!'),
+        );
+        authService.cancelSilentRefreshTimer();
+
+        await tester.pumpWidget(createTestApp());
+        await tester.pumpAndSettle();
+
+        expect(find.byType(BackofficeShell), findsOneWidget);
+
+        // Access token expires, and refresh is refused with 401
+        fakeApi.expireAccessToken = true;
+        fakeApi.rejectRefresh = true;
+
+        await tester.runAsync(() async {
+          try {
+            await dio.get<dynamic>('/v1/branches');
+          } catch (_) {}
+        });
+
+        await tester.pumpAndSettle();
+
+        expect(find.byType(BackofficeLoginScreen), findsOneWidget);
+        expect(authService.isAuthenticated, isFalse);
+      },
+    );
   });
 }

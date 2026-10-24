@@ -148,6 +148,12 @@ abstract class AppLocalizations {
   /// **'Regresar'**
   String get commonBack;
 
+  /// No description provided for @validationFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisa los datos.'**
+  String get validationFailed;
+
   /// No description provided for @statusOnline.
   ///
   /// In es, this message translates to:
@@ -567,6 +573,78 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Guardando...'**
   String get branchesSaving;
+
+  /// No description provided for @timezoneMexicoCity.
+  ///
+  /// In es, this message translates to:
+  /// **'Centro (Ciudad de México)'**
+  String get timezoneMexicoCity;
+
+  /// No description provided for @timezoneCancun.
+  ///
+  /// In es, this message translates to:
+  /// **'Sureste (Cancún)'**
+  String get timezoneCancun;
+
+  /// No description provided for @timezoneMerida.
+  ///
+  /// In es, this message translates to:
+  /// **'Centro (Mérida)'**
+  String get timezoneMerida;
+
+  /// No description provided for @timezoneMonterrey.
+  ///
+  /// In es, this message translates to:
+  /// **'Centro (Monterrey)'**
+  String get timezoneMonterrey;
+
+  /// No description provided for @timezoneMatamoros.
+  ///
+  /// In es, this message translates to:
+  /// **'Frontera Norte (Matamoros)'**
+  String get timezoneMatamoros;
+
+  /// No description provided for @timezoneChihuahua.
+  ///
+  /// In es, this message translates to:
+  /// **'Montaña (Chihuahua)'**
+  String get timezoneChihuahua;
+
+  /// No description provided for @timezoneCiudadJuarez.
+  ///
+  /// In es, this message translates to:
+  /// **'Frontera Norte (Ciudad Juárez)'**
+  String get timezoneCiudadJuarez;
+
+  /// No description provided for @timezoneOjinaga.
+  ///
+  /// In es, this message translates to:
+  /// **'Frontera Norte (Ojinaga)'**
+  String get timezoneOjinaga;
+
+  /// No description provided for @timezoneMazatlan.
+  ///
+  /// In es, this message translates to:
+  /// **'Pacífico (Mazatlán)'**
+  String get timezoneMazatlan;
+
+  /// No description provided for @timezoneBahiaBanderas.
+  ///
+  /// In es, this message translates to:
+  /// **'Centro (Bahía de Banderas)'**
+  String get timezoneBahiaBanderas;
+
+  /// No description provided for @timezoneHermosillo.
+  ///
+  /// In es, this message translates to:
+  /// **'Pacífico (Hermosillo)'**
+  String get timezoneHermosillo;
+
+  /// No description provided for @timezoneTijuana.
+  ///
+  /// In es, this message translates to:
+  /// **'Noroeste (Tijuana)'**
+  String get timezoneTijuana;
 
   /// No description provided for @approvalTitle.
   ///

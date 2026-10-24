@@ -17,6 +17,8 @@ class FakeApiInterceptor extends Interceptor {
   String? currentStaffId;
   String? currentStaffRole;
   List<String>? currentStaffPermissions;
+  bool rejectRefresh = false;
+  bool expireAccessToken = false;
 
   late final List<Map<String, dynamic>> branches = [
     {
@@ -82,6 +84,27 @@ class FakeApiInterceptor extends Interceptor {
             },
           ),
         ),
+      );
+    }
+
+    final authHeader = options.headers['Authorization'] as String?;
+    if (expireAccessToken &&
+        authHeader != null &&
+        !path.endsWith('/v1/auth/refresh') &&
+        !path.endsWith('/v1/auth/password-login')) {
+      return handler.reject(
+        DioException(
+          requestOptions: options,
+          response: Response(
+            requestOptions: options,
+            statusCode: 401,
+            data: {
+              'code': 'AUTH_TOKEN_EXPIRED',
+              'message': 'Access token expired',
+            },
+          ),
+        ),
+        true,
       );
     }
 
@@ -418,7 +441,9 @@ class FakeApiInterceptor extends Interceptor {
     if (path.endsWith('/v1/auth/refresh') && method == 'POST') {
       final body = options.data as Map<String, dynamic>? ?? {};
       final refreshToken = body['refreshToken'] as String? ?? '';
-      if (refreshToken.isEmpty || refreshToken == 'invalid-token') {
+      if (rejectRefresh ||
+          refreshToken.isEmpty ||
+          refreshToken == 'invalid-token') {
         return handler.reject(
           DioException(
             requestOptions: options,
@@ -719,7 +744,8 @@ class FakeApiInterceptor extends Interceptor {
       final code = body['code'] as String?;
       final name = body['name'] as String?;
 
-      if (code == null ||
+      if (name == 'Trigger400' ||
+          code == null ||
           name == null ||
           !RegExp(r'^[A-Z0-9]{2,10}$').hasMatch(code)) {
         return handler.reject(
@@ -745,7 +771,7 @@ class FakeApiInterceptor extends Interceptor {
               requestOptions: options,
               statusCode: 409,
               data: {
-                'code': 'DUPLICATE_BRANCH_CODE',
+                'code': 'CONFLICT',
                 'message': 'Branch code already in use',
               },
             ),

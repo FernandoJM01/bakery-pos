@@ -37,6 +37,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonBack => 'Regresar';
 
   @override
+  String get validationFailed => 'Revisa los datos.';
+
+  @override
   String get statusOnline => 'En línea';
 
   @override
@@ -260,6 +263,42 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get branchesSaving => 'Guardando...';
+
+  @override
+  String get timezoneMexicoCity => 'Centro (Ciudad de México)';
+
+  @override
+  String get timezoneCancun => 'Sureste (Cancún)';
+
+  @override
+  String get timezoneMerida => 'Centro (Mérida)';
+
+  @override
+  String get timezoneMonterrey => 'Centro (Monterrey)';
+
+  @override
+  String get timezoneMatamoros => 'Frontera Norte (Matamoros)';
+
+  @override
+  String get timezoneChihuahua => 'Montaña (Chihuahua)';
+
+  @override
+  String get timezoneCiudadJuarez => 'Frontera Norte (Ciudad Juárez)';
+
+  @override
+  String get timezoneOjinaga => 'Frontera Norte (Ojinaga)';
+
+  @override
+  String get timezoneMazatlan => 'Pacífico (Mazatlán)';
+
+  @override
+  String get timezoneBahiaBanderas => 'Centro (Bahía de Banderas)';
+
+  @override
+  String get timezoneHermosillo => 'Pacífico (Hermosillo)';
+
+  @override
+  String get timezoneTijuana => 'Noroeste (Tijuana)';
 
   @override
   String get approvalTitle => 'Aprobación de Gerente';

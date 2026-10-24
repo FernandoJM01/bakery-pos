@@ -8,11 +8,13 @@ class BackofficeAuthInterceptor extends Interceptor {
   BackofficeAuthInterceptor({
     required this.getAccessToken,
     required this.silentRefresh,
+    this.onSessionExpired,
     this.dio,
   });
 
   final String? Function() getAccessToken;
   final Future<String?> Function() silentRefresh;
+  final void Function()? onSessionExpired;
   final Dio? dio;
 
   /// Set on a request after its one refresh-and-retry, so a second 401
@@ -23,6 +25,11 @@ class BackofficeAuthInterceptor extends Interceptor {
     final clean = path.split('?').first;
     return clean.endsWith('/v1/auth/password-login') ||
         clean.endsWith('/v1/auth/refresh');
+  }
+
+  static bool isNoRefreshRoute(String path) {
+    final clean = path.split('?').first;
+    return isPublicRoute(path) || clean.endsWith('/v1/auth/logout');
   }
 
   @override
@@ -46,20 +53,29 @@ class BackofficeAuthInterceptor extends Interceptor {
     final data = err.response?.data;
     final code = data is Map ? data['code']?.toString() : null;
 
-    if (status == 401 &&
-        (code == 'AUTH_TOKEN_EXPIRED' || code == 'AUTH_REQUIRED') &&
-        !isPublicRoute(err.requestOptions.path) &&
-        err.requestOptions.extra[retriedKey] != true) {
-      final newToken = await silentRefresh();
-      if (newToken != null && dio != null) {
-        final opts = err.requestOptions;
-        opts.headers['Authorization'] = 'Bearer $newToken';
-        opts.extra[retriedKey] = true;
-        try {
-          final res = await dio!.fetch(opts);
-          return handler.resolve(res);
-        } on DioException catch (retryErr) {
-          return handler.next(retryErr);
+    if (status == 401) {
+      if (code == 'AUTH_REQUIRED') {
+        onSessionExpired?.call();
+        return handler.next(err);
+      }
+
+      if (code == 'AUTH_TOKEN_EXPIRED' &&
+          !isNoRefreshRoute(err.requestOptions.path) &&
+          err.requestOptions.extra[retriedKey] != true) {
+        final newToken = await silentRefresh();
+        if (newToken != null && dio != null) {
+          final opts = err.requestOptions;
+          opts.headers['Authorization'] = 'Bearer $newToken';
+          opts.extra[retriedKey] = true;
+          try {
+            final res = await dio!.fetch(opts);
+            return handler.resolve(res);
+          } on DioException catch (retryErr) {
+            if (retryErr.response?.statusCode == 401) {
+              onSessionExpired?.call();
+            }
+            return handler.next(retryErr);
+          }
         }
       }
     }
