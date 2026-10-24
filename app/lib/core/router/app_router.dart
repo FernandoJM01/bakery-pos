@@ -3,6 +3,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app.dart';
+import '../../features/backoffice/shell/presentation/backoffice_shell.dart';
+import '../../features/branches/presentation/branches_screen.dart';
 import '../../features/enrollment/presentation/enrollment_screen.dart';
 import '../storage/secure_storage.dart';
 
@@ -19,6 +21,10 @@ class AppRoutes {
 
   static const String backofficeLogin = '/backoffice/login';
   static const String backofficeDashboard = '/backoffice/dashboard';
+  static const String backofficeBranches = '/backoffice/branches';
+  static const String backofficeStaff = '/backoffice/staff';
+  static const String backofficeDevices = '/backoffice/devices';
+  static const String backofficeAudit = '/backoffice/audit';
 }
 
 const tillSectionRoutes = [
@@ -28,6 +34,13 @@ const tillSectionRoutes = [
   AppRoutes.tillOrders,
   AppRoutes.tillOven,
   AppRoutes.tillReports,
+];
+
+const backofficeSectionRoutes = [
+  AppRoutes.backofficeBranches,
+  AppRoutes.backofficeStaff,
+  AppRoutes.backofficeDevices,
+  AppRoutes.backofficeAudit,
 ];
 
 List<String> getPermittedTillRoutes(List<String> permissions) {
@@ -54,6 +67,23 @@ List<String> getPermittedTillRoutes(List<String> permissions) {
   return permitted;
 }
 
+List<String> getPermittedBackofficeRoutes(List<String> permissions) {
+  final permitted = <String>[];
+  if (permissions.contains('branches.manage')) {
+    permitted.add(AppRoutes.backofficeBranches);
+  }
+  if (permissions.contains('staff.manage')) {
+    permitted.add(AppRoutes.backofficeStaff);
+  }
+  if (permissions.contains('devices.manage')) {
+    permitted.add(AppRoutes.backofficeDevices);
+  }
+  if (permissions.contains('audit.view')) {
+    permitted.add(AppRoutes.backofficeAudit);
+  }
+  return permitted;
+}
+
 typedef TillShellBuilder = Widget Function(
   BuildContext context,
   GoRouterState state,
@@ -61,6 +91,17 @@ typedef TillShellBuilder = Widget Function(
 );
 
 typedef TillSectionBuilder = Widget Function(
+  BuildContext context,
+  String route,
+);
+
+typedef BackofficeShellBuilder = Widget Function(
+  BuildContext context,
+  GoRouterState state,
+  Widget child,
+);
+
+typedef BackofficeSectionBuilder = Widget Function(
   BuildContext context,
   String route,
 );
@@ -77,6 +118,9 @@ GoRouter createAppRouter(
   WidgetBuilder? tillHomeBuilder,
   TillShellBuilder? tillShellBuilder,
   TillSectionBuilder? tillSectionBuilder,
+  WidgetBuilder? backofficeLoginBuilder,
+  BackofficeShellBuilder? backofficeShellBuilder,
+  BackofficeSectionBuilder? backofficeSectionBuilder,
 }) {
   final initialLocation = mode == AppMode.till
       ? AppRoutes.tillLogin
@@ -131,6 +175,35 @@ GoRouter createAppRouter(
           }
         }
       }
+
+      if (mode == AppMode.backoffice) {
+        final isLogin = state.matchedLocation == AppRoutes.backofficeLogin;
+        if (hasSession != null) {
+          final sessionActive = hasSession();
+          if (!sessionActive && !isLogin) {
+            return AppRoutes.backofficeLogin;
+          }
+          if (sessionActive) {
+            final permissions = getPermissions?.call() ?? const [];
+            final permittedRoutes = getPermittedBackofficeRoutes(permissions);
+            final defaultRoute = permittedRoutes.isNotEmpty
+                ? permittedRoutes.first
+                : AppRoutes.backofficeDashboard;
+
+            if (isLogin ||
+                state.matchedLocation == AppRoutes.backofficeDashboard) {
+              return defaultRoute;
+            }
+
+            if (backofficeSectionRoutes.contains(state.matchedLocation)) {
+              if (!permittedRoutes.contains(state.matchedLocation)) {
+                return defaultRoute;
+              }
+            }
+          }
+        }
+      }
+
       return null;
     },
     routes: [
@@ -225,17 +298,73 @@ GoRouter createAppRouter(
       ),
       GoRoute(
         path: AppRoutes.backofficeLogin,
-        builder: (context, state) => const _RoutePlaceholder(
-          titleKey: 'backofficeLoginTitle',
-          routeName: 'backoffice-login',
-        ),
+        builder: (context, state) =>
+            backofficeLoginBuilder?.call(context) ??
+            const _RoutePlaceholder(
+              titleKey: 'backofficeLoginTitle',
+              routeName: 'backoffice-login',
+            ),
       ),
-      GoRoute(
-        path: AppRoutes.backofficeDashboard,
-        builder: (context, state) => const _RoutePlaceholder(
-          titleKey: 'appTitle',
-          routeName: 'backoffice-dashboard',
-        ),
+      ShellRoute(
+        builder: (context, state, child) {
+          if (backofficeShellBuilder != null) {
+            return backofficeShellBuilder(context, state, child);
+          }
+          return BackofficeShell(child: child);
+        },
+        routes: [
+          GoRoute(
+            path: AppRoutes.backofficeDashboard,
+            builder: (context, state) =>
+                backofficeSectionBuilder?.call(
+                  context,
+                  AppRoutes.backofficeDashboard,
+                ) ??
+                const SizedBox.shrink(),
+          ),
+          GoRoute(
+            path: AppRoutes.backofficeBranches,
+            builder: (context, state) =>
+                backofficeSectionBuilder?.call(
+                  context,
+                  AppRoutes.backofficeBranches,
+                ) ??
+                const BranchesScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.backofficeStaff,
+            builder: (context, state) =>
+                backofficeSectionBuilder?.call(
+                  context,
+                  AppRoutes.backofficeStaff,
+                ) ??
+                BackofficeSectionPlaceholder.forRoute(
+                  AppRoutes.backofficeStaff,
+                ),
+          ),
+          GoRoute(
+            path: AppRoutes.backofficeDevices,
+            builder: (context, state) =>
+                backofficeSectionBuilder?.call(
+                  context,
+                  AppRoutes.backofficeDevices,
+                ) ??
+                BackofficeSectionPlaceholder.forRoute(
+                  AppRoutes.backofficeDevices,
+                ),
+          ),
+          GoRoute(
+            path: AppRoutes.backofficeAudit,
+            builder: (context, state) =>
+                backofficeSectionBuilder?.call(
+                  context,
+                  AppRoutes.backofficeAudit,
+                ) ??
+                BackofficeSectionPlaceholder.forRoute(
+                  AppRoutes.backofficeAudit,
+                ),
+          ),
+        ],
       ),
     ],
   );

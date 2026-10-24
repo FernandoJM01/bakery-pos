@@ -22,6 +22,9 @@ class BakeryPosApp extends ConsumerStatefulWidget {
     this.tillHomeBuilder,
     this.tillShellBuilder,
     this.tillSectionBuilder,
+    this.backofficeLoginBuilder,
+    this.backofficeShellBuilder,
+    this.backofficeSectionBuilder,
     this.appWrapper,
   });
 
@@ -33,6 +36,9 @@ class BakeryPosApp extends ConsumerStatefulWidget {
   final WidgetBuilder? tillHomeBuilder;
   final TillShellBuilder? tillShellBuilder;
   final TillSectionBuilder? tillSectionBuilder;
+  final WidgetBuilder? backofficeLoginBuilder;
+  final BackofficeShellBuilder? backofficeShellBuilder;
+  final BackofficeSectionBuilder? backofficeSectionBuilder;
   final TransitionBuilder? appWrapper;
 
   @override
@@ -51,6 +57,9 @@ class _BakeryPosAppState extends ConsumerState<BakeryPosApp> {
     tillHomeBuilder: widget.tillHomeBuilder,
     tillShellBuilder: widget.tillShellBuilder,
     tillSectionBuilder: widget.tillSectionBuilder,
+    backofficeLoginBuilder: widget.backofficeLoginBuilder,
+    backofficeShellBuilder: widget.backofficeShellBuilder,
+    backofficeSectionBuilder: widget.backofficeSectionBuilder,
   );
 
   @override

@@ -37,6 +37,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonBack => 'Regresar';
 
   @override
+  String get validationFailed => 'Revisa los datos.';
+
+  @override
   String get statusOnline => 'En línea';
 
   @override
@@ -183,6 +186,119 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get backofficeInvalidCredentials => 'Credenciales inválidas';
+
+  @override
+  String backofficeLockedUntil(String time) {
+    return 'Demasiados intentos. Bloqueado hasta las $time.';
+  }
+
+  @override
+  String get backofficeTitle => 'Panel de Administración';
+
+  @override
+  String get backofficeNoPermissions =>
+      'No tiene permisos para acceder a ninguna sección';
+
+  @override
+  String get branchesTitle => 'Sucursales';
+
+  @override
+  String get branchesNew => 'Nueva sucursal';
+
+  @override
+  String get branchesEdit => 'Editar sucursal';
+
+  @override
+  String get branchesCode => 'Código';
+
+  @override
+  String get branchesName => 'Nombre';
+
+  @override
+  String get branchesAddress => 'Dirección';
+
+  @override
+  String get branchesTimezone => 'Zona horaria';
+
+  @override
+  String get branchesStatus => 'Estado';
+
+  @override
+  String get branchesActive => 'Activa';
+
+  @override
+  String get branchesInactive => 'Inactiva';
+
+  @override
+  String get branchesCodeImmutable => 'El código no se puede modificar';
+
+  @override
+  String get branchesCodeInvalid =>
+      'El código debe tener entre 2 y 10 caracteres alfanuméricos en mayúsculas';
+
+  @override
+  String get branchesNameRequired => 'El nombre es obligatorio';
+
+  @override
+  String get branchesNameInvalid =>
+      'El nombre debe tener entre 1 y 120 caracteres';
+
+  @override
+  String get branchesTimezoneRequired => 'La zona horaria es obligatoria';
+
+  @override
+  String get branchesEmpty => 'No hay sucursales registradas';
+
+  @override
+  String get branchesCreateSuccess => 'Sucursal creada exitosamente';
+
+  @override
+  String get branchesUpdateSuccess => 'Sucursal actualizada exitosamente';
+
+  @override
+  String get branchesCodeConflict => 'Ya existe una sucursal con ese código';
+
+  @override
+  String get branchesErrorLoading => 'Error al cargar las sucursales';
+
+  @override
+  String get branchesSaving => 'Guardando...';
+
+  @override
+  String get timezoneMexicoCity => 'Centro (Ciudad de México)';
+
+  @override
+  String get timezoneCancun => 'Sureste (Cancún)';
+
+  @override
+  String get timezoneMerida => 'Centro (Mérida)';
+
+  @override
+  String get timezoneMonterrey => 'Centro (Monterrey)';
+
+  @override
+  String get timezoneMatamoros => 'Frontera Norte (Matamoros)';
+
+  @override
+  String get timezoneChihuahua => 'Montaña (Chihuahua)';
+
+  @override
+  String get timezoneCiudadJuarez => 'Frontera Norte (Ciudad Juárez)';
+
+  @override
+  String get timezoneOjinaga => 'Frontera Norte (Ojinaga)';
+
+  @override
+  String get timezoneMazatlan => 'Pacífico (Mazatlán)';
+
+  @override
+  String get timezoneBahiaBanderas => 'Centro (Bahía de Banderas)';
+
+  @override
+  String get timezoneHermosillo => 'Pacífico (Hermosillo)';
+
+  @override
+  String get timezoneTijuana => 'Noroeste (Tijuana)';
 
   @override
   String get approvalTitle => 'Aprobación de Gerente';

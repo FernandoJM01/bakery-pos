@@ -148,6 +148,12 @@ abstract class AppLocalizations {
   /// **'Regresar'**
   String get commonBack;
 
+  /// No description provided for @validationFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisa los datos.'**
+  String get validationFailed;
+
   /// No description provided for @statusOnline.
   ///
   /// In es, this message translates to:
@@ -423,6 +429,222 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Credenciales inválidas'**
   String get backofficeInvalidCredentials;
+
+  /// Mensaje de bloqueo temporal en back office
+  ///
+  /// In es, this message translates to:
+  /// **'Demasiados intentos. Bloqueado hasta las {time}.'**
+  String backofficeLockedUntil(String time);
+
+  /// No description provided for @backofficeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Panel de Administración'**
+  String get backofficeTitle;
+
+  /// No description provided for @backofficeNoPermissions.
+  ///
+  /// In es, this message translates to:
+  /// **'No tiene permisos para acceder a ninguna sección'**
+  String get backofficeNoPermissions;
+
+  /// No description provided for @branchesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sucursales'**
+  String get branchesTitle;
+
+  /// No description provided for @branchesNew.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva sucursal'**
+  String get branchesNew;
+
+  /// No description provided for @branchesEdit.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar sucursal'**
+  String get branchesEdit;
+
+  /// No description provided for @branchesCode.
+  ///
+  /// In es, this message translates to:
+  /// **'Código'**
+  String get branchesCode;
+
+  /// No description provided for @branchesName.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre'**
+  String get branchesName;
+
+  /// No description provided for @branchesAddress.
+  ///
+  /// In es, this message translates to:
+  /// **'Dirección'**
+  String get branchesAddress;
+
+  /// No description provided for @branchesTimezone.
+  ///
+  /// In es, this message translates to:
+  /// **'Zona horaria'**
+  String get branchesTimezone;
+
+  /// No description provided for @branchesStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'Estado'**
+  String get branchesStatus;
+
+  /// No description provided for @branchesActive.
+  ///
+  /// In es, this message translates to:
+  /// **'Activa'**
+  String get branchesActive;
+
+  /// No description provided for @branchesInactive.
+  ///
+  /// In es, this message translates to:
+  /// **'Inactiva'**
+  String get branchesInactive;
+
+  /// No description provided for @branchesCodeImmutable.
+  ///
+  /// In es, this message translates to:
+  /// **'El código no se puede modificar'**
+  String get branchesCodeImmutable;
+
+  /// No description provided for @branchesCodeInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'El código debe tener entre 2 y 10 caracteres alfanuméricos en mayúsculas'**
+  String get branchesCodeInvalid;
+
+  /// No description provided for @branchesNameRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'El nombre es obligatorio'**
+  String get branchesNameRequired;
+
+  /// No description provided for @branchesNameInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'El nombre debe tener entre 1 y 120 caracteres'**
+  String get branchesNameInvalid;
+
+  /// No description provided for @branchesTimezoneRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'La zona horaria es obligatoria'**
+  String get branchesTimezoneRequired;
+
+  /// No description provided for @branchesEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay sucursales registradas'**
+  String get branchesEmpty;
+
+  /// No description provided for @branchesCreateSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Sucursal creada exitosamente'**
+  String get branchesCreateSuccess;
+
+  /// No description provided for @branchesUpdateSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Sucursal actualizada exitosamente'**
+  String get branchesUpdateSuccess;
+
+  /// No description provided for @branchesCodeConflict.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya existe una sucursal con ese código'**
+  String get branchesCodeConflict;
+
+  /// No description provided for @branchesErrorLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al cargar las sucursales'**
+  String get branchesErrorLoading;
+
+  /// No description provided for @branchesSaving.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardando...'**
+  String get branchesSaving;
+
+  /// No description provided for @timezoneMexicoCity.
+  ///
+  /// In es, this message translates to:
+  /// **'Centro (Ciudad de México)'**
+  String get timezoneMexicoCity;
+
+  /// No description provided for @timezoneCancun.
+  ///
+  /// In es, this message translates to:
+  /// **'Sureste (Cancún)'**
+  String get timezoneCancun;
+
+  /// No description provided for @timezoneMerida.
+  ///
+  /// In es, this message translates to:
+  /// **'Centro (Mérida)'**
+  String get timezoneMerida;
+
+  /// No description provided for @timezoneMonterrey.
+  ///
+  /// In es, this message translates to:
+  /// **'Centro (Monterrey)'**
+  String get timezoneMonterrey;
+
+  /// No description provided for @timezoneMatamoros.
+  ///
+  /// In es, this message translates to:
+  /// **'Frontera Norte (Matamoros)'**
+  String get timezoneMatamoros;
+
+  /// No description provided for @timezoneChihuahua.
+  ///
+  /// In es, this message translates to:
+  /// **'Montaña (Chihuahua)'**
+  String get timezoneChihuahua;
+
+  /// No description provided for @timezoneCiudadJuarez.
+  ///
+  /// In es, this message translates to:
+  /// **'Frontera Norte (Ciudad Juárez)'**
+  String get timezoneCiudadJuarez;
+
+  /// No description provided for @timezoneOjinaga.
+  ///
+  /// In es, this message translates to:
+  /// **'Frontera Norte (Ojinaga)'**
+  String get timezoneOjinaga;
+
+  /// No description provided for @timezoneMazatlan.
+  ///
+  /// In es, this message translates to:
+  /// **'Pacífico (Mazatlán)'**
+  String get timezoneMazatlan;
+
+  /// No description provided for @timezoneBahiaBanderas.
+  ///
+  /// In es, this message translates to:
+  /// **'Centro (Bahía de Banderas)'**
+  String get timezoneBahiaBanderas;
+
+  /// No description provided for @timezoneHermosillo.
+  ///
+  /// In es, this message translates to:
+  /// **'Pacífico (Hermosillo)'**
+  String get timezoneHermosillo;
+
+  /// No description provided for @timezoneTijuana.
+  ///
+  /// In es, this message translates to:
+  /// **'Noroeste (Tijuana)'**
+  String get timezoneTijuana;
 
   /// No description provided for @approvalTitle.
   ///
