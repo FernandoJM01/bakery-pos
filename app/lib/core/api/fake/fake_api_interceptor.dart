@@ -18,6 +18,29 @@ class FakeApiInterceptor extends Interceptor {
   String? currentStaffRole;
   List<String>? currentStaffPermissions;
 
+  late final List<Map<String, dynamic>> branches = [
+    {
+      'id': branchId1,
+      'code': 'SUC1',
+      'name': 'Sucursal Centro',
+      'address': 'Av. Juárez 100',
+      'timezone': 'America/Mexico_City',
+      'isActive': true,
+      'createdAt': '2026-01-01T00:00:00.000Z',
+      'updatedAt': '2026-01-01T00:00:00.000Z',
+    },
+    {
+      'id': branchId2,
+      'code': 'SUC2',
+      'name': 'Sucursal Norte',
+      'address': 'Blvd. Diaz Ordaz 200',
+      'timezone': 'America/Mexico_City',
+      'isActive': true,
+      'createdAt': '2026-01-01T00:00:00.000Z',
+      'updatedAt': '2026-01-01T00:00:00.000Z',
+    },
+  ];
+
   @override
   Future<void> onRequest(
     RequestOptions options,
@@ -459,6 +482,28 @@ class FakeApiInterceptor extends Interceptor {
       final email = body['email'] as String? ?? '';
       final password = body['password'] as String? ?? '';
 
+      if (email == 'locked@panaderia.com') {
+        return handler.reject(
+          DioException(
+            requestOptions: options,
+            response: Response(
+              requestOptions: options,
+              statusCode: 423,
+              data: {
+                'code': 'AUTH_LOCKED',
+                'message': 'Account is locked',
+                'details': {
+                  'lockedUntil': DateTime.now()
+                      .add(const Duration(minutes: 15))
+                      .toUtc()
+                      .toIso8601String(),
+                },
+              },
+            ),
+          ),
+        );
+      }
+
       if (password != 'Admin123456!') {
         return handler.reject(
           DioException(
@@ -473,6 +518,32 @@ class FakeApiInterceptor extends Interceptor {
             ),
           ),
         );
+      }
+
+      var staffId = ownerId;
+      var fullName = 'Fernando Dueño';
+      var displayName = 'Fernando';
+      var role = 'OWNER';
+      var perms = [
+        'staff.manage',
+        'devices.manage',
+        'branches.manage',
+        'audit.view',
+        'sale.create',
+      ];
+
+      if (email == 'manager@panaderia.com') {
+        staffId = managerId;
+        fullName = 'Gerente Carlos';
+        displayName = 'Carlos';
+        role = 'BRANCH_MANAGER';
+        perms = ['devices.manage', 'branches.manage', 'sale.create'];
+      } else if (email == 'cashier@panaderia.com') {
+        staffId = cashierId;
+        fullName = 'Cajero Ana';
+        displayName = 'Ana';
+        role = 'CASHIER';
+        perms = ['sale.create'];
       }
 
       return handler.resolve(
@@ -492,10 +563,10 @@ class FakeApiInterceptor extends Interceptor {
                 .toIso8601String(),
             'me': {
               'staff': {
-                'id': ownerId,
-                'fullName': 'Fernando Dueño',
-                'displayName': 'Fernando',
-                'role': 'OWNER',
+                'id': staffId,
+                'fullName': fullName,
+                'displayName': displayName,
+                'role': role,
                 'email': email,
                 'branchIds': [branchId1, branchId2],
                 'isActive': true,
@@ -503,13 +574,7 @@ class FakeApiInterceptor extends Interceptor {
                 'createdAt': DateTime.now().toUtc().toIso8601String(),
                 'updatedAt': DateTime.now().toUtc().toIso8601String(),
               },
-              'permissions': [
-                'staff.manage',
-                'devices.manage',
-                'branches.manage',
-                'audit.view',
-                'sale.create',
-              ],
+              'permissions': perms,
               'deviceId': null,
             },
           },
@@ -645,30 +710,94 @@ class FakeApiInterceptor extends Interceptor {
     // 7. /v1/branches
     if (path.endsWith('/v1/branches') && method == 'GET') {
       return handler.resolve(
-        Response(
-          requestOptions: options,
-          statusCode: 200,
-          data: [
-            {
-              'id': branchId1,
-              'code': 'SUC1',
-              'name': 'Sucursal Centro',
-              'timezone': 'America/Mexico_City',
-              'isActive': true,
-              'createdAt': DateTime.now().toUtc().toIso8601String(),
-              'updatedAt': DateTime.now().toUtc().toIso8601String(),
-            },
-            {
-              'id': branchId2,
-              'code': 'SUC2',
-              'name': 'Sucursal Norte',
-              'timezone': 'America/Mexico_City',
-              'isActive': true,
-              'createdAt': DateTime.now().toUtc().toIso8601String(),
-              'updatedAt': DateTime.now().toUtc().toIso8601String(),
-            },
-          ],
-        ),
+        Response(requestOptions: options, statusCode: 200, data: branches),
+      );
+    }
+
+    if (path.endsWith('/v1/branches') && method == 'POST') {
+      final body = options.data as Map<String, dynamic>? ?? {};
+      final code = body['code'] as String?;
+      final name = body['name'] as String?;
+
+      if (code == null ||
+          name == null ||
+          !RegExp(r'^[A-Z0-9]{2,10}$').hasMatch(code)) {
+        return handler.reject(
+          DioException(
+            requestOptions: options,
+            response: Response(
+              requestOptions: options,
+              statusCode: 400,
+              data: {
+                'code': 'VALIDATION_FAILED',
+                'message': 'Code must be 2-10 uppercase alphanumeric chars',
+              },
+            ),
+          ),
+        );
+      }
+
+      if (branches.any((b) => b['code'] == code)) {
+        return handler.reject(
+          DioException(
+            requestOptions: options,
+            response: Response(
+              requestOptions: options,
+              statusCode: 409,
+              data: {
+                'code': 'DUPLICATE_BRANCH_CODE',
+                'message': 'Branch code already in use',
+              },
+            ),
+          ),
+        );
+      }
+
+      final newBranch = {
+        'id':
+            '0192e2b0-000${branches.length + 1}-7000-8000-00000000000${branches.length + 1}',
+        'code': code,
+        'name': name,
+        'address': body['address'],
+        'timezone': body['timezone'] ?? 'America/Mexico_City',
+        'isActive': true,
+        'createdAt': DateTime.now().toUtc().toIso8601String(),
+        'updatedAt': DateTime.now().toUtc().toIso8601String(),
+      };
+      branches.add(newBranch);
+      return handler.resolve(
+        Response(requestOptions: options, statusCode: 201, data: newBranch),
+      );
+    }
+
+    if (path.contains('/v1/branches/') && method == 'PATCH') {
+      final branchId = path.split('/v1/branches/').last.split('?').first;
+      final body = options.data as Map<String, dynamic>? ?? {};
+
+      final index = branches.indexWhere((b) => b['id'] == branchId);
+      if (index == -1) {
+        return handler.reject(
+          DioException(
+            requestOptions: options,
+            response: Response(
+              requestOptions: options,
+              statusCode: 404,
+              data: {'code': 'NOT_FOUND', 'message': 'Branch not found'},
+            ),
+          ),
+        );
+      }
+
+      final updated = Map<String, dynamic>.from(branches[index]);
+      if (body.containsKey('name')) updated['name'] = body['name'];
+      if (body.containsKey('address')) updated['address'] = body['address'];
+      if (body.containsKey('timezone')) updated['timezone'] = body['timezone'];
+      if (body.containsKey('isActive')) updated['isActive'] = body['isActive'];
+      updated['updatedAt'] = DateTime.now().toUtc().toIso8601String();
+      branches[index] = updated;
+
+      return handler.resolve(
+        Response(requestOptions: options, statusCode: 200, data: updated),
       );
     }
 

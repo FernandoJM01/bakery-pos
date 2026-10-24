@@ -185,6 +185,83 @@ class AppLocalizationsEs extends AppLocalizations {
   String get backofficeInvalidCredentials => 'Credenciales inválidas';
 
   @override
+  String backofficeLockedUntil(String time) {
+    return 'Demasiados intentos. Bloqueado hasta las $time.';
+  }
+
+  @override
+  String get backofficeTitle => 'Panel de Administración';
+
+  @override
+  String get backofficeNoPermissions =>
+      'No tiene permisos para acceder a ninguna sección';
+
+  @override
+  String get branchesTitle => 'Sucursales';
+
+  @override
+  String get branchesNew => 'Nueva sucursal';
+
+  @override
+  String get branchesEdit => 'Editar sucursal';
+
+  @override
+  String get branchesCode => 'Código';
+
+  @override
+  String get branchesName => 'Nombre';
+
+  @override
+  String get branchesAddress => 'Dirección';
+
+  @override
+  String get branchesTimezone => 'Zona horaria';
+
+  @override
+  String get branchesStatus => 'Estado';
+
+  @override
+  String get branchesActive => 'Activa';
+
+  @override
+  String get branchesInactive => 'Inactiva';
+
+  @override
+  String get branchesCodeImmutable => 'El código no se puede modificar';
+
+  @override
+  String get branchesCodeInvalid =>
+      'El código debe tener entre 2 y 10 caracteres alfanuméricos en mayúsculas';
+
+  @override
+  String get branchesNameRequired => 'El nombre es obligatorio';
+
+  @override
+  String get branchesNameInvalid =>
+      'El nombre debe tener entre 1 y 120 caracteres';
+
+  @override
+  String get branchesTimezoneRequired => 'La zona horaria es obligatoria';
+
+  @override
+  String get branchesEmpty => 'No hay sucursales registradas';
+
+  @override
+  String get branchesCreateSuccess => 'Sucursal creada exitosamente';
+
+  @override
+  String get branchesUpdateSuccess => 'Sucursal actualizada exitosamente';
+
+  @override
+  String get branchesCodeConflict => 'Ya existe una sucursal con ese código';
+
+  @override
+  String get branchesErrorLoading => 'Error al cargar las sucursales';
+
+  @override
+  String get branchesSaving => 'Guardando...';
+
+  @override
   String get approvalTitle => 'Aprobación de Gerente';
 
   @override

@@ -66,6 +66,38 @@
   "backofficePasswordLabel": "Contraseña",
   "backofficeLoginButton": "Iniciar sesión",
   "backofficeInvalidCredentials": "Credenciales inválidas",
+  "backofficeLockedUntil": "Demasiados intentos. Bloqueado hasta las {time}.",
+  "@backofficeLockedUntil": {
+    "description": "Mensaje de bloqueo temporal en back office",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "backofficeTitle": "Panel de Administración",
+  "backofficeNoPermissions": "No tiene permisos para acceder a ninguna sección",
+  "branchesTitle": "Sucursales",
+  "branchesNew": "Nueva sucursal",
+  "branchesEdit": "Editar sucursal",
+  "branchesCode": "Código",
+  "branchesName": "Nombre",
+  "branchesAddress": "Dirección",
+  "branchesTimezone": "Zona horaria",
+  "branchesStatus": "Estado",
+  "branchesActive": "Activa",
+  "branchesInactive": "Inactiva",
+  "branchesCodeImmutable": "El código no se puede modificar",
+  "branchesCodeInvalid": "El código debe tener entre 2 y 10 caracteres alfanuméricos en mayúsculas",
+  "branchesNameRequired": "El nombre es obligatorio",
+  "branchesNameInvalid": "El nombre debe tener entre 1 y 120 caracteres",
+  "branchesTimezoneRequired": "La zona horaria es obligatoria",
+  "branchesEmpty": "No hay sucursales registradas",
+  "branchesCreateSuccess": "Sucursal creada exitosamente",
+  "branchesUpdateSuccess": "Sucursal actualizada exitosamente",
+  "branchesCodeConflict": "Ya existe una sucursal con ese código",
+  "branchesErrorLoading": "Error al cargar las sucursales",
+  "branchesSaving": "Guardando...",
   "approvalTitle": "Aprobación de Gerente",
   "approvalPinPrompt": "Ingrese PIN de gerente para aprobar esta acción",
   "approvalGranted": "Acción aprobada",
