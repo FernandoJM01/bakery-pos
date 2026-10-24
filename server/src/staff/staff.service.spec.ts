@@ -4,7 +4,7 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
-import { Role } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service';
 import { AuthenticatedUser } from '../auth/interfaces/auth.interface';
@@ -283,6 +283,44 @@ describe('StaffService', () => {
 
       await expect(
         service.update(ownerUser, ownerUser.staffId, { role: Role.CASHIER }),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it("refuses removing an owner's email (they could not log in)", async () => {
+      findUniqueMock.mockResolvedValue({
+        id: ownerUser.staffId,
+        role: Role.OWNER,
+        isActive: true,
+        email: 'owner@bakery.local',
+        passwordHash: 'hash',
+        staffBranches: [],
+      });
+
+      await expect(
+        service.update(ownerUser, ownerUser.staffId, { email: null }),
+      ).rejects.toThrow(BadRequestException);
+      expect(transactionMock).not.toHaveBeenCalled();
+    });
+
+    it('maps a concurrent duplicate email (P2002) to 409 CONFLICT', async () => {
+      findUniqueMock.mockResolvedValue(null);
+      countBranchMock.mockResolvedValue(1);
+      createStaffMock.mockRejectedValue(
+        new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: 'test',
+        }),
+      );
+
+      await expect(
+        service.create(ownerUser, {
+          fullName: 'Ana López',
+          displayName: 'Ana',
+          role: Role.CASHIER,
+          email: 'ana@bakery.local',
+          branchIds: [uuidv7()],
+          pin: '1234',
+        }),
       ).rejects.toThrow(ConflictException);
     });
 

@@ -8,6 +8,7 @@ import { Branch, Role } from '@prisma/client';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service';
 import { AuthenticatedUser } from '../auth/interfaces/auth.interface';
+import { withUniqueConflict } from '../common/prisma-errors';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBranchDto, UpdateBranchDto } from './dto/branch.dto';
 
@@ -54,16 +55,18 @@ export class BranchesService {
       });
     }
 
-    const branch = await this.prisma.branch.create({
-      data: {
-        id: uuidv7(),
-        code: dto.code,
-        name: dto.name,
-        address: dto.address ?? null,
-        timezone: dto.timezone ?? 'America/Mexico_City',
-        isActive: true,
-      },
-    });
+    const branch = await withUniqueConflict('Branch code already in use', () =>
+      this.prisma.branch.create({
+        data: {
+          id: uuidv7(),
+          code: dto.code,
+          name: dto.name,
+          address: dto.address ?? null,
+          timezone: dto.timezone ?? 'America/Mexico_City',
+          isActive: true,
+        },
+      }),
+    );
 
     await this.audit.log({
       action: 'branch.created',
@@ -104,7 +107,7 @@ export class BranchesService {
 
     if (!hasUpdate) {
       throw new BadRequestException({
-        code: 'VALIDATION_ERROR',
+        code: 'VALIDATION_FAILED',
         message: 'At least one field must be provided',
       });
     }

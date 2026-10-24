@@ -11,6 +11,7 @@ import { AuditService } from '../audit/audit.service';
 import { AuthenticatedUser } from '../auth/interfaces/auth.interface';
 import { ClockService } from '../common/clock.service';
 import { hashPassword, hashPin } from '../common/crypto';
+import { withUniqueConflict } from '../common/prisma-errors';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateStaffDto,
@@ -94,13 +95,13 @@ export class StaffService {
     if (dto.role === Role.OWNER) {
       if (!dto.email) {
         throw new BadRequestException({
-          code: 'VALIDATION_ERROR',
+          code: 'VALIDATION_FAILED',
           message: 'Email is required for owner',
         });
       }
       if (!dto.password || dto.password.length < 10) {
         throw new BadRequestException({
-          code: 'VALIDATION_ERROR',
+          code: 'VALIDATION_FAILED',
           message: 'Password of at least 10 characters is required for owner',
         });
       }
@@ -123,7 +124,7 @@ export class StaffService {
     });
     if (branchCount !== dto.branchIds.length) {
       throw new BadRequestException({
-        code: 'VALIDATION_ERROR',
+        code: 'VALIDATION_FAILED',
         message: 'One or more branch IDs are invalid',
       });
     }
@@ -133,24 +134,26 @@ export class StaffService {
     const now = this.clock.now();
     const staffId = uuidv7();
 
-    const staff = await this.prisma.staff.create({
-      data: {
-        id: staffId,
-        fullName: dto.fullName,
-        displayName: dto.displayName,
-        role: dto.role,
-        email: dto.email ? dto.email.toLowerCase() : null,
-        passwordHash,
-        pinHash,
-        offlinePinVerifier,
-        pinUpdatedAt: now,
-        isActive: true,
-        staffBranches: {
-          create: dto.branchIds.map((branchId) => ({ branchId })),
+    const staff = await withUniqueConflict('Email already in use', () =>
+      this.prisma.staff.create({
+        data: {
+          id: staffId,
+          fullName: dto.fullName,
+          displayName: dto.displayName,
+          role: dto.role,
+          email: dto.email ? dto.email.toLowerCase() : null,
+          passwordHash,
+          pinHash,
+          offlinePinVerifier,
+          pinUpdatedAt: now,
+          isActive: true,
+          staffBranches: {
+            create: dto.branchIds.map((branchId) => ({ branchId })),
+          },
         },
-      },
-      include: { staffBranches: true },
-    });
+        include: { staffBranches: true },
+      }),
+    );
 
     await this.audit.log({
       action: 'staff.created',
@@ -197,7 +200,7 @@ export class StaffService {
 
     if (!hasUpdate) {
       throw new BadRequestException({
-        code: 'VALIDATION_ERROR',
+        code: 'VALIDATION_FAILED',
         message: 'At least one field must be provided',
       });
     }
@@ -227,8 +230,9 @@ export class StaffService {
       });
     }
 
-    // If promoted to OWNER, must have email and password
-    if (dto.role === Role.OWNER) {
+    // An owner (staying one or being promoted) must keep an email and a
+    // password, or they could no longer log in to the back office.
+    if ((dto.role ?? existing.role) === Role.OWNER) {
       const effectiveEmail =
         dto.email !== undefined ? dto.email : existing.email;
       const effectivePassword = dto.password
@@ -236,7 +240,7 @@ export class StaffService {
         : existing.passwordHash !== null;
       if (!effectiveEmail || !effectivePassword) {
         throw new BadRequestException({
-          code: 'VALIDATION_ERROR',
+          code: 'VALIDATION_FAILED',
           message:
             'Owner must have an email and a password of at least 10 characters',
         });
@@ -264,7 +268,7 @@ export class StaffService {
       });
       if (branchCount !== dto.branchIds.length) {
         throw new BadRequestException({
-          code: 'VALIDATION_ERROR',
+          code: 'VALIDATION_FAILED',
           message: 'One or more branch IDs are invalid',
         });
       }
@@ -276,64 +280,67 @@ export class StaffService {
     }
 
     const now = this.clock.now();
-    const updated = await this.prisma.$transaction(async (tx) => {
-      if (dto.branchIds) {
-        await tx.staffBranch.deleteMany({ where: { staffId } });
-        await tx.staffBranch.createMany({
-          data: dto.branchIds.map((branchId) => ({ staffId, branchId })),
+    const updated = await withUniqueConflict('Email already in use', () =>
+      this.prisma.$transaction(async (tx) => {
+        if (dto.branchIds) {
+          await tx.staffBranch.deleteMany({ where: { staffId } });
+          await tx.staffBranch.createMany({
+            data: dto.branchIds.map((branchId) => ({ staffId, branchId })),
+          });
+        }
+
+        if (dto.isActive === false) {
+          await tx.authSession.updateMany({
+            where: { staffId, revokedAt: null },
+            data: { revokedAt: now },
+          });
+        }
+
+        const s = await tx.staff.update({
+          where: { id: staffId },
+          data: {
+            fullName: dto.fullName,
+            displayName: dto.displayName,
+            role: dto.role,
+            email:
+              dto.email !== undefined
+                ? dto.email
+                  ? dto.email.toLowerCase()
+                  : null
+                : undefined,
+            passwordHash,
+            isActive: dto.isActive,
+          },
+          include: { staffBranches: true },
         });
-      }
 
-      if (dto.isActive === false) {
-        await tx.authSession.updateMany({
-          where: { staffId, revokedAt: null },
-          data: { revokedAt: now },
+        const isDeactivation =
+          dto.isActive === false && existing.isActive === true;
+        const changes: Record<string, unknown> = {};
+        if (dto.fullName !== undefined) changes.fullName = dto.fullName;
+        if (dto.displayName !== undefined)
+          changes.displayName = dto.displayName;
+        if (dto.role !== undefined) changes.role = dto.role;
+        if (dto.email !== undefined) changes.email = dto.email;
+        if (dto.password !== undefined) changes.hasPassword = true;
+        if (dto.branchIds !== undefined) changes.branchIds = dto.branchIds;
+        if (dto.isActive !== undefined) changes.isActive = dto.isActive;
+
+        await tx.auditLog.create({
+          data: {
+            id: uuidv7(),
+            occurredAt: now,
+            action: isDeactivation ? 'staff.deactivated' : 'staff.updated',
+            actorStaffId: currentUser.staffId,
+            entityType: 'staff',
+            entityId: staffId,
+            data: changes as Prisma.InputJsonValue,
+          },
         });
-      }
 
-      const s = await tx.staff.update({
-        where: { id: staffId },
-        data: {
-          fullName: dto.fullName,
-          displayName: dto.displayName,
-          role: dto.role,
-          email:
-            dto.email !== undefined
-              ? dto.email
-                ? dto.email.toLowerCase()
-                : null
-              : undefined,
-          passwordHash,
-          isActive: dto.isActive,
-        },
-        include: { staffBranches: true },
-      });
-
-      const isDeactivation =
-        dto.isActive === false && existing.isActive === true;
-      const changes: Record<string, unknown> = {};
-      if (dto.fullName !== undefined) changes.fullName = dto.fullName;
-      if (dto.displayName !== undefined) changes.displayName = dto.displayName;
-      if (dto.role !== undefined) changes.role = dto.role;
-      if (dto.email !== undefined) changes.email = dto.email;
-      if (dto.password !== undefined) changes.hasPassword = true;
-      if (dto.branchIds !== undefined) changes.branchIds = dto.branchIds;
-      if (dto.isActive !== undefined) changes.isActive = dto.isActive;
-
-      await tx.auditLog.create({
-        data: {
-          id: uuidv7(),
-          occurredAt: now,
-          action: isDeactivation ? 'staff.deactivated' : 'staff.updated',
-          actorStaffId: currentUser.staffId,
-          entityType: 'staff',
-          entityId: staffId,
-          data: changes as Prisma.InputJsonValue,
-        },
-      });
-
-      return s;
-    });
+        return s;
+      }),
+    );
 
     return formatStaff(updated);
   }
