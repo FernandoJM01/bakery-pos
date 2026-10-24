@@ -28,6 +28,7 @@ describe('Admin Endpoints: Branches, Staff & Audit Log (e2e)', () => {
   let cashierId: string;
   let managerToken: string;
   let deviceTokenHex: string;
+  let createdStaffId: string;
 
   const ownerEmail = 'admin-e2e-owner@bakery.local';
   const ownerPassword = 'OwnerAdminPass123!';
@@ -306,10 +307,92 @@ describe('Admin Endpoints: Branches, Staff & Audit Log (e2e)', () => {
       expect(audit).not.toBeNull();
       expect(audit?.actorStaffId).toBe(ownerId);
     });
+
+    it('refuses invalid time zone on POST and PATCH /v1/branches (400 VALIDATION_FAILED)', async () => {
+      const createRes = await request(server)
+        .post('/v1/branches')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          code: 'BADTZ1',
+          name: 'Bad Timezone Branch',
+          timezone: 'Mexico',
+        });
+
+      expect(createRes.status).toBe(400);
+      expect((createRes.body as { code: string }).code).toBe(
+        'VALIDATION_FAILED',
+      );
+
+      const patchRes = await request(server)
+        .patch(`/v1/branches/${branch1Id}`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          timezone: 'NotAnIANAZone',
+        });
+
+      expect(patchRes.status).toBe(400);
+      expect((patchRes.body as { code: string }).code).toBe(
+        'VALIDATION_FAILED',
+      );
+    });
+
+    it('deactivating a branch revokes its tills active sessions in the same transaction', async () => {
+      // 1. Create a branch and a till device in it
+      const branchCode = `B${Date.now().toString().slice(-6)}`;
+      const branch = await prisma.branch.create({
+        data: {
+          id: uuidv7(),
+          code: branchCode,
+          name: 'Branch To Deactivate',
+          isActive: true,
+        },
+      });
+
+      const tillTokenHex = randomBytes(32).toString('hex');
+      const pepper = process.env.DEVICE_TOKEN_PEPPER!;
+      await prisma.device.create({
+        data: {
+          id: uuidv7(),
+          branchId: branch.id,
+          name: 'Till Deact Test',
+          type: 'TILL',
+          status: 'ACTIVE',
+          tokenHash: hashTokenWithPepper(tillTokenHex, pepper),
+        },
+      });
+
+      // 2. Log in owner on that till
+      const loginRes = await request(server)
+        .post('/v1/auth/pin-login')
+        .set('X-Device-Token', tillTokenHex)
+        .send({ staffId: ownerId, pin: '1111' });
+      expect(loginRes.status).toBe(200);
+      const tillSessionToken = (loginRes.body as { accessToken: string })
+        .accessToken;
+
+      // Verify the session works before deactivation
+      const checkBefore = await request(server)
+        .get('/v1/branches')
+        .set('Authorization', `Bearer ${tillSessionToken}`);
+      expect(checkBefore.status).toBe(200);
+
+      // 3. Deactivate the branch
+      const deactBranchRes = await request(server)
+        .patch(`/v1/branches/${branch.id}`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({ isActive: false });
+      expect(deactBranchRes.status).toBe(200);
+
+      // 4. Till session token is refused (401 AUTH_REQUIRED)
+      const checkAfter = await request(server)
+        .get('/v1/branches')
+        .set('Authorization', `Bearer ${tillSessionToken}`);
+      expect(checkAfter.status).toBe(401);
+      expect((checkAfter.body as { code: string }).code).toBe('AUTH_REQUIRED');
+    });
   });
 
   describe('Staff Management & Acceptance Tests A5, A10', () => {
-    let createdStaffId: string;
     const testCashierPin = '5555';
 
     it('A5: cashier calling POST /v1/staff gets 403 PERMISSION_DENIED; owner gets 201', async () => {
@@ -402,9 +485,9 @@ describe('Admin Endpoints: Branches, Staff & Audit Log (e2e)', () => {
 
     it('guard rail: nobody can deactivate or demote the last active owner (409 CONFLICT)', async () => {
       const appPrisma = app.get(PrismaService);
-      const countSpy = jest
-        .spyOn(appPrisma.staff, 'count')
-        .mockResolvedValue(1);
+      const queryRawSpy = jest
+        .spyOn(appPrisma, '$queryRaw')
+        .mockResolvedValue([{ id: ownerId }]);
 
       // 1. Attempt deactivation of the owner
       const deactRes = await request(server)
@@ -424,7 +507,7 @@ describe('Admin Endpoints: Branches, Staff & Audit Log (e2e)', () => {
       expect(demoteRes.status).toBe(409);
       expect((demoteRes.body as { code: string }).code).toBe('CONFLICT');
 
-      countSpy.mockRestore();
+      queryRawSpy.mockRestore();
     });
 
     it('guard rail: manager can never create or promote an OWNER (403 PERMISSION_DENIED)', async () => {
@@ -604,6 +687,47 @@ describe('Admin Endpoints: Branches, Staff & Audit Log (e2e)', () => {
       };
       expect(staffBundleAfter.staff.some((s) => s.id === targetId)).toBe(false);
     });
+
+    it('password change through PATCH /v1/staff/{id} revokes that persons other sessions', async () => {
+      // Create staff with password
+      const tempEmail = `pwd-test-${Date.now()}@bakery.local`;
+      const createRes = await request(server)
+        .post('/v1/staff')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          fullName: 'Password Revoke Target',
+          displayName: 'PwdTarget',
+          role: Role.OWNER,
+          email: tempEmail,
+          password: 'InitialPassword123!',
+          branchIds: [branch1Id],
+          pin: '6666',
+        });
+      expect(createRes.status).toBe(201);
+      const targetId = (createRes.body as { id: string }).id;
+
+      // Log in to get active session
+      const loginRes = await request(server)
+        .post('/v1/auth/password-login')
+        .send({ email: tempEmail, password: 'InitialPassword123!' });
+      expect(loginRes.status).toBe(200);
+      const oldSessionToken = (loginRes.body as { accessToken: string })
+        .accessToken;
+
+      // Change password via PATCH /v1/staff/{id}
+      const updateRes = await request(server)
+        .patch(`/v1/staff/${targetId}`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({ password: 'BrandNewPassword123!' });
+      expect(updateRes.status).toBe(200);
+
+      // Old session is now revoked (401 AUTH_REQUIRED)
+      const testRes = await request(server)
+        .get('/v1/branches')
+        .set('Authorization', `Bearer ${oldSessionToken}`);
+      expect(testRes.status).toBe(401);
+      expect((testRes.body as { code: string }).code).toBe('AUTH_REQUIRED');
+    });
   });
 
   describe('Audit Log (GET /v1/audit-log) & Cursor Pagination', () => {
@@ -679,6 +803,47 @@ describe('Admin Endpoints: Branches, Staff & Audit Log (e2e)', () => {
         expect(item.action).toBe('branch.created');
         expect(item.actorStaffId).toBe(ownerId);
       }
+    });
+
+    it('returns 400 VALIDATION_FAILED on unreadable or invalid cursor', async () => {
+      const res = await request(server)
+        .get('/v1/audit-log?cursor=invalid-cursor-value')
+        .set('Authorization', `Bearer ${ownerToken}`);
+
+      expect(res.status).toBe(400);
+      expect((res.body as { code: string }).code).toBe('VALIDATION_FAILED');
+    });
+
+    it('staff.updated, staff.deactivated and staff.pin_changed audit rows carry staff members branchId', async () => {
+      // 1. Perform an update on createdStaffId
+      const updateRes = await request(server)
+        .patch(`/v1/staff/${createdStaffId}`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({ displayName: 'MariaP' });
+      expect(updateRes.status).toBe(200);
+
+      const updatedAudit = await prisma.auditLog.findFirst({
+        where: { action: 'staff.updated', entityId: createdStaffId },
+      });
+      expect(updatedAudit?.branchId).toBe(branch1Id);
+
+      // 2. Perform deactivation on createdStaffId
+      const deactRes = await request(server)
+        .patch(`/v1/staff/${createdStaffId}`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({ isActive: false });
+      expect(deactRes.status).toBe(200);
+
+      const deactAudit = await prisma.auditLog.findFirst({
+        where: { action: 'staff.deactivated', entityId: createdStaffId },
+      });
+      expect(deactAudit?.branchId).toBe(branch1Id);
+
+      // 3. Verify pin_changed audit
+      const pinAudit = await prisma.auditLog.findFirst({
+        where: { action: 'staff.pin_changed', entityId: createdStaffId },
+      });
+      expect(pinAudit?.branchId).toBe(branch1Id);
     });
 
     it('never contains passwords, PINs, or hashes in audit log data', async () => {

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { v7 as uuidv7 } from 'uuid';
 import { ClockService } from '../common/clock.service';
@@ -66,24 +66,39 @@ export class AuditService {
     }
 
     if (query.cursor) {
+      let cursorOccurredAt: Date | undefined;
+      let cursorId: string | undefined;
+
       try {
         const decoded = Buffer.from(query.cursor, 'base64').toString('utf8');
         const [occurredAtStr, id] = decoded.split('|');
         if (occurredAtStr && id) {
-          const cursorOccurredAt = new Date(occurredAtStr);
-          andConditions.push({
-            OR: [
-              { occurredAt: { lt: cursorOccurredAt } },
-              {
-                occurredAt: cursorOccurredAt,
-                id: { lt: id },
-              },
-            ],
-          });
+          const parsedDate = new Date(occurredAtStr);
+          if (!isNaN(parsedDate.getTime())) {
+            cursorOccurredAt = parsedDate;
+            cursorId = id;
+          }
         }
       } catch {
-        // Ignore invalid cursor
+        // Handled below
       }
+
+      if (!cursorOccurredAt || !cursorId) {
+        throw new BadRequestException({
+          code: 'VALIDATION_FAILED',
+          message: 'Invalid pagination cursor',
+        });
+      }
+
+      andConditions.push({
+        OR: [
+          { occurredAt: { lt: cursorOccurredAt } },
+          {
+            occurredAt: cursorOccurredAt,
+            id: { lt: cursorId },
+          },
+        ],
+      });
     }
 
     const where: Prisma.AuditLogWhereInput =

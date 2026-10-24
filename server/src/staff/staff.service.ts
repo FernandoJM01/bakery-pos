@@ -206,21 +206,16 @@ export class StaffService {
     }
 
     // Guard rail: nobody can deactivate or demote the last active owner
-    if (existing.role === Role.OWNER && existing.isActive) {
-      const isDemoting = dto.role !== undefined && dto.role !== Role.OWNER;
-      const isDeactivating = dto.isActive === false;
-      if (isDemoting || isDeactivating) {
-        const activeOwners = await this.prisma.staff.count({
-          where: { role: Role.OWNER, isActive: true },
-        });
-        if (activeOwners <= 1) {
-          throw new ConflictException({
-            code: 'CONFLICT',
-            message: 'Cannot deactivate or demote the last active owner',
-          });
-        }
-      }
-    }
+    const isDemotingOwner =
+      existing.role === Role.OWNER &&
+      existing.isActive &&
+      dto.role !== undefined &&
+      dto.role !== Role.OWNER;
+    const isDeactivatingOwner =
+      existing.role === Role.OWNER &&
+      existing.isActive &&
+      dto.isActive === false;
+    const requiresLastOwnerCheck = isDemotingOwner || isDeactivatingOwner;
 
     // Guard rail: a manager can never create or promote an OWNER
     if (currentUser.role !== Role.OWNER && dto.role === Role.OWNER) {
@@ -282,6 +277,18 @@ export class StaffService {
     const now = this.clock.now();
     const updated = await withUniqueConflict('Email already in use', () =>
       this.prisma.$transaction(async (tx) => {
+        if (requiresLastOwnerCheck) {
+          const activeOwners = await tx.$queryRaw<Array<{ id: string }>>`
+            SELECT id FROM staff WHERE role = 'OWNER'::role AND is_active = true FOR UPDATE
+          `;
+          if (activeOwners.length <= 1) {
+            throw new ConflictException({
+              code: 'CONFLICT',
+              message: 'Cannot deactivate or demote the last active owner',
+            });
+          }
+        }
+
         if (dto.branchIds) {
           await tx.staffBranch.deleteMany({ where: { staffId } });
           await tx.staffBranch.createMany({
@@ -289,7 +296,7 @@ export class StaffService {
           });
         }
 
-        if (dto.isActive === false) {
+        if (dto.isActive === false || dto.password) {
           await tx.authSession.updateMany({
             where: { staffId, revokedAt: null },
             data: { revokedAt: now },
@@ -326,12 +333,16 @@ export class StaffService {
         if (dto.branchIds !== undefined) changes.branchIds = dto.branchIds;
         if (dto.isActive !== undefined) changes.isActive = dto.isActive;
 
+        const auditBranchId =
+          dto.branchIds?.[0] ?? existing.staffBranches?.[0]?.branchId ?? null;
+
         await tx.auditLog.create({
           data: {
             id: uuidv7(),
             occurredAt: now,
             action: isDeactivation ? 'staff.deactivated' : 'staff.updated',
             actorStaffId: currentUser.staffId,
+            branchId: auditBranchId,
             entityType: 'staff',
             entityId: staffId,
             data: changes as Prisma.InputJsonValue,
@@ -352,6 +363,7 @@ export class StaffService {
   ) {
     const staff = await this.prisma.staff.findUnique({
       where: { id: staffId },
+      include: { staffBranches: true },
     });
     if (!staff) {
       throw new NotFoundException({
@@ -380,12 +392,15 @@ export class StaffService {
         data: { revokedAt: now },
       });
 
+      const auditBranchId = staff.staffBranches?.[0]?.branchId ?? null;
+
       await tx.auditLog.create({
         data: {
           id: uuidv7(),
           occurredAt: now,
           action: 'staff.pin_changed',
           actorStaffId: currentUser.staffId,
+          branchId: auditBranchId,
           entityType: 'staff',
           entityId: staffId,
           data: {},

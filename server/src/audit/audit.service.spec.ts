@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { v7 as uuidv7 } from 'uuid';
 import { ClockService } from '../common/clock.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -125,6 +126,19 @@ describe('AuditService', () => {
         'utf8',
       );
       expect(decoded).toBe('2026-10-23T12:00:00.000Z|2');
+    });
+
+    it('throws BadRequestException on unreadable or invalid cursor', async () => {
+      await expect(
+        service.list({ cursor: 'not-a-valid-cursor' }),
+      ).rejects.toThrow(BadRequestException);
+
+      const invalidDateCursor = Buffer.from('invalid-date|row-id').toString(
+        'base64',
+      );
+      await expect(service.list({ cursor: invalidDateCursor })).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });

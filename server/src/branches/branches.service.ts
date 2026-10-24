@@ -4,13 +4,26 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Branch, Role } from '@prisma/client';
+import { Branch, Prisma, Role } from '@prisma/client';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service';
 import { AuthenticatedUser } from '../auth/interfaces/auth.interface';
+import { ClockService } from '../common/clock.service';
 import { withUniqueConflict } from '../common/prisma-errors';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBranchDto, UpdateBranchDto } from './dto/branch.dto';
+
+export function assertValidTimeZone(timeZone?: string): void {
+  if (!timeZone) return;
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone });
+  } catch {
+    throw new BadRequestException({
+      code: 'VALIDATION_FAILED',
+      message: 'Invalid IANA time zone',
+    });
+  }
+}
 
 export function formatBranch(branch: Branch) {
   return {
@@ -30,6 +43,7 @@ export class BranchesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly clock: ClockService,
   ) {}
 
   async list(user: AuthenticatedUser) {
@@ -45,6 +59,8 @@ export class BranchesService {
   }
 
   async create(user: AuthenticatedUser, dto: CreateBranchDto) {
+    assertValidTimeZone(dto.timezone);
+
     const existing = await this.prisma.branch.findUnique({
       where: { code: dto.code },
     });
@@ -89,6 +105,8 @@ export class BranchesService {
     branchId: string,
     dto: UpdateBranchDto,
   ) {
+    assertValidTimeZone(dto.timezone);
+
     const branch = await this.prisma.branch.findUnique({
       where: { id: branchId },
     });
@@ -112,29 +130,48 @@ export class BranchesService {
       });
     }
 
-    const updated = await this.prisma.branch.update({
-      where: { id: branchId },
-      data: {
-        name: dto.name,
-        address: dto.address,
-        timezone: dto.timezone,
-        isActive: dto.isActive,
-      },
-    });
+    const now = this.clock.now();
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const b = await tx.branch.update({
+        where: { id: branchId },
+        data: {
+          name: dto.name,
+          address: dto.address,
+          timezone: dto.timezone,
+          isActive: dto.isActive,
+        },
+      });
 
-    const changes: Record<string, unknown> = {};
-    if (dto.name !== undefined) changes.name = dto.name;
-    if (dto.address !== undefined) changes.address = dto.address;
-    if (dto.timezone !== undefined) changes.timezone = dto.timezone;
-    if (dto.isActive !== undefined) changes.isActive = dto.isActive;
+      if (dto.isActive === false) {
+        await tx.authSession.updateMany({
+          where: {
+            device: { branchId },
+            revokedAt: null,
+          },
+          data: { revokedAt: now },
+        });
+      }
 
-    await this.audit.log({
-      action: 'branch.updated',
-      actorStaffId: user.staffId,
-      branchId: updated.id,
-      entityType: 'branch',
-      entityId: updated.id,
-      data: changes,
+      const changes: Record<string, unknown> = {};
+      if (dto.name !== undefined) changes.name = dto.name;
+      if (dto.address !== undefined) changes.address = dto.address;
+      if (dto.timezone !== undefined) changes.timezone = dto.timezone;
+      if (dto.isActive !== undefined) changes.isActive = dto.isActive;
+
+      await tx.auditLog.create({
+        data: {
+          id: uuidv7(),
+          occurredAt: now,
+          action: 'branch.updated',
+          actorStaffId: user.staffId,
+          branchId: b.id,
+          entityType: 'branch',
+          entityId: b.id,
+          data: changes as Prisma.InputJsonValue,
+        },
+      });
+
+      return b;
     });
 
     return formatBranch(updated);

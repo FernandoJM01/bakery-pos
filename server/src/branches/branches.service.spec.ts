@@ -7,6 +7,7 @@ import { Role } from '@prisma/client';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service';
 import { AuthenticatedUser } from '../auth/interfaces/auth.interface';
+import { ClockService } from '../common/clock.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { BranchesService } from './branches.service';
 
@@ -16,7 +17,10 @@ describe('BranchesService', () => {
   let findUniqueMock: jest.Mock<Promise<unknown>, [unknown]>;
   let createMock: jest.Mock<Promise<unknown>, [unknown]>;
   let updateMock: jest.Mock<Promise<unknown>, [unknown]>;
+  let updateManySessionsMock: jest.Mock<Promise<unknown>, [unknown]>;
+  let createAuditMock: jest.Mock<Promise<unknown>, [unknown]>;
   let auditLogMock: jest.Mock<Promise<unknown>, [unknown]>;
+  let clock: ClockService;
 
   const ownerUser: AuthenticatedUser = {
     staffId: uuidv7(),
@@ -41,7 +45,10 @@ describe('BranchesService', () => {
     findUniqueMock = jest.fn<Promise<unknown>, [unknown]>();
     createMock = jest.fn<Promise<unknown>, [unknown]>();
     updateMock = jest.fn<Promise<unknown>, [unknown]>();
+    updateManySessionsMock = jest.fn<Promise<unknown>, [unknown]>();
+    createAuditMock = jest.fn<Promise<unknown>, [unknown]>();
     auditLogMock = jest.fn<Promise<unknown>, [unknown]>();
+    clock = new ClockService();
 
     const prismaMock = {
       branch: {
@@ -50,13 +57,23 @@ describe('BranchesService', () => {
         create: createMock,
         update: updateMock,
       },
+      $transaction: jest.fn(async (cb) => {
+        if (typeof cb === 'function') {
+          return (cb as (tx: unknown) => Promise<unknown>)({
+            branch: { update: updateMock },
+            authSession: { updateMany: updateManySessionsMock },
+            auditLog: { create: createAuditMock },
+          });
+        }
+        return Promise.resolve();
+      }),
     } as unknown as PrismaService;
 
     const auditMock = {
       log: auditLogMock,
     } as unknown as AuditService;
 
-    service = new BranchesService(prismaMock, auditMock);
+    service = new BranchesService(prismaMock, auditMock, clock);
   });
 
   describe('list', () => {
@@ -124,6 +141,16 @@ describe('BranchesService', () => {
       );
     });
 
+    it('throws BadRequestException on invalid time zone', async () => {
+      await expect(
+        service.create(ownerUser, {
+          code: 'SUC9',
+          name: 'Sucursal 9',
+          timezone: 'Mexico',
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
     it('throws ConflictException on duplicate code', async () => {
       findUniqueMock.mockResolvedValue({ id: uuidv7(), code: 'SUC1' });
 
@@ -150,7 +177,13 @@ describe('BranchesService', () => {
       );
     });
 
-    it('updates branch and writes audit log', async () => {
+    it('throws BadRequestException on invalid time zone in update', async () => {
+      await expect(
+        service.update(ownerUser, uuidv7(), { timezone: 'Invalid/Zone' }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('updates branch and writes audit log in transaction', async () => {
       const branchId = uuidv7();
       findUniqueMock.mockResolvedValue({ id: branchId });
       updateMock.mockResolvedValue({
@@ -169,10 +202,33 @@ describe('BranchesService', () => {
       });
 
       expect(res.name).toBe('Updated Name');
-      expect(auditLogMock).toHaveBeenCalledWith(
+      expect(createAuditMock).toHaveBeenCalled();
+      const auditArg = createAuditMock.mock.calls[0][0] as {
+        data: { action: string; actorStaffId: string };
+      };
+      expect(auditArg.data.action).toBe('branch.updated');
+      expect(auditArg.data.actorStaffId).toBe(ownerUser.staffId);
+    });
+
+    it('deactivating branch revokes sessions of that branch in transaction', async () => {
+      const branchId = uuidv7();
+      findUniqueMock.mockResolvedValue({ id: branchId });
+      updateMock.mockResolvedValue({
+        id: branchId,
+        code: 'SUC1',
+        name: 'Sucursal 1',
+        address: null,
+        timezone: 'America/Mexico_City',
+        isActive: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      await service.update(ownerUser, branchId, { isActive: false });
+
+      expect(updateManySessionsMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          action: 'branch.updated',
-          actorStaffId: ownerUser.staffId,
+          where: { device: { branchId }, revokedAt: null },
         }),
       );
     });

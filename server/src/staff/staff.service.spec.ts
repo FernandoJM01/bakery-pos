@@ -24,6 +24,7 @@ describe('StaffService', () => {
   let createManyStaffBranchMock: jest.Mock<Promise<unknown>, [unknown]>;
   let updateManySessionsMock: jest.Mock<Promise<unknown>, [unknown]>;
   let createAuditMock: jest.Mock<Promise<unknown>, [unknown]>;
+  let queryRawMock: jest.Mock<Promise<unknown>, [unknown]>;
   let auditLogMock: jest.Mock<Promise<unknown>, [unknown]>;
   let transactionMock: jest.Mock<Promise<unknown>, [unknown]>;
   let clock: ClockService;
@@ -57,6 +58,7 @@ describe('StaffService', () => {
     createManyStaffBranchMock = jest.fn<Promise<unknown>, [unknown]>();
     updateManySessionsMock = jest.fn<Promise<unknown>, [unknown]>();
     createAuditMock = jest.fn<Promise<unknown>, [unknown]>();
+    queryRawMock = jest.fn<Promise<unknown>, [unknown]>();
     auditLogMock = jest.fn<Promise<unknown>, [unknown]>();
     clock = new ClockService();
 
@@ -65,6 +67,7 @@ describe('StaffService', () => {
       .mockImplementation(async (callback) => {
         if (typeof callback === 'function') {
           return (callback as (tx: unknown) => Promise<unknown>)({
+            $queryRaw: queryRawMock,
             staff: {
               update: updateStaffMock,
             },
@@ -262,10 +265,12 @@ describe('StaffService', () => {
       findUniqueMock.mockResolvedValue({
         id: ownerUser.staffId,
         role: Role.OWNER,
+        email: 'owner@bakery.local',
+        passwordHash: 'hashed-password',
         isActive: true,
         staffBranches: [],
       });
-      countStaffMock.mockResolvedValue(1);
+      queryRawMock.mockResolvedValue([{ id: ownerUser.staffId }]);
 
       await expect(
         service.update(ownerUser, ownerUser.staffId, { isActive: false }),
@@ -276,10 +281,12 @@ describe('StaffService', () => {
       findUniqueMock.mockResolvedValue({
         id: ownerUser.staffId,
         role: Role.OWNER,
+        email: 'owner@bakery.local',
+        passwordHash: 'hashed-password',
         isActive: true,
         staffBranches: [],
       });
-      countStaffMock.mockResolvedValue(1);
+      queryRawMock.mockResolvedValue([{ id: ownerUser.staffId }]);
 
       await expect(
         service.update(ownerUser, ownerUser.staffId, { role: Role.CASHIER }),
@@ -450,6 +457,48 @@ describe('StaffService', () => {
       };
       expect(auditArg.data.action).toBe('staff.deactivated');
       expect(auditArg.data.actorStaffId).toBe(ownerUser.staffId);
+    });
+
+    it('password change revokes sessions in transaction', async () => {
+      const targetId = uuidv7();
+      findUniqueMock.mockResolvedValue({
+        id: targetId,
+        role: Role.CASHIER,
+        isActive: true,
+        staffBranches: [{ branchId: 'b-1' }],
+      });
+      updateStaffMock.mockResolvedValue({
+        id: targetId,
+        fullName: 'Test',
+        displayName: 'T',
+        role: Role.CASHIER,
+        email: null,
+        passwordHash: 'hash',
+        pinHash: 'hash',
+        offlinePinVerifier: 'verifier',
+        pinUpdatedAt: new Date(),
+        isActive: true,
+        lockedUntil: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        staffBranches: [{ branchId: 'b-1' }],
+      });
+
+      await service.update(ownerUser, targetId, {
+        password: 'NewStrongPassword123!',
+      });
+
+      expect(updateManySessionsMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { staffId: targetId, revokedAt: null },
+        }),
+      );
+      expect(createAuditMock).toHaveBeenCalled();
+      const auditArg = createAuditMock.mock.calls[0][0] as {
+        data: { action: string; actorStaffId: string; branchId?: string };
+      };
+      expect(auditArg.data.action).toBe('staff.updated');
+      expect(auditArg.data.branchId).toBe('b-1');
     });
   });
 
