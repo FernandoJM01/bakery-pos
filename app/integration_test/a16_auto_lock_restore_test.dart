@@ -108,8 +108,11 @@ void main() {
       final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'))
         ..interceptors.add(FakeApiInterceptor());
 
+      // Pass dio so the service installs TillAuthInterceptor, as the app's
+      // provider does; without it requests carry no access token.
       authService = TillAuthService(
         restClient: RestClient(dio),
+        dio: dio,
         database: db,
         secureStorage: secureStorage,
         clock: () => currentTime,
@@ -141,8 +144,10 @@ void main() {
       router = createAppRouter(
         AppMode.till,
         secureStorage: secureStorage,
-        refreshListenable: authService,
-        hasSession: () => authService.currentSession != null,
+        // Wired as in main_till.dart: a locked session counts as no access,
+        // and the router refreshes on lock changes too.
+        refreshListenable: Listenable.merge([authService, lockManager]),
+        hasSession: () => lockManager.hasActiveSession,
         getPermissions: () =>
             authService.currentSession?.permissions ?? const [],
         tillLoginBuilder: (context) => const TillLoginScreen(),
@@ -151,6 +156,8 @@ void main() {
         tillSectionBuilder: (context, route) =>
             TillSectionPlaceholder.forRoute(route),
       );
+      lockManager.readCurrentRoute = () =>
+          router.routerDelegate.currentConfiguration.uri.toString();
     });
 
     tearDown(() async {
