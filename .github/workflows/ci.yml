@@ -117,3 +117,45 @@ jobs:
           emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot
           working-directory: app
           script: flutter test integration_test -d emulator-5554
+
+  deploy:
+    name: Docker image and local server stack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Build for arm64 (Raspberry Pi 5 / ARM mini PC)
+        run: docker buildx build --platform linux/arm64 --target runtime server
+      - name: Start the stack (amd64)
+        working-directory: deploy
+        run: |
+          {
+            echo "POSTGRES_PASSWORD=$(openssl rand -hex 16)"
+            echo "POS_APP_PASSWORD=$(openssl rand -hex 16)"
+            echo "JWT_SECRET=$(openssl rand -hex 32)"
+            echo "DEVICE_TOKEN_PEPPER=$(openssl rand -hex 32)"
+          } > .env
+          mkdir -p backoffice backups && echo ok > backoffice/index.html
+          docker compose up -d --build --wait --wait-timeout 180 db server web
+      - name: Smoke test the built image
+        working-directory: deploy
+        run: |
+          set -e
+          curl -fsS http://127.0.0.1:8080/health | grep '"status":"ok"'
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/v1/branches)" = 403
+          printf 'CI Owner\nOwner\nci-owner@bakery.local\nCiOwnerPass123!\n4321\n' |
+            docker compose exec -T server node dist/cli/create-owner.js
+          curl -fsS -H 'X-Forwarded-Proto: https' -H 'Content-Type: application/json' \
+            -d '{"email":"ci-owner@bakery.local","password":"CiOwnerPass123!"}' \
+            http://127.0.0.1:8080/v1/auth/password-login | grep -q accessToken
+          ! docker compose logs server | grep -q 'CiOwnerPass123'
+      - name: Backup and restore test
+        working-directory: deploy
+        run: |
+          docker compose up -d backup
+          docker compose exec -T backup sh /backup.sh now
+          ./restore-test.sh
+      - if: failure()
+        working-directory: deploy
+        run: docker compose logs

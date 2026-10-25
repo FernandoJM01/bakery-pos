@@ -61,6 +61,7 @@ describe('Environment validation', () => {
       NODE_ENV: 'production',
       JWT_SECRET: 'short-secret-less-than-32-chars',
       DEVICE_TOKEN_PEPPER: 'short-pepper',
+      TRUST_PROXY: 'loopback',
     };
 
     expect(() => validateEnv(prodShortEnv)).toThrow(
@@ -83,9 +84,24 @@ describe('Environment validation', () => {
       NODE_ENV: 'production',
       JWT_SECRET: 'a'.repeat(32),
       DEVICE_TOKEN_PEPPER: 'b'.repeat(32),
+      TRUST_PROXY: 'loopback',
     };
     const prodResult = validateEnv(prodValidEnv);
     expect(prodResult.JWT_SECRET).toBe('a'.repeat(32));
     expect(prodResult.DEVICE_TOKEN_PEPPER).toBe('b'.repeat(32));
+  });
+
+  it('refuses to start in production without TRUST_PROXY unless REQUIRE_HTTPS is false', () => {
+    const prodEnv = {
+      ...validBaseEnv,
+      NODE_ENV: 'production',
+      JWT_SECRET: 'a'.repeat(32),
+      DEVICE_TOKEN_PEPPER: 'b'.repeat(32),
+    };
+
+    expect(() => validateEnv(prodEnv)).toThrow(/TRUST_PROXY/);
+    expect(() =>
+      validateEnv({ ...prodEnv, REQUIRE_HTTPS: 'false' }),
+    ).not.toThrow();
   });
 });
