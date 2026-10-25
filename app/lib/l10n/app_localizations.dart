@@ -729,6 +729,672 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Esta funcionalidad estará disponible en un próximo hito.'**
   String get placeholderSectionMessage;
+
+  /// No description provided for @commonRefresh.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizar'**
+  String get commonRefresh;
+
+  /// No description provided for @adminConflict.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya existe un registro con esos datos.'**
+  String get adminConflict;
+
+  /// No description provided for @adminNotFound.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya no existe. Actualiza la lista.'**
+  String get adminNotFound;
+
+  /// No description provided for @adminPermissionDenied.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes permiso para hacer esto.'**
+  String get adminPermissionDenied;
+
+  /// No description provided for @allBranches.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las sucursales'**
+  String get allBranches;
+
+  /// No description provided for @allRoles.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos los puestos'**
+  String get allRoles;
+
+  /// No description provided for @roleOwner.
+  ///
+  /// In es, this message translates to:
+  /// **'Dueño'**
+  String get roleOwner;
+
+  /// No description provided for @roleBranchManager.
+  ///
+  /// In es, this message translates to:
+  /// **'Gerente de sucursal'**
+  String get roleBranchManager;
+
+  /// No description provided for @roleCashier.
+  ///
+  /// In es, this message translates to:
+  /// **'Cajero'**
+  String get roleCashier;
+
+  /// No description provided for @roleBaker.
+  ///
+  /// In es, this message translates to:
+  /// **'Panadero'**
+  String get roleBaker;
+
+  /// No description provided for @staffTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Personal'**
+  String get staffTitle;
+
+  /// No description provided for @staffNew.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva persona'**
+  String get staffNew;
+
+  /// No description provided for @staffEdit.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar persona'**
+  String get staffEdit;
+
+  /// No description provided for @staffFullName.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre completo'**
+  String get staffFullName;
+
+  /// No description provided for @staffFullNameInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe el nombre completo (máximo 120 caracteres)'**
+  String get staffFullNameInvalid;
+
+  /// No description provided for @staffDisplayName.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre en la caja'**
+  String get staffDisplayName;
+
+  /// No description provided for @staffDisplayNameHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Así aparece en la pantalla de PIN'**
+  String get staffDisplayNameHelp;
+
+  /// No description provided for @staffDisplayNameInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe un nombre corto (máximo 30 caracteres)'**
+  String get staffDisplayNameInvalid;
+
+  /// No description provided for @staffRole.
+  ///
+  /// In es, this message translates to:
+  /// **'Puesto'**
+  String get staffRole;
+
+  /// No description provided for @staffBranch.
+  ///
+  /// In es, this message translates to:
+  /// **'Sucursal'**
+  String get staffBranch;
+
+  /// No description provided for @staffBranches.
+  ///
+  /// In es, this message translates to:
+  /// **'Sucursales'**
+  String get staffBranches;
+
+  /// No description provided for @staffBranchesRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige al menos una sucursal'**
+  String get staffBranchesRequired;
+
+  /// No description provided for @staffEmail.
+  ///
+  /// In es, this message translates to:
+  /// **'Correo'**
+  String get staffEmail;
+
+  /// No description provided for @staffEmailOptional.
+  ///
+  /// In es, this message translates to:
+  /// **'Correo (opcional, para entrar a la administración)'**
+  String get staffEmailOptional;
+
+  /// No description provided for @staffEmailRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'El correo es obligatorio para entrar a la administración'**
+  String get staffEmailRequired;
+
+  /// No description provided for @staffEmailInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe un correo válido'**
+  String get staffEmailInvalid;
+
+  /// No description provided for @staffPassword.
+  ///
+  /// In es, this message translates to:
+  /// **'Contraseña'**
+  String get staffPassword;
+
+  /// No description provided for @staffNewPasswordOptional.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva contraseña (déjala vacía para no cambiarla)'**
+  String get staffNewPasswordOptional;
+
+  /// No description provided for @staffPasswordHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Mínimo 10 caracteres. Cambiarla cierra sus sesiones abiertas.'**
+  String get staffPasswordHelp;
+
+  /// No description provided for @staffPasswordRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'El dueño necesita contraseña'**
+  String get staffPasswordRequired;
+
+  /// No description provided for @staffPasswordTooShort.
+  ///
+  /// In es, this message translates to:
+  /// **'La contraseña debe tener al menos 10 caracteres'**
+  String get staffPasswordTooShort;
+
+  /// No description provided for @staffPin.
+  ///
+  /// In es, this message translates to:
+  /// **'PIN (4 a 6 dígitos)'**
+  String get staffPin;
+
+  /// No description provided for @staffPinConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Repite el PIN'**
+  String get staffPinConfirm;
+
+  /// No description provided for @staffPinInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'El PIN debe tener de 4 a 6 dígitos'**
+  String get staffPinInvalid;
+
+  /// No description provided for @staffPinMismatch.
+  ///
+  /// In es, this message translates to:
+  /// **'Los PIN no coinciden'**
+  String get staffPinMismatch;
+
+  /// No description provided for @staffShowInactive.
+  ///
+  /// In es, this message translates to:
+  /// **'Mostrar dados de baja'**
+  String get staffShowInactive;
+
+  /// No description provided for @staffActive.
+  ///
+  /// In es, this message translates to:
+  /// **'Activo'**
+  String get staffActive;
+
+  /// No description provided for @staffInactive.
+  ///
+  /// In es, this message translates to:
+  /// **'Dado de baja'**
+  String get staffInactive;
+
+  /// No description provided for @staffLocked.
+  ///
+  /// In es, this message translates to:
+  /// **'Bloqueado'**
+  String get staffLocked;
+
+  /// No description provided for @staffEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay personal con estos filtros'**
+  String get staffEmpty;
+
+  /// No description provided for @staffErrorLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al cargar el personal'**
+  String get staffErrorLoading;
+
+  /// No description provided for @staffCreated.
+  ///
+  /// In es, this message translates to:
+  /// **'Persona agregada'**
+  String get staffCreated;
+
+  /// No description provided for @staffUpdated.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambios guardados'**
+  String get staffUpdated;
+
+  /// No description provided for @staffResetPin.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar PIN'**
+  String get staffResetPin;
+
+  /// No description provided for @staffResetPinMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'El nuevo PIN funciona de inmediato. Se desbloquea la cuenta y se cierran sus sesiones abiertas.'**
+  String get staffResetPinMessage;
+
+  /// No description provided for @staffPinChanged.
+  ///
+  /// In es, this message translates to:
+  /// **'PIN cambiado'**
+  String get staffPinChanged;
+
+  /// No description provided for @staffDeactivate.
+  ///
+  /// In es, this message translates to:
+  /// **'Dar de baja'**
+  String get staffDeactivate;
+
+  /// No description provided for @staffReactivate.
+  ///
+  /// In es, this message translates to:
+  /// **'Reactivar'**
+  String get staffReactivate;
+
+  /// No description provided for @staffDeactivateMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya no podrá entrar a ninguna caja ni a la administración y se cierran sus sesiones abiertas. Su historial se conserva y puedes reactivarla después.'**
+  String get staffDeactivateMessage;
+
+  /// No description provided for @staffDeactivated.
+  ///
+  /// In es, this message translates to:
+  /// **'Persona dada de baja'**
+  String get staffDeactivated;
+
+  /// No description provided for @staffReactivated.
+  ///
+  /// In es, this message translates to:
+  /// **'Persona reactivada'**
+  String get staffReactivated;
+
+  /// No description provided for @staffEmailConflict.
+  ///
+  /// In es, this message translates to:
+  /// **'Ese correo ya lo usa otra persona'**
+  String get staffEmailConflict;
+
+  /// No description provided for @staffLastOwner.
+  ///
+  /// In es, this message translates to:
+  /// **'No se puede: debe quedar al menos un dueño activo'**
+  String get staffLastOwner;
+
+  /// No description provided for @devicesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Dispositivos'**
+  String get devicesTitle;
+
+  /// No description provided for @deviceNew.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo dispositivo'**
+  String get deviceNew;
+
+  /// No description provided for @deviceName.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre'**
+  String get deviceName;
+
+  /// No description provided for @deviceNameHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Por ejemplo: Caja 1, Mostrador'**
+  String get deviceNameHelp;
+
+  /// No description provided for @deviceNameInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe un nombre (máximo 60 caracteres)'**
+  String get deviceNameInvalid;
+
+  /// No description provided for @deviceType.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo'**
+  String get deviceType;
+
+  /// No description provided for @deviceTypeTill.
+  ///
+  /// In es, this message translates to:
+  /// **'Caja'**
+  String get deviceTypeTill;
+
+  /// No description provided for @deviceTypeProduction.
+  ///
+  /// In es, this message translates to:
+  /// **'Producción'**
+  String get deviceTypeProduction;
+
+  /// No description provided for @deviceLastSeen.
+  ///
+  /// In es, this message translates to:
+  /// **'Última conexión'**
+  String get deviceLastSeen;
+
+  /// No description provided for @deviceShowRevoked.
+  ///
+  /// In es, this message translates to:
+  /// **'Mostrar revocados'**
+  String get deviceShowRevoked;
+
+  /// No description provided for @deviceStatusActive.
+  ///
+  /// In es, this message translates to:
+  /// **'Activo'**
+  String get deviceStatusActive;
+
+  /// No description provided for @deviceStatusPending.
+  ///
+  /// In es, this message translates to:
+  /// **'Esperando código'**
+  String get deviceStatusPending;
+
+  /// No description provided for @deviceStatusRevoked.
+  ///
+  /// In es, this message translates to:
+  /// **'Revocado'**
+  String get deviceStatusRevoked;
+
+  /// No description provided for @deviceBranchRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige la sucursal'**
+  String get deviceBranchRequired;
+
+  /// No description provided for @deviceBranchInactive.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo registrar: revisa que la sucursal esté activa.'**
+  String get deviceBranchInactive;
+
+  /// No description provided for @deviceCreateAndGetCode.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrar y ver código'**
+  String get deviceCreateAndGetCode;
+
+  /// No description provided for @deviceNewCode.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo código'**
+  String get deviceNewCode;
+
+  /// No description provided for @deviceNewCodeMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'El código anterior deja de funcionar.'**
+  String get deviceNewCodeMessage;
+
+  /// No description provided for @deviceRevoke.
+  ///
+  /// In es, this message translates to:
+  /// **'Revocar'**
+  String get deviceRevoke;
+
+  /// No description provided for @deviceRevokeMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'El dispositivo se desconecta de inmediato y ya no podrá usarse. Para volver a usarlo hay que registrarlo como nuevo.'**
+  String get deviceRevokeMessage;
+
+  /// No description provided for @deviceRevoked.
+  ///
+  /// In es, this message translates to:
+  /// **'Dispositivo revocado'**
+  String get deviceRevoked;
+
+  /// No description provided for @deviceCopyCode.
+  ///
+  /// In es, this message translates to:
+  /// **'Copiar'**
+  String get deviceCopyCode;
+
+  /// No description provided for @deviceCodeDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya lo anoté'**
+  String get deviceCodeDone;
+
+  /// No description provided for @devicesEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay dispositivos con estos filtros'**
+  String get devicesEmpty;
+
+  /// No description provided for @devicesErrorLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al cargar los dispositivos'**
+  String get devicesErrorLoading;
+
+  /// No description provided for @auditTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Auditoría'**
+  String get auditTitle;
+
+  /// No description provided for @auditAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Acción'**
+  String get auditAction;
+
+  /// No description provided for @auditAllActions.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las acciones'**
+  String get auditAllActions;
+
+  /// No description provided for @auditPerson.
+  ///
+  /// In es, this message translates to:
+  /// **'Persona'**
+  String get auditPerson;
+
+  /// No description provided for @auditAllPeople.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las personas'**
+  String get auditAllPeople;
+
+  /// No description provided for @auditAnyDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Cualquier fecha'**
+  String get auditAnyDate;
+
+  /// No description provided for @auditClearDates.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar fechas'**
+  String get auditClearDates;
+
+  /// No description provided for @auditEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay movimientos con estos filtros'**
+  String get auditEmpty;
+
+  /// No description provided for @auditLoadMore.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargar más'**
+  String get auditLoadMore;
+
+  /// No description provided for @auditSystem.
+  ///
+  /// In es, this message translates to:
+  /// **'Sistema'**
+  String get auditSystem;
+
+  /// No description provided for @auditUnknownPerson.
+  ///
+  /// In es, this message translates to:
+  /// **'Persona desconocida'**
+  String get auditUnknownPerson;
+
+  /// No description provided for @auditLoginSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Inicio de sesión'**
+  String get auditLoginSuccess;
+
+  /// No description provided for @auditLoginFailure.
+  ///
+  /// In es, this message translates to:
+  /// **'Intento fallido de inicio de sesión'**
+  String get auditLoginFailure;
+
+  /// No description provided for @auditLocked.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta bloqueada por intentos'**
+  String get auditLocked;
+
+  /// No description provided for @auditLogout.
+  ///
+  /// In es, this message translates to:
+  /// **'Cierre de sesión'**
+  String get auditLogout;
+
+  /// No description provided for @auditApprovalGranted.
+  ///
+  /// In es, this message translates to:
+  /// **'Autorización de gerente concedida'**
+  String get auditApprovalGranted;
+
+  /// No description provided for @auditApprovalDenied.
+  ///
+  /// In es, this message translates to:
+  /// **'Autorización de gerente rechazada'**
+  String get auditApprovalDenied;
+
+  /// No description provided for @auditStaffCreated.
+  ///
+  /// In es, this message translates to:
+  /// **'Persona agregada'**
+  String get auditStaffCreated;
+
+  /// No description provided for @auditStaffUpdated.
+  ///
+  /// In es, this message translates to:
+  /// **'Persona modificada'**
+  String get auditStaffUpdated;
+
+  /// No description provided for @auditStaffDeactivated.
+  ///
+  /// In es, this message translates to:
+  /// **'Persona dada de baja'**
+  String get auditStaffDeactivated;
+
+  /// No description provided for @auditStaffPinChanged.
+  ///
+  /// In es, this message translates to:
+  /// **'PIN cambiado'**
+  String get auditStaffPinChanged;
+
+  /// No description provided for @auditDeviceCreated.
+  ///
+  /// In es, this message translates to:
+  /// **'Dispositivo registrado'**
+  String get auditDeviceCreated;
+
+  /// No description provided for @auditDeviceActivated.
+  ///
+  /// In es, this message translates to:
+  /// **'Dispositivo activado'**
+  String get auditDeviceActivated;
+
+  /// No description provided for @auditDeviceRevoked.
+  ///
+  /// In es, this message translates to:
+  /// **'Dispositivo revocado'**
+  String get auditDeviceRevoked;
+
+  /// No description provided for @auditBranchCreated.
+  ///
+  /// In es, this message translates to:
+  /// **'Sucursal creada'**
+  String get auditBranchCreated;
+
+  /// No description provided for @auditBranchUpdated.
+  ///
+  /// In es, this message translates to:
+  /// **'Sucursal modificada'**
+  String get auditBranchUpdated;
+
+  /// No description provided for @staffDeactivateTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Dar de baja a {name}?'**
+  String staffDeactivateTitle(String name);
+
+  /// No description provided for @staffResetPinTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar el PIN de {name}'**
+  String staffResetPinTitle(String name);
+
+  /// No description provided for @deviceNewCodeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Nuevo código para {name}?'**
+  String deviceNewCodeTitle(String name);
+
+  /// No description provided for @deviceRevokeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Revocar {name}?'**
+  String deviceRevokeTitle(String name);
+
+  /// No description provided for @deviceCodeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Código para {name}'**
+  String deviceCodeTitle(String name);
+
+  /// No description provided for @deviceCodeInstructions.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe este código en la tableta al abrir la app. Vence a las {time} y solo se muestra esta vez.'**
+  String deviceCodeInstructions(String time);
+
+  /// No description provided for @auditApprovedBy.
+  ///
+  /// In es, this message translates to:
+  /// **'autorizó {name}'**
+  String auditApprovedBy(String name);
 }
 
 class _AppLocalizationsDelegate
