@@ -1,0 +1,84 @@
+# Bakery POS on the always-on computer at the bakery (Phase 1, no cloud host).
+# Usage: see README.md. Every service restarts on its own after a power cut.
+name: bakery-pos
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pos
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: pos
+      TZ: ${TZ:-America/Mexico_City}
+    volumes:
+      - pos-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pos -d pos"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  migrate:
+    image: ${SERVER_IMAGE:-bakery-pos-server}:migrate
+    build: { context: ../server, target: migrate }
+    restart: "no"
+    environment:
+      MIGRATION_DATABASE_URL: postgres://pos:${POSTGRES_PASSWORD}@db:5432/pos
+      DATABASE_URL: postgres://pos:${POSTGRES_PASSWORD}@db:5432/pos
+      POS_APP_PASSWORD: ${POS_APP_PASSWORD:?set POS_APP_PASSWORD in .env}
+    depends_on:
+      db: { condition: service_healthy }
+
+  server:
+    image: ${SERVER_IMAGE:-bakery-pos-server}:latest
+    build: { context: ../server, target: runtime }
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://pos_app:${POS_APP_PASSWORD}@db:5432/pos
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      DEVICE_TOKEN_PEPPER: ${DEVICE_TOKEN_PEPPER:?set DEVICE_TOKEN_PEPPER in .env}
+      # Tailscale (on the host) and nginx (below) both sit on private addresses.
+      TRUST_PROXY: loopback,uniquelocal
+      REQUIRE_HTTPS: ${REQUIRE_HTTPS:-true}
+      BACKOFFICE_ORIGIN: ${BACKOFFICE_ORIGIN:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      TZ: ${TZ:-America/Mexico_City}
+    depends_on:
+      db: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
+
+  # Serves the back office web files and forwards /v1 and /health to the
+  # server, so the tills and the back office use one address.
+  web:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "${WEB_BIND:-127.0.0.1}:8080:8080"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./backoffice:/usr/share/nginx/html:ro
+    depends_on:
+      - server
+
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      PGHOST: db
+      PGUSER: pos
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: pos
+      BACKUP_AT: ${BACKUP_AT:-02:30}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-30}
+      TZ: ${TZ:-America/Mexico_City}
+    volumes:
+      - ./backup.sh:/backup.sh:ro
+      - ${BACKUP_DIR:-./backups}:/backups
+    entrypoint: ["sh", "/backup.sh"]
+    depends_on:
+      db: { condition: service_healthy }
+
+volumes:
+  pos-db:
