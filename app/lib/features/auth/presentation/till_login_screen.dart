@@ -559,8 +559,7 @@ class _Keypad extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        _KeypadRow(
           children: [
             buildDigitButton('1'),
             buildDigitButton('2'),
@@ -568,8 +567,7 @@ class _Keypad extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        _KeypadRow(
           children: [
             buildDigitButton('4'),
             buildDigitButton('5'),
@@ -577,8 +575,7 @@ class _Keypad extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        _KeypadRow(
           children: [
             buildDigitButton('7'),
             buildDigitButton('8'),
@@ -586,8 +583,7 @@ class _Keypad extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        _KeypadRow(
           children: [
             // Backspace button
             SizedBox(
@@ -654,6 +650,28 @@ class _Keypad extends StatelessWidget {
             ),
           ],
         ),
+      ],
+    );
+  }
+}
+
+/// One keypad row. Buttons keep their full 72 x 56 dp size whenever the row
+/// has room (the 10-inch till always does) and scale down evenly on narrower
+/// layouts instead of overflowing.
+class _KeypadRow extends StatelessWidget {
+  const _KeypadRow({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        for (final child in children)
+          Flexible(
+            child: FittedBox(fit: BoxFit.scaleDown, child: child),
+          ),
       ],
     );
   }
