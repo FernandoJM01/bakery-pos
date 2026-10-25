@@ -69,6 +69,11 @@ class _AuditScreenState extends ConsumerState<AuditScreen> {
   bool _loading = true;
   String? _error;
 
+  /// Bumped on every request; a response for an older request (a filter
+  /// changed or a reload started meanwhile) is dropped instead of mixing
+  /// rows from two filters.
+  int _generation = 0;
+
   @override
   void initState() {
     super.initState();
@@ -76,6 +81,7 @@ class _AuditScreenState extends ConsumerState<AuditScreen> {
   }
 
   Future<void> _load({required bool reset}) async {
+    final generation = ++_generation;
     setState(() {
       _loading = true;
       _error = null;
@@ -94,19 +100,21 @@ class _AuditScreenState extends ConsumerState<AuditScreen> {
             to: _range?.end.add(const Duration(days: 1)).toUtc(),
             cursor: reset ? null : _nextCursor,
           );
-      if (!mounted) return;
+      if (!mounted || generation != _generation) return;
       setState(() {
         if (reset) _items.clear();
         _items.addAll(page.items);
         _nextCursor = page.nextCursor;
       });
     } catch (e) {
-      if (mounted) {
+      if (mounted && generation == _generation) {
         final l10n = AppLocalizations.of(context)!;
         setState(() => _error = commonAdminError(l10n, e));
       }
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted && generation == _generation) {
+        setState(() => _loading = false);
+      }
     }
   }
 
