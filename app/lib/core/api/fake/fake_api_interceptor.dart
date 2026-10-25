@@ -43,6 +43,89 @@ class FakeApiInterceptor extends Interceptor {
     },
   ];
 
+  late final List<Map<String, dynamic>> devices = [
+    {
+      'id': deviceId,
+      'branchId': branchId1,
+      'name': 'Caja 1',
+      'type': 'TILL',
+      'status': 'ACTIVE',
+      'lastSeenAt': '2026-10-25T13:05:00.000Z',
+      'createdAt': '2026-10-01T00:00:00.000Z',
+    },
+  ];
+
+  late final List<Map<String, dynamic>> staff = [
+    {
+      'id': ownerId,
+      'fullName': 'Fernando Dueño',
+      'displayName': 'Fernando',
+      'role': 'OWNER',
+      'email': 'owner@bakery.com',
+      'branchIds': [branchId1, branchId2],
+      'isActive': true,
+      'hasPassword': true,
+      'createdAt': '2026-10-01T00:00:00.000Z',
+      'updatedAt': '2026-10-01T00:00:00.000Z',
+    },
+    {
+      'id': cashierId,
+      'fullName': 'Ana Pérez',
+      'displayName': 'Ana',
+      'role': 'CASHIER',
+      'branchIds': [branchId1],
+      'isActive': true,
+      'hasPassword': false,
+      'createdAt': '2026-10-01T00:00:00.000Z',
+      'updatedAt': '2026-10-01T00:00:00.000Z',
+    },
+  ];
+
+  late final List<Map<String, dynamic>> auditLog = [
+    {
+      'id': '0192e2b0-0a00-7000-8000-000000000003',
+      'occurredAt': '2026-10-25T15:10:00.000Z',
+      'action': 'staff.pin_changed',
+      'branchId': branchId1,
+      'actorStaffId': ownerId,
+      'entityType': 'staff',
+      'entityId': cashierId,
+      'data': <String, dynamic>{},
+    },
+    {
+      'id': '0192e2b0-0a00-7000-8000-000000000002',
+      'occurredAt': '2026-10-25T14:00:00.000Z',
+      'action': 'auth.approval_granted',
+      'branchId': branchId1,
+      'deviceId': deviceId,
+      'actorStaffId': cashierId,
+      'approverStaffId': ownerId,
+      'data': {'permission': 'sale.refund'},
+    },
+    {
+      'id': '0192e2b0-0a00-7000-8000-000000000001',
+      'occurredAt': '2026-10-25T13:00:00.000Z',
+      'action': 'device.created',
+      'branchId': branchId1,
+      'actorStaffId': ownerId,
+      'entityType': 'device',
+      'entityId': deviceId,
+      'data': {'name': 'Caja 1'},
+    },
+  ];
+
+  Map<String, dynamic> _publicStaff(Map<String, dynamic> s) =>
+      Map<String, dynamic>.from(s);
+
+  Map<String, dynamic> _enrollment(Map<String, dynamic> device) => {
+    'device': device,
+    'enrollmentCode': 'K7M2XQ9P',
+    'expiresAt': DateTime.now()
+        .toUtc()
+        .add(const Duration(minutes: 30))
+        .toIso8601String(),
+  };
+
   @override
   Future<void> onRequest(
     RequestOptions options,
@@ -54,6 +137,20 @@ class FakeApiInterceptor extends Interceptor {
 
     final path = options.path;
     final method = options.method.toUpperCase();
+
+    void ok(Object? data, {int status = 200}) => handler.resolve(
+      Response(requestOptions: options, statusCode: status, data: data),
+    );
+    void fail(int status, String code, String message) => handler.reject(
+      DioException(
+        requestOptions: options,
+        response: Response(
+          requestOptions: options,
+          statusCode: status,
+          data: {'code': code, 'message': message},
+        ),
+      ),
+    );
 
     final token = options.headers['X-Device-Token'] as String?;
     if (token == 'revoked-token') {
@@ -827,59 +924,173 @@ class FakeApiInterceptor extends Interceptor {
       );
     }
 
-    // 8. /v1/devices
+    // 8. /v1/devices (admin)
     if (path.endsWith('/v1/devices') && method == 'GET') {
-      return handler.resolve(
-        Response(
-          requestOptions: options,
-          statusCode: 200,
-          data: [
-            {
-              'id': deviceId,
-              'branchId': branchId1,
-              'name': 'Caja 1',
-              'type': 'TILL',
-              'status': 'ACTIVE',
-              'createdAt': DateTime.now().toUtc().toIso8601String(),
-            },
-          ],
-        ),
-      );
+      final branch = options.queryParameters['branchId'];
+      return ok([
+        for (final d in devices)
+          if (branch == null || d['branchId'] == branch) d,
+      ]);
     }
 
-    // 9. /v1/staff
-    if (path.endsWith('/v1/staff') && method == 'GET') {
-      return handler.resolve(
-        Response(
-          requestOptions: options,
-          statusCode: 200,
-          data: [
-            {
-              'id': ownerId,
-              'fullName': 'Fernando Dueño',
-              'displayName': 'Fernando',
-              'role': 'OWNER',
-              'email': 'owner@bakery.com',
-              'branchIds': [branchId1, branchId2],
-              'isActive': true,
-              'hasPassword': true,
-              'createdAt': DateTime.now().toUtc().toIso8601String(),
-              'updatedAt': DateTime.now().toUtc().toIso8601String(),
-            },
-            {
-              'id': cashierId,
-              'fullName': 'Ana Pérez',
-              'displayName': 'Ana',
-              'role': 'CASHIER',
-              'branchIds': [branchId1],
-              'isActive': true,
-              'hasPassword': false,
-              'createdAt': DateTime.now().toUtc().toIso8601String(),
-              'updatedAt': DateTime.now().toUtc().toIso8601String(),
-            },
-          ],
-        ),
+    if (path.endsWith('/v1/devices') && method == 'POST') {
+      final body = options.data as Map<String, dynamic>? ?? {};
+      final branch = branches.firstWhere(
+        (b) => b['id'] == body['branchId'],
+        orElse: () => <String, dynamic>{},
       );
+      if (branch.isEmpty || branch['isActive'] != true) {
+        return fail(400, 'VALIDATION_FAILED', 'Branch inactive');
+      }
+      final now = DateTime.now().toUtc();
+      final device = <String, dynamic>{
+        'id':
+            '0192e2b0-0100-7000-8000-${(100 + devices.length).toString().padLeft(12, '0')}',
+        'branchId': body['branchId'],
+        'name': body['name'],
+        'type': body['type'] ?? 'TILL',
+        'status': 'PENDING',
+        'createdAt': now.toIso8601String(),
+      };
+      devices.add(device);
+      return ok(_enrollment(device), status: 201);
+    }
+
+    final deviceAction = RegExp(
+      r'/v1/devices/([^/]+)/(enrollment-code|revoke)$',
+    ).firstMatch(path);
+    if (deviceAction != null && method == 'POST') {
+      final index = devices.indexWhere((d) => d['id'] == deviceAction[1]);
+      if (index == -1) {
+        return fail(404, 'NOT_FOUND', 'Device not found');
+      }
+      final device = Map<String, dynamic>.from(devices[index]);
+      if (deviceAction[2] == 'revoke') {
+        device['status'] = 'REVOKED';
+        device['revokedAt'] = DateTime.now().toUtc().toIso8601String();
+        devices[index] = device;
+        return ok(device);
+      }
+      if (device['status'] != 'PENDING') {
+        return fail(409, 'CONFLICT', 'Device is not pending');
+      }
+      return ok(_enrollment(device));
+    }
+
+    // 9. /v1/staff (admin)
+    if (path.endsWith('/v1/staff') && method == 'GET') {
+      final includeInactive =
+          options.queryParameters['includeInactive'] == true;
+      return ok([
+        for (final s in staff)
+          if (includeInactive || s['isActive'] == true) _publicStaff(s),
+      ]);
+    }
+
+    if (path.endsWith('/v1/staff') && method == 'POST') {
+      final body = options.data as Map<String, dynamic>? ?? {};
+      if (body['role'] == 'OWNER' &&
+          (body['email'] == null || body['password'] == null)) {
+        return fail(400, 'VALIDATION_FAILED', 'Owner needs email and password');
+      }
+      if (body['email'] != null &&
+          staff.any((s) => s['email'] == body['email'])) {
+        return fail(409, 'CONFLICT', 'Email already in use');
+      }
+      final now = DateTime.now().toUtc().toIso8601String();
+      final created = <String, dynamic>{
+        'id':
+            '0192e2b0-0050-7000-8000-${(50 + staff.length).toString().padLeft(12, '0')}',
+        'fullName': body['fullName'],
+        'displayName': body['displayName'],
+        'role': body['role'],
+        if (body['email'] != null) 'email': body['email'],
+        'branchIds': body['branchIds'],
+        'isActive': true,
+        'hasPassword': body['password'] != null,
+        'createdAt': now,
+        'updatedAt': now,
+      };
+      staff.add(created);
+      return ok(_publicStaff(created), status: 201);
+    }
+
+    final staffMatch = RegExp(r'/v1/staff/([^/]+)(/pin)?$').firstMatch(path);
+    if (staffMatch != null) {
+      final index = staff.indexWhere((s) => s['id'] == staffMatch[1]);
+      if (index == -1) {
+        return fail(404, 'NOT_FOUND', 'Staff not found');
+      }
+      if (staffMatch[2] == '/pin' && method == 'PUT') {
+        final updated = Map<String, dynamic>.from(staff[index])
+          ..remove('lockedUntil');
+        staff[index] = updated;
+        return handler.resolve(
+          Response(requestOptions: options, statusCode: 204),
+        );
+      }
+      if (method == 'GET') return ok(_publicStaff(staff[index]));
+      if (method == 'PATCH') {
+        final body = options.data as Map<String, dynamic>? ?? {};
+        final current = staff[index];
+        final losesOwner =
+            current['role'] == 'OWNER' &&
+            current['isActive'] == true &&
+            (body['isActive'] == false ||
+                (body['role'] != null && body['role'] != 'OWNER'));
+        final activeOwners = staff
+            .where((s) => s['role'] == 'OWNER' && s['isActive'] == true)
+            .length;
+        if (losesOwner && activeOwners <= 1) {
+          return fail(
+            409,
+            'CONFLICT',
+            'Cannot deactivate or demote the last active owner',
+          );
+        }
+        if (body['email'] != null &&
+            staff.any(
+              (s) => s['email'] == body['email'] && s['id'] != current['id'],
+            )) {
+          return fail(409, 'CONFLICT', 'Email already in use');
+        }
+        final updated = Map<String, dynamic>.from(current);
+        for (final key in [
+          'fullName',
+          'displayName',
+          'role',
+          'email',
+          'branchIds',
+          'isActive',
+        ]) {
+          if (body.containsKey(key)) updated[key] = body[key];
+        }
+        if (body['password'] != null) updated['hasPassword'] = true;
+        updated['updatedAt'] = DateTime.now().toUtc().toIso8601String();
+        staff[index] = updated;
+        return ok(_publicStaff(updated));
+      }
+    }
+
+    // 10. /v1/audit-log, newest first, two entries per page
+    if (path.endsWith('/v1/audit-log') && method == 'GET') {
+      final q = options.queryParameters;
+      final filtered = [
+        for (final e in auditLog)
+          if ((q['action'] == null || e['action'] == q['action'].toString()) &&
+              (q['branchId'] == null || e['branchId'] == q['branchId']) &&
+              (q['staffId'] == null ||
+                  e['actorStaffId'] == q['staffId'] ||
+                  e['approverStaffId'] == q['staffId']))
+            e,
+      ];
+      final start = int.tryParse(q['cursor']?.toString() ?? '') ?? 0;
+      const pageSize = 2;
+      final end = (start + pageSize).clamp(0, filtered.length);
+      return ok({
+        'items': filtered.sublist(start, end),
+        if (end < filtered.length) 'nextCursor': '$end',
+      });
     }
 
     // Default passthrough

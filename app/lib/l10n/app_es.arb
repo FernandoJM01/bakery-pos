@@ -124,5 +124,165 @@
   "deviceRevokedTitle": "Dispositivo revocado",
   "deviceRevokedMessage": "Este dispositivo ha sido revocado. Los datos locales serán eliminados.",
   "placeholderSectionTitle": "Sección en desarrollo",
-  "placeholderSectionMessage": "Esta funcionalidad estará disponible en un próximo hito."
+  "placeholderSectionMessage": "Esta funcionalidad estará disponible en un próximo hito.",
+  "commonRefresh": "Actualizar",
+  "adminConflict": "Ya existe un registro con esos datos.",
+  "adminNotFound": "Ya no existe. Actualiza la lista.",
+  "adminPermissionDenied": "No tienes permiso para hacer esto.",
+  "allBranches": "Todas las sucursales",
+  "allRoles": "Todos los puestos",
+  "roleOwner": "Dueño",
+  "roleBranchManager": "Gerente de sucursal",
+  "roleCashier": "Cajero",
+  "roleBaker": "Panadero",
+  "staffTitle": "Personal",
+  "staffNew": "Nueva persona",
+  "staffEdit": "Editar persona",
+  "staffFullName": "Nombre completo",
+  "staffFullNameInvalid": "Escribe el nombre completo (máximo 120 caracteres)",
+  "staffDisplayName": "Nombre en la caja",
+  "staffDisplayNameHelp": "Así aparece en la pantalla de PIN",
+  "staffDisplayNameInvalid": "Escribe un nombre corto (máximo 30 caracteres)",
+  "staffRole": "Puesto",
+  "staffBranch": "Sucursal",
+  "staffBranches": "Sucursales",
+  "staffBranchesRequired": "Elige al menos una sucursal",
+  "staffEmail": "Correo",
+  "staffEmailOptional": "Correo (opcional, para entrar a la administración)",
+  "staffEmailRequired": "El correo es obligatorio para entrar a la administración",
+  "staffEmailInvalid": "Escribe un correo válido",
+  "staffPassword": "Contraseña",
+  "staffNewPasswordOptional": "Nueva contraseña (déjala vacía para no cambiarla)",
+  "staffPasswordHelp": "Mínimo 10 caracteres. Cambiarla cierra sus sesiones abiertas.",
+  "staffPasswordRequired": "El dueño necesita contraseña",
+  "staffPasswordTooShort": "La contraseña debe tener al menos 10 caracteres",
+  "staffPin": "PIN (4 a 6 dígitos)",
+  "staffPinConfirm": "Repite el PIN",
+  "staffPinInvalid": "El PIN debe tener de 4 a 6 dígitos",
+  "staffPinMismatch": "Los PIN no coinciden",
+  "staffShowInactive": "Mostrar dados de baja",
+  "staffActive": "Activo",
+  "staffInactive": "Dado de baja",
+  "staffLocked": "Bloqueado",
+  "staffEmpty": "No hay personal con estos filtros",
+  "staffErrorLoading": "Error al cargar el personal",
+  "staffCreated": "Persona agregada",
+  "staffUpdated": "Cambios guardados",
+  "staffResetPin": "Cambiar PIN",
+  "staffResetPinMessage": "El nuevo PIN funciona de inmediato. Se desbloquea la cuenta y se cierran sus sesiones abiertas.",
+  "staffPinChanged": "PIN cambiado",
+  "staffDeactivate": "Dar de baja",
+  "staffReactivate": "Reactivar",
+  "staffDeactivateMessage": "Ya no podrá entrar a ninguna caja ni a la administración y se cierran sus sesiones abiertas. Su historial se conserva y puedes reactivarla después.",
+  "staffDeactivated": "Persona dada de baja",
+  "staffReactivated": "Persona reactivada",
+  "staffEmailConflict": "Ese correo ya lo usa otra persona",
+  "staffLastOwner": "No se puede: debe quedar al menos un dueño activo",
+  "devicesTitle": "Dispositivos",
+  "deviceNew": "Nuevo dispositivo",
+  "deviceName": "Nombre",
+  "deviceNameHelp": "Por ejemplo: Caja 1, Mostrador",
+  "deviceNameInvalid": "Escribe un nombre (máximo 60 caracteres)",
+  "deviceType": "Tipo",
+  "deviceTypeTill": "Caja",
+  "deviceTypeProduction": "Producción",
+  "deviceLastSeen": "Última conexión",
+  "deviceShowRevoked": "Mostrar revocados",
+  "deviceStatusActive": "Activo",
+  "deviceStatusPending": "Esperando código",
+  "deviceStatusRevoked": "Revocado",
+  "deviceBranchRequired": "Elige la sucursal",
+  "deviceBranchInactive": "No se pudo registrar: revisa que la sucursal esté activa.",
+  "deviceCreateAndGetCode": "Registrar y ver código",
+  "deviceNewCode": "Nuevo código",
+  "deviceNewCodeMessage": "El código anterior deja de funcionar.",
+  "deviceRevoke": "Revocar",
+  "deviceRevokeMessage": "El dispositivo se desconecta de inmediato y ya no podrá usarse. Para volver a usarlo hay que registrarlo como nuevo.",
+  "deviceRevoked": "Dispositivo revocado",
+  "deviceCopyCode": "Copiar",
+  "deviceCodeDone": "Ya lo anoté",
+  "devicesEmpty": "No hay dispositivos con estos filtros",
+  "devicesErrorLoading": "Error al cargar los dispositivos",
+  "auditTitle": "Auditoría",
+  "auditAction": "Acción",
+  "auditAllActions": "Todas las acciones",
+  "auditPerson": "Persona",
+  "auditAllPeople": "Todas las personas",
+  "auditAnyDate": "Cualquier fecha",
+  "auditClearDates": "Quitar fechas",
+  "auditEmpty": "No hay movimientos con estos filtros",
+  "auditLoadMore": "Cargar más",
+  "auditSystem": "Sistema",
+  "auditUnknownPerson": "Persona desconocida",
+  "auditLoginSuccess": "Inicio de sesión",
+  "auditLoginFailure": "Intento fallido de inicio de sesión",
+  "auditLocked": "Cuenta bloqueada por intentos",
+  "auditLogout": "Cierre de sesión",
+  "auditApprovalGranted": "Autorización de gerente concedida",
+  "auditApprovalDenied": "Autorización de gerente rechazada",
+  "auditStaffCreated": "Persona agregada",
+  "auditStaffUpdated": "Persona modificada",
+  "auditStaffDeactivated": "Persona dada de baja",
+  "auditStaffPinChanged": "PIN cambiado",
+  "auditDeviceCreated": "Dispositivo registrado",
+  "auditDeviceActivated": "Dispositivo activado",
+  "auditDeviceRevoked": "Dispositivo revocado",
+  "auditBranchCreated": "Sucursal creada",
+  "auditBranchUpdated": "Sucursal modificada",
+  "staffDeactivateTitle": "¿Dar de baja a {name}?",
+  "@staffDeactivateTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffResetPinTitle": "Cambiar el PIN de {name}",
+  "@staffResetPinTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceNewCodeTitle": "¿Nuevo código para {name}?",
+  "@deviceNewCodeTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceRevokeTitle": "¿Revocar {name}?",
+  "@deviceRevokeTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceCodeTitle": "Código para {name}",
+  "@deviceCodeTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceCodeInstructions": "Escribe este código en la tableta al abrir la app. Vence a las {time} y solo se muestra esta vez.",
+  "@deviceCodeInstructions": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "auditApprovedBy": "autorizó {name}",
+  "@auditApprovedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }
