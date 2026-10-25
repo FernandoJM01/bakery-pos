@@ -90,7 +90,7 @@ Back office (owner):
 - **Impuestos** (under Ajustes): list of tax rates, add, rename, deactivate.
 - **Sincronización:** quarantine list and resolve dialog, plus a list of devices with their last sync time (`lastSeenAt`).
 
-Till: the product grid as the home for cashiers and managers (bakers keep their production placeholder), the sync indicator in the top bar, and a **Sincronización** sheet opened from the indicator with waiting and quarantined counts and a "Sincronizar ahora" button.
+Till: **Ajustes · Apariencia** from the approved wireframe (theme Espresso, Crema, Alto contraste or Automático, accent color, text size, product-button style, saved per device and applied at once; app only, no server change), the product grid as the home for cashiers and managers (bakers keep their production placeholder), the sync indicator in the top bar, and a **Sincronización** sheet opened from the indicator with waiting and quarantined counts and a "Sincronizar ahora" button.
 
 All text in `app_es.arb`. Follow the approved wireframes ([design](https://claude.ai/artifact/PMKvvJ6PdGV57koaPLyv4J)) for the grid tiles and photo slots.
 
