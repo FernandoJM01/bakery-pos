@@ -45,6 +45,16 @@ export class EnvironmentVariables {
   @IsOptional()
   @IsString()
   TRUST_PROXY?: string;
+
+  // Comma-separated origins allowed by CORS; empty means same-origin only.
+  @IsOptional()
+  @IsString()
+  BACKOFFICE_ORIGIN?: string;
+
+  // 'false' allows plain HTTP in production, for LAN testing only.
+  @IsOptional()
+  @IsString()
+  REQUIRE_HTTPS?: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {
@@ -69,6 +79,14 @@ export function validateEnv(config: Record<string, unknown>) {
     }
     if (validatedConfig.DEVICE_TOKEN_PEPPER.length < 32) {
       invalidSecrets.push('DEVICE_TOKEN_PEPPER (min 32 chars in production)');
+    }
+    if (
+      validatedConfig.REQUIRE_HTTPS !== 'false' &&
+      !validatedConfig.TRUST_PROXY
+    ) {
+      invalidSecrets.push(
+        'TRUST_PROXY (HTTPS is required in production and arrives through a proxy)',
+      );
     }
     if (invalidSecrets.length > 0) {
       throw new Error(
