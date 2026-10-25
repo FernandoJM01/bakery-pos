@@ -60,7 +60,7 @@ Audit (`audit_log`, new actions): `catalog.category_created`, `catalog.category_
   - `beforeIva = round(price × 10000 / (10000 + ivaBp))`, `iva = price − beforeIva`
   - `base = round(beforeIva × 10000 / (10000 + iepsBp))`, `ieps = beforeIva − base`
 
-  The three parts always add up to the price. Put this in one pure function on each side, tested against the same table of cases (C5); M3 receipts and reports reuse it.
+  The three parts always add up to the price. Put this in one pure function on each side, tested against the shared table `contracts/fixtures/tax-split-cases.json` (C5); M3 receipts and reports reuse it.
 
 ### 4.2 Catalog on the till
 - After login and then every sync cycle the till calls `GET /v1/sync/catalog?since=<lastSeq>` with its device token, pages until `hasMore` is false, applies each page in one local transaction, then stores `nextSince`. First run uses `since=0`.
@@ -110,7 +110,7 @@ Each must exist as an automated test named with its ID unless marked manual.
 | C2 | Duplicate SKU or barcode across variants → 409 `CONFLICT` with `details.field` | M2.1 |
 | C3 | A till pulling from `since=0` receives the new product; a second pull with the returned `nextSince` returns nothing; after an edit it returns only the edited rows | M2.1, M10.1 |
 | C4 | A SUC1 till receives SUC1 branch prices and never SUC2's; removing an override reaches the till and the base price applies again | M2.2 |
-| C5 | Tax split: `$10.00` with IVA 16% → base 8.62, IVA 1.38; `$10.00` with IEPS 8% and IVA 16% → base 7.98, IEPS 0.64, IVA 1.38; same results on server and app (shared table of cases) | M2.2, M2.3 |
+| C5 | Tax split: `$10.00` with IVA 16% → base 8.62, IVA 1.38; `$10.00` with IEPS 8% and IVA 16% → base 7.98, IEPS 0.64, IVA 1.38; same results on server and app for every row of `contracts/fixtures/tax-split-cases.json` | M2.2, M2.3 |
 | C6 | An IEPS rate cannot be set as a product's IVA rate; a rate in use cannot be deactivated | M2.3 |
 | C7 | Day-old fields: discount days without percentage → 400; waste days ≤ discount days → 400 | M2.4 |
 | C8 | Every price change writes one `catalog.price_changed` audit row with actor, old and new centavos; branch price changes likewise | M2.5 |

@@ -1,0 +1,101 @@
+{
+  "description": "Shared cases for the tax split in M2 brief section 4.1 (acceptance test C5). Both server and app tests must reproduce every row.",
+  "cases": [
+    {
+      "priceCents": 1000,
+      "ivaBp": 1600,
+      "iepsBp": 0,
+      "baseCents": 862,
+      "iepsCents": 0,
+      "ivaCents": 138
+    },
+    {
+      "priceCents": 1000,
+      "ivaBp": 1600,
+      "iepsBp": 800,
+      "baseCents": 798,
+      "iepsCents": 64,
+      "ivaCents": 138
+    },
+    {
+      "priceCents": 1000,
+      "ivaBp": 0,
+      "iepsBp": 0,
+      "baseCents": 1000,
+      "iepsCents": 0,
+      "ivaCents": 0
+    },
+    {
+      "priceCents": 1000,
+      "ivaBp": 0,
+      "iepsBp": 800,
+      "baseCents": 926,
+      "iepsCents": 74,
+      "ivaCents": 0
+    },
+    {
+      "priceCents": 1,
+      "ivaBp": 1600,
+      "iepsBp": 0,
+      "baseCents": 1,
+      "iepsCents": 0,
+      "ivaCents": 0
+    },
+    {
+      "priceCents": 116,
+      "ivaBp": 1600,
+      "iepsBp": 0,
+      "baseCents": 100,
+      "iepsCents": 0,
+      "ivaCents": 16
+    },
+    {
+      "priceCents": 1250,
+      "ivaBp": 1600,
+      "iepsBp": 0,
+      "baseCents": 1078,
+      "iepsCents": 0,
+      "ivaCents": 172
+    },
+    {
+      "priceCents": 450,
+      "ivaBp": 0,
+      "iepsBp": 0,
+      "baseCents": 450,
+      "iepsCents": 0,
+      "ivaCents": 0
+    },
+    {
+      "priceCents": 3999,
+      "ivaBp": 1600,
+      "iepsBp": 800,
+      "baseCents": 3192,
+      "iepsCents": 255,
+      "ivaCents": 552
+    },
+    {
+      "priceCents": 2500,
+      "ivaBp": 0,
+      "iepsBp": 800,
+      "baseCents": 2315,
+      "iepsCents": 185,
+      "ivaCents": 0
+    },
+    {
+      "priceCents": 9999999,
+      "ivaBp": 1600,
+      "iepsBp": 800,
+      "baseCents": 7982119,
+      "iepsCents": 638570,
+      "ivaCents": 1379310
+    },
+    {
+      "priceCents": 58,
+      "ivaBp": 1600,
+      "iepsBp": 0,
+      "baseCents": 50,
+      "iepsCents": 0,
+      "ivaCents": 8
+    }
+  ]
+}
