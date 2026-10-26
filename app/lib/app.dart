@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'core/router/app_router.dart';
 import 'core/storage/secure_storage.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/appearance_settings.dart';
 import 'l10n/app_localizations.dart';
 
 /// Which surface the app runs as.
@@ -70,16 +71,33 @@ class _BakeryPosAppState extends ConsumerState<BakeryPosApp> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = ref.watch(appearanceSettingsProvider);
+    final themeMode = switch (settings.themeMode) {
+      AppThemeMode.espresso => ThemeMode.dark,
+      AppThemeMode.crema => ThemeMode.light,
+      AppThemeMode.highContrast => ThemeMode.dark,
+      AppThemeMode.system => ThemeMode.system,
+    };
+
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.dark,
-      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
+      theme: AppTheme.buildTheme(settings, Brightness.light),
+      darkTheme: AppTheme.buildTheme(settings, Brightness.dark),
       routerConfig: _router,
       locale: const Locale('es', 'MX'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      builder: widget.appWrapper,
+      builder: (context, child) {
+        final scaledChild = MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(settings.textScale.factor)),
+          child: child ?? const SizedBox.shrink(),
+        );
+        return widget.appWrapper?.call(context, scaledChild) ?? scaledChild;
+      },
     );
   }
 }
