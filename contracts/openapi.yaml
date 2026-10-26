@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
   title: Bakery POS API
-  version: 0.1.0-m1
+  version: 0.2.0-m2
   description: |
-    Contract for Milestone 1 (foundation, access, roles, devices).
+    Contract for Milestones 1 (foundation, access, roles, devices) and 2 (catalog and sync).
     Owned by the architect. Developers must not edit this file; open an issue labelled `contract` instead.
 
     Conventions:
@@ -12,6 +12,7 @@ info:
     - Every operation declares `x-permission` (a permission key) or `x-public: true`.
       Operations that need an enrolled till also declare `x-device: required`.
     - Errors always use the `Error` schema with a stable `code`.
+    - Money is integer centavos with tax included, in fields ending in `Cents`; rates are basis points (`Bp`).
 servers:
   - url: http://localhost:3000
     description: Local development
@@ -26,6 +27,10 @@ tags:
   - name: branches
   - name: staff
   - name: audit
+  - name: catalog
+    description: Categories, products, variants, prices, tax rates and photos (M2)
+  - name: sync
+    description: Till catalog feed, outbox push and quarantine (M2)
 
 paths:
   /health:
@@ -509,6 +514,473 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /v1/tax-rates:
+    get:
+      tags: [catalog]
+      operationId: listTaxRates
+      summary: List tax rates
+      x-permission: catalog.manage
+      parameters:
+        - $ref: '#/components/parameters/IncludeInactive'
+      responses:
+        '200':
+          description: Tax rates
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TaxRate' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [catalog]
+      operationId: createTaxRate
+      summary: Create a tax rate
+      x-permission: catalog.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaxRateCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TaxRate' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/tax-rates/{taxRateId}:
+    parameters:
+      - $ref: '#/components/parameters/TaxRateId'
+    patch:
+      tags: [catalog]
+      operationId: updateTaxRate
+      summary: Rename or deactivate a tax rate
+      description: The kind and rate of an existing tax rate never change; create a new rate instead. A rate used by an active product cannot be deactivated (`CONFLICT`).
+      x-permission: catalog.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaxRateUpdate' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TaxRate' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/categories:
+    get:
+      tags: [catalog]
+      operationId: listCategories
+      summary: List categories in display order
+      x-permission: catalog.manage
+      parameters:
+        - $ref: '#/components/parameters/IncludeInactive'
+      responses:
+        '200':
+          description: Categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Category' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [catalog]
+      operationId: createCategory
+      summary: Create a category
+      x-permission: catalog.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/categories/{categoryId}:
+    parameters:
+      - $ref: '#/components/parameters/CategoryId'
+    patch:
+      tags: [catalog]
+      operationId: updateCategory
+      summary: Rename, recolor, reorder or deactivate a category
+      x-permission: catalog.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryUpdate' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/products:
+    get:
+      tags: [catalog]
+      operationId: listProducts
+      summary: Search products with their variants and branch prices
+      x-permission: catalog.manage
+      parameters:
+        - name: q
+          in: query
+          description: Matches product name, variant name, SKU or barcode (case and accent insensitive)
+          schema: { type: string, maxLength: 100 }
+        - name: categoryId
+          in: query
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/IncludeInactive'
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+      responses:
+        '200':
+          description: By category order, then product order, then name
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductPage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [catalog]
+      operationId: createProduct
+      summary: Create a product together with its variants
+      x-permission: catalog.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/products/{productId}:
+    parameters:
+      - $ref: '#/components/parameters/ProductId'
+    get:
+      tags: [catalog]
+      operationId: getProduct
+      summary: Get one product with its variants and branch prices
+      x-permission: catalog.manage
+      responses:
+        '200':
+          description: Product
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [catalog]
+      operationId: updateProduct
+      summary: Update product fields (variants have their own routes)
+      description: Send only changed fields; `null` clears a nullable field.
+      x-permission: catalog.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductUpdate' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/products/{productId}/variants:
+    parameters:
+      - $ref: '#/components/parameters/ProductId'
+    post:
+      tags: [catalog]
+      operationId: createVariant
+      summary: Add a variant to a product
+      x-permission: catalog.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VariantCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Variant' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/variants/{variantId}:
+    parameters:
+      - $ref: '#/components/parameters/VariantId'
+    patch:
+      tags: [catalog]
+      operationId: updateVariant
+      summary: Update a variant, including its base price
+      description: Deactivating the last active variant of an active product is refused (`CONFLICT`).
+      x-permission: catalog.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VariantUpdate' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Variant' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/variants/{variantId}/branch-prices/{branchId}:
+    parameters:
+      - $ref: '#/components/parameters/VariantId'
+      - $ref: '#/components/parameters/BranchId'
+    put:
+      tags: [catalog]
+      operationId: setBranchPrice
+      summary: Set the variant's price in one branch
+      x-permission: catalog.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BranchPriceSet' }
+      responses:
+        '200':
+          description: Set
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BranchPrice' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [catalog]
+      operationId: removeBranchPrice
+      summary: Remove the branch override so the base price applies
+      x-permission: catalog.manage
+      responses:
+        '204':
+          description: Removed (also when there was no override)
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/photos:
+    post:
+      tags: [catalog]
+      operationId: uploadPhoto
+      summary: Upload a product photo
+      description: JPEG, PNG or WebP up to 5 MB, checked by content. Stored re-encoded as WebP, at most 800 × 800 px, without metadata.
+      x-permission: catalog.manage
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Stored
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Photo' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '413':
+          description: File over 5 MB (`PAYLOAD_TOO_LARGE`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /v1/photos/{photoId}:
+    parameters:
+      - $ref: '#/components/parameters/PhotoId'
+    get:
+      tags: [catalog]
+      operationId: getPhoto
+      summary: Download a product photo
+      description: Photo IDs are random and photos are not sensitive, so no token is needed. Sent with `Cache-Control public, max-age=31536000, immutable`.
+      security: []
+      x-public: true
+      responses:
+        '200':
+          description: WebP image
+          content:
+            image/webp:
+              schema:
+                type: string
+                format: binary
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/sync/catalog:
+    get:
+      tags: [sync]
+      operationId: pullCatalog
+      summary: Catalog rows changed after a sequence number, for the device's branch
+      security:
+        - deviceToken: []
+      x-public: true
+      x-device: required
+      parameters:
+        - name: since
+          in: query
+          required: true
+          description: The `nextSince` of the previous page, or 0 for a full download
+          schema: { type: integer, format: int64, minimum: 0 }
+        - name: limit
+          in: query
+          description: Maximum rows per page, summed over all lists
+          schema: { type: integer, minimum: 1, maximum: 1000, default: 500 }
+      responses:
+        '200':
+          description: Changed rows ordered by change sequence; inactive and removed rows are included so the till can hide them
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CatalogChanges' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/DeviceRejected' }
+
+  /v1/sync/push:
+    post:
+      tags: [sync]
+      operationId: pushRecords
+      summary: Deliver records from the till's outbox
+      description: |
+        Each record is applied in its own transaction, so one bad record never blocks the others.
+        Records are idempotent by `id`: sending one again returns `DUPLICATE` (or `QUARANTINED` if it was quarantined).
+        Rate-limited to 60 requests a minute per device.
+      security:
+        - deviceToken: []
+      x-public: true
+      x-device: required
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SyncPushRequest' }
+      responses:
+        '200':
+          description: One result per record, in request order
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SyncPushResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/DeviceRejected' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /v1/sync/quarantine:
+    get:
+      tags: [sync]
+      operationId: listQuarantine
+      summary: Records the server could not apply
+      x-permission: settings.manage
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [OPEN, RESOLVED, ALL], default: OPEN }
+        - name: deviceId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+      responses:
+        '200':
+          description: Newest first
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QuarantinePage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/sync/quarantine/{recordId}/resolve:
+    parameters:
+      - $ref: '#/components/parameters/RecordId'
+    post:
+      tags: [sync]
+      operationId: resolveQuarantine
+      summary: Mark a quarantined record as resolved (it is not re-applied)
+      x-permission: settings.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuarantineResolve' }
+      responses:
+        '200':
+          description: Resolved
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QuarantineEntry' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -538,6 +1010,41 @@ components:
       in: path
       required: true
       schema: { type: string, format: uuid }
+
+    TaxRateId:
+      name: taxRateId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    CategoryId:
+      name: categoryId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ProductId:
+      name: productId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    VariantId:
+      name: variantId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    PhotoId:
+      name: photoId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    RecordId:
+      name: recordId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    IncludeInactive:
+      name: includeInactive
+      in: query
+      schema: { type: boolean, default: false }
 
   responses:
     ValidationError:
@@ -904,6 +1411,17 @@ components:
         - device.revoked
         - branch.created
         - branch.updated
+        - catalog.category_created
+        - catalog.category_updated
+        - catalog.product_created
+        - catalog.product_updated
+        - catalog.variant_created
+        - catalog.variant_updated
+        - catalog.price_changed
+        - catalog.branch_price_changed
+        - catalog.tax_rate_created
+        - catalog.tax_rate_updated
+        - sync.quarantine_resolved
     AuditEntry:
       type: object
       required: [id, occurredAt, action]
@@ -929,3 +1447,375 @@ components:
           type: array
           items: { $ref: '#/components/schemas/AuditEntry' }
         nextCursor: { type: [string, 'null'] }
+
+    Cents:
+      type: integer
+      minimum: 1
+      maximum: 10000000
+      description: Integer centavos, tax included (`1250` = $12.50)
+    BasisPoints:
+      type: integer
+      minimum: 0
+      maximum: 10000
+      description: Hundredths of a percent (`1600` = 16%)
+    TaxKind:
+      type: string
+      enum: [IVA, IEPS]
+    TaxRate:
+      type: object
+      required: [id, kind, name, rateBp, isActive, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { $ref: '#/components/schemas/TaxKind' }
+        name: { type: string, examples: ['IVA 16%'] }
+        rateBp: { $ref: '#/components/schemas/BasisPoints' }
+        isActive: { type: boolean }
+        updatedAt: { type: string, format: date-time }
+    TaxRateCreate:
+      type: object
+      required: [kind, name, rateBp]
+      additionalProperties: false
+      properties:
+        kind: { $ref: '#/components/schemas/TaxKind' }
+        name: { type: string, minLength: 1, maxLength: 60 }
+        rateBp: { $ref: '#/components/schemas/BasisPoints' }
+    TaxRateUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 60 }
+        isActive: { type: boolean }
+
+    Category:
+      type: object
+      required: [id, name, sortOrder, color, isActive, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        sortOrder: { type: integer }
+        color: { type: [string, 'null'], pattern: '^#[0-9A-Fa-f]{6}$' }
+        isActive: { type: boolean }
+        updatedAt: { type: string, format: date-time }
+    CategoryCreate:
+      type: object
+      required: [name]
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 60 }
+        color: { type: [string, 'null'], pattern: '^#[0-9A-Fa-f]{6}$' }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+    CategoryUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 60 }
+        color: { type: [string, 'null'], pattern: '^#[0-9A-Fa-f]{6}$' }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+        isActive: { type: boolean }
+
+    ProductUnit:
+      type: string
+      enum: [PIECE, KG, PACKAGE]
+    DayOldDays:
+      type: [integer, 'null']
+      minimum: 1
+      maximum: 60
+    Product:
+      type: object
+      description: Back office view, with variants and their branch prices.
+      required: [id, categoryId, name, description, unit, photoId, ivaRateId, iepsRateId, dayOldDiscountAfterDays, dayOldDiscountBp, dayOldWasteAfterDays, sortOrder, isActive, updatedAt, variants]
+      properties:
+        id: { type: string, format: uuid }
+        categoryId: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        unit: { $ref: '#/components/schemas/ProductUnit' }
+        photoId: { type: [string, 'null'], format: uuid }
+        ivaRateId: { type: string, format: uuid }
+        iepsRateId: { type: [string, 'null'], format: uuid }
+        dayOldDiscountAfterDays: { $ref: '#/components/schemas/DayOldDays' }
+        dayOldDiscountBp: { type: [integer, 'null'], minimum: 1, maximum: 10000 }
+        dayOldWasteAfterDays: { $ref: '#/components/schemas/DayOldDays' }
+        sortOrder: { type: integer }
+        isActive: { type: boolean }
+        updatedAt: { type: string, format: date-time }
+        variants:
+          type: array
+          items: { $ref: '#/components/schemas/Variant' }
+    ProductCreate:
+      type: object
+      required: [categoryId, name, unit, ivaRateId, variants]
+      additionalProperties: false
+      description: Day-old discount days and percentage are both set or both null; waste days must be greater than discount days when both are set.
+      properties:
+        categoryId: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 80 }
+        description: { type: [string, 'null'], maxLength: 500 }
+        unit: { $ref: '#/components/schemas/ProductUnit' }
+        photoId: { type: [string, 'null'], format: uuid }
+        ivaRateId: { type: string, format: uuid }
+        iepsRateId: { type: [string, 'null'], format: uuid }
+        dayOldDiscountAfterDays: { $ref: '#/components/schemas/DayOldDays' }
+        dayOldDiscountBp: { type: [integer, 'null'], minimum: 1, maximum: 10000 }
+        dayOldWasteAfterDays: { $ref: '#/components/schemas/DayOldDays' }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+        variants:
+          type: array
+          minItems: 1
+          maxItems: 30
+          items: { $ref: '#/components/schemas/VariantCreate' }
+    ProductUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        categoryId: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 80 }
+        description: { type: [string, 'null'], maxLength: 500 }
+        unit: { $ref: '#/components/schemas/ProductUnit' }
+        photoId: { type: [string, 'null'], format: uuid }
+        ivaRateId: { type: string, format: uuid }
+        iepsRateId: { type: [string, 'null'], format: uuid }
+        dayOldDiscountAfterDays: { $ref: '#/components/schemas/DayOldDays' }
+        dayOldDiscountBp: { type: [integer, 'null'], minimum: 1, maximum: 10000 }
+        dayOldWasteAfterDays: { $ref: '#/components/schemas/DayOldDays' }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+        isActive: { type: boolean }
+    ProductPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Product' }
+        nextCursor: { type: [string, 'null'] }
+
+    Variant:
+      type: object
+      required: [id, productId, name, sku, barcode, priceCents, sortOrder, isActive, updatedAt, branchPrices]
+      properties:
+        id: { type: string, format: uuid }
+        productId: { type: string, format: uuid }
+        name: { type: string }
+        sku: { type: [string, 'null'] }
+        barcode: { type: [string, 'null'] }
+        priceCents: { $ref: '#/components/schemas/Cents' }
+        sortOrder: { type: integer }
+        isActive: { type: boolean }
+        updatedAt: { type: string, format: date-time }
+        branchPrices:
+          type: array
+          items: { $ref: '#/components/schemas/BranchPrice' }
+    VariantCreate:
+      type: object
+      required: [name, priceCents]
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 60 }
+        sku: { type: [string, 'null'], minLength: 1, maxLength: 40 }
+        barcode: { type: [string, 'null'], pattern: '^[0-9A-Za-z-]{4,32}$' }
+        priceCents: { $ref: '#/components/schemas/Cents' }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+    VariantUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 60 }
+        sku: { type: [string, 'null'], minLength: 1, maxLength: 40 }
+        barcode: { type: [string, 'null'], pattern: '^[0-9A-Za-z-]{4,32}$' }
+        priceCents: { $ref: '#/components/schemas/Cents' }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+        isActive: { type: boolean }
+    BranchPrice:
+      type: object
+      required: [variantId, branchId, priceCents, updatedAt]
+      properties:
+        variantId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        priceCents: { $ref: '#/components/schemas/Cents' }
+        updatedAt: { type: string, format: date-time }
+    BranchPriceSet:
+      type: object
+      required: [priceCents]
+      additionalProperties: false
+      properties:
+        priceCents: { $ref: '#/components/schemas/Cents' }
+
+    Photo:
+      type: object
+      required: [id, width, height, bytes]
+      properties:
+        id: { type: string, format: uuid }
+        width: { type: integer }
+        height: { type: integer }
+        bytes: { type: integer }
+
+    CatalogChanges:
+      type: object
+      description: |
+        Flat rows for the till. Apply a page in one local transaction, then store `nextSince`.
+        Keep asking while `hasMore` is true. Inactive rows are sent so the till can hide them;
+        a removed branch price comes with `removed: true` and `priceCents: null`.
+      required: [nextSince, hasMore, serverTime, taxRates, categories, products, variants, branchPrices]
+      properties:
+        nextSince: { type: integer, format: int64 }
+        hasMore: { type: boolean }
+        serverTime: { type: string, format: date-time }
+        taxRates:
+          type: array
+          items: { $ref: '#/components/schemas/TaxRate' }
+        categories:
+          type: array
+          items: { $ref: '#/components/schemas/Category' }
+        products:
+          type: array
+          items: { $ref: '#/components/schemas/CatalogProduct' }
+        variants:
+          type: array
+          items: { $ref: '#/components/schemas/CatalogVariant' }
+        branchPrices:
+          type: array
+          description: Only the device's branch
+          items: { $ref: '#/components/schemas/CatalogBranchPrice' }
+    CatalogProduct:
+      type: object
+      required: [id, categoryId, name, unit, photoId, ivaRateId, iepsRateId, dayOldDiscountAfterDays, dayOldDiscountBp, dayOldWasteAfterDays, sortOrder, isActive]
+      properties:
+        id: { type: string, format: uuid }
+        categoryId: { type: string, format: uuid }
+        name: { type: string }
+        unit: { $ref: '#/components/schemas/ProductUnit' }
+        photoId: { type: [string, 'null'], format: uuid }
+        ivaRateId: { type: string, format: uuid }
+        iepsRateId: { type: [string, 'null'], format: uuid }
+        dayOldDiscountAfterDays: { $ref: '#/components/schemas/DayOldDays' }
+        dayOldDiscountBp: { type: [integer, 'null'], minimum: 1, maximum: 10000 }
+        dayOldWasteAfterDays: { $ref: '#/components/schemas/DayOldDays' }
+        sortOrder: { type: integer }
+        isActive: { type: boolean }
+    CatalogVariant:
+      type: object
+      required: [id, productId, name, sku, barcode, priceCents, sortOrder, isActive]
+      properties:
+        id: { type: string, format: uuid }
+        productId: { type: string, format: uuid }
+        name: { type: string }
+        sku: { type: [string, 'null'] }
+        barcode: { type: [string, 'null'] }
+        priceCents: { $ref: '#/components/schemas/Cents' }
+        sortOrder: { type: integer }
+        isActive: { type: boolean }
+    CatalogBranchPrice:
+      type: object
+      required: [variantId, priceCents, removed]
+      properties:
+        variantId: { type: string, format: uuid }
+        priceCents:
+          type: [integer, 'null']
+          minimum: 1
+        removed: { type: boolean }
+
+    SyncRecordType:
+      type: string
+      description: |
+        Known types: `audit.offline_event` (payload `OfflineAuditPayload`). The server accepts any string
+        and quarantines unknown types with `SYNC_UNKNOWN_TYPE`, so an older server never rejects a whole batch.
+      examples: [audit.offline_event]
+    SyncRecord:
+      type: object
+      required: [id, type, occurredAt, payload]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: UUID v7 created on the till when the record was written; the idempotency key.
+        type: { $ref: '#/components/schemas/SyncRecordType' }
+        occurredAt: { type: string, format: date-time }
+        actorStaffId: { type: [string, 'null'], format: uuid }
+        payload:
+          type: object
+          additionalProperties: true
+    OfflineAuditPayload:
+      type: object
+      description: Payload of `audit.offline_event`. Never contains a PIN.
+      required: [action, staffId]
+      additionalProperties: false
+      properties:
+        action:
+          type: string
+          enum: [auth.login_success, auth.login_failure, auth.locked, auth.approval_granted]
+        staffId:
+          type: string
+          format: uuid
+          description: Who logged in, who failed, who was locked, or who asked for the approval
+        approverStaffId:
+          type: [string, 'null']
+          format: uuid
+          description: Required for `auth.approval_granted`
+        approvalAction:
+          type: [string, 'null']
+          description: The permission key (`PermissionKey`) that was approved; required for `auth.approval_granted`
+        reference: { type: [string, 'null'], maxLength: 100 }
+    SyncPushRequest:
+      type: object
+      required: [records]
+      additionalProperties: false
+      properties:
+        records:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: '#/components/schemas/SyncRecord' }
+    SyncResultStatus:
+      type: string
+      enum: [APPLIED, DUPLICATE, QUARANTINED]
+    SyncPushResult:
+      type: object
+      required: [id, status]
+      properties:
+        id: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/SyncResultStatus' }
+        errorCode:
+          type: [string, 'null']
+          description: Set when QUARANTINED - `SYNC_UNKNOWN_TYPE`, `SYNC_INVALID_PAYLOAD` or `SYNC_REJECTED`
+        message: { type: [string, 'null'] }
+    SyncPushResponse:
+      type: object
+      required: [results, serverTime]
+      properties:
+        results:
+          type: array
+          items: { $ref: '#/components/schemas/SyncPushResult' }
+        serverTime: { type: string, format: date-time }
+
+    QuarantineEntry:
+      type: object
+      required: [recordId, deviceId, branchId, type, occurredAt, receivedAt, errorCode, errorMessage, payload, resolvedAt, resolvedByStaffId, resolutionNote]
+      properties:
+        recordId: { type: string, format: uuid }
+        deviceId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        type: { type: string }
+        occurredAt: { type: string, format: date-time }
+        receivedAt: { type: string, format: date-time }
+        errorCode: { type: string }
+        errorMessage: { type: string }
+        payload:
+          type: object
+          additionalProperties: true
+        resolvedAt: { type: [string, 'null'], format: date-time }
+        resolvedByStaffId: { type: [string, 'null'], format: uuid }
+        resolutionNote: { type: [string, 'null'] }
+    QuarantinePage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/QuarantineEntry' }
+        nextCursor: { type: [string, 'null'] }
+    QuarantineResolve:
+      type: object
+      required: [note]
+      additionalProperties: false
+      properties:
+        note: { type: string, minLength: 1, maxLength: 500 }
