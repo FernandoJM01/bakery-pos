@@ -412,43 +412,46 @@ describe('Catalog Schema, Triggers, Constraints & Permissions (e2e)', () => {
     const first = await make('a');
     const second = await make('b');
     const other = new PrismaClient();
-    const committedAt: Record<string, bigint> = {};
-    const committed: string[] = [];
     try {
       let releaseFirst!: () => void;
       const firstMayCommit = new Promise<void>((r) => (releaseFirst = r));
       let firstUpdated!: () => void;
       const firstHasUpdated = new Promise<void>((r) => (firstUpdated = r));
+      let firstSeq = 0n;
+      let secondSeq = 0n;
+      let secondDone = false;
 
-      const slow = prisma
-        .$transaction(
-          async (tx) => {
-            const row = await tx.category.update({
-              where: { id: first.id },
-              data: { color: '#111111' },
-            });
-            committedAt.first = row.changeSeq;
-            firstUpdated();
-            await firstMayCommit;
-          },
-          { timeout: 10_000 },
-        )
-        .then(() => committed.push('first'));
+      const slow = prisma.$transaction(
+        async (tx) => {
+          const row = await tx.category.update({
+            where: { id: first.id },
+            data: { color: '#111111' },
+          });
+          firstSeq = row.changeSeq;
+          firstUpdated();
+          await firstMayCommit;
+        },
+        { timeout: 10_000 },
+      );
 
       await firstHasUpdated;
       const fast = other.category
         .update({ where: { id: second.id }, data: { color: '#222222' } })
         .then((row) => {
-          committedAt.second = row.changeSeq;
-          committed.push('second');
+          secondSeq = row.changeSeq;
+          secondDone = true;
         });
 
+      // While the first edit is still open, the second must wait for it.
+      // Otherwise it commits a higher number first, and a till that reads
+      // in between skips the first edit for good.
       await new Promise((r) => setTimeout(r, 300));
+      const secondFinishedWhileFirstOpen = secondDone;
       releaseFirst();
       await Promise.all([slow, fast]);
 
-      const [earlier, later] = committed;
-      expect(committedAt[later]).toBeGreaterThan(committedAt[earlier]);
+      expect(secondFinishedWhileFirstOpen).toBe(false);
+      expect(secondSeq).toBeGreaterThan(firstSeq);
     } finally {
       await other.$disconnect();
     }
