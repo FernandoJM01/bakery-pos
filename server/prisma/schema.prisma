@@ -45,6 +45,7 @@ model Branch {
   staffBranches StaffBranch[]
   devices       Device[]
   auditLogs     AuditLog[]
+  branchPrices  BranchPrice[]
 
   @@map("branch")
 }
@@ -70,6 +71,7 @@ model Staff {
 
   staffBranches     StaffBranch[]
   createdDevices    Device[]      @relation("DeviceCreatedBy")
+  createdPhotos     Photo[]       @relation("PhotoCreatedBy")
   authSessions      AuthSession[]
   actorAuditLogs    AuditLog[]    @relation("AuditLogActor")
   approverAuditLogs AuditLog[]    @relation("AuditLogApprover")
@@ -194,5 +196,138 @@ model Approval {
   @@index([approverStaffId])
   @@index([requesterStaffId])
   @@map("approval")
+}
+
+enum TaxKind {
+  IVA
+  IEPS
+
+  @@map("tax_kind")
+}
+
+enum ProductUnit {
+  PIECE
+  KG
+  PACKAGE
+
+  @@map("product_unit")
+}
+
+model TaxRate {
+  id        String   @id @db.Uuid
+  kind      TaxKind  @map("kind")
+  name      String   @db.VarChar(60)
+  rateBp    Int      @map("rate_bp")
+  isActive  Boolean  @default(true) @map("is_active")
+  changeSeq BigInt   @default(0) @map("change_seq") @db.BigInt
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  productsAsIva  Product[] @relation("ProductIvaRate")
+  productsAsIeps Product[] @relation("ProductIepsRate")
+
+  @@index([changeSeq])
+  @@map("tax_rate")
+}
+
+model Category {
+  id        String   @id @db.Uuid
+  name      String   @db.VarChar(60)
+  sortOrder Int      @default(0) @map("sort_order")
+  color     String?  @db.VarChar(7)
+  isActive  Boolean  @default(true) @map("is_active")
+  changeSeq BigInt   @default(0) @map("change_seq") @db.BigInt
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  products Product[]
+
+  @@index([changeSeq])
+  @@map("category")
+}
+
+model Photo {
+  id          String   @id @db.Uuid
+  contentType String   @map("content_type") @db.VarChar(50)
+  bytes       Int      @map("bytes")
+  width       Int      @map("width")
+  height      Int      @map("height")
+  sha256      String   @map("sha256") @db.VarChar(64)
+  createdBy   String?  @map("created_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  creator  Staff?    @relation("PhotoCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+  products Product[]
+
+  @@map("photo")
+}
+
+model Product {
+  id                      String      @id @db.Uuid
+  categoryId              String      @map("category_id") @db.Uuid
+  name                    String      @db.VarChar(80)
+  description             String?     @db.VarChar(500)
+  unit                    ProductUnit @map("unit")
+  photoId                 String?     @map("photo_id") @db.Uuid
+  ivaRateId               String      @map("iva_rate_id") @db.Uuid
+  iepsRateId              String?     @map("ieps_rate_id") @db.Uuid
+  dayOldDiscountAfterDays Int?        @map("day_old_discount_after_days")
+  dayOldDiscountBp        Int?        @map("day_old_discount_bp")
+  dayOldWasteAfterDays    Int?        @map("day_old_waste_after_days")
+  sortOrder               Int         @default(0) @map("sort_order")
+  isActive                Boolean     @default(true) @map("is_active")
+  changeSeq               BigInt      @default(0) @map("change_seq") @db.BigInt
+  createdAt               DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  category Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  photo    Photo?           @relation(fields: [photoId], references: [id], onDelete: SetNull)
+  ivaRate  TaxRate          @relation("ProductIvaRate", fields: [ivaRateId], references: [id], onDelete: Restrict)
+  iepsRate TaxRate?         @relation("ProductIepsRate", fields: [iepsRateId], references: [id], onDelete: Restrict)
+  variants ProductVariant[]
+
+  @@index([categoryId])
+  @@index([changeSeq])
+  @@map("product")
+}
+
+model ProductVariant {
+  id         String   @id @db.Uuid
+  productId  String   @map("product_id") @db.Uuid
+  name       String   @db.VarChar(60)
+  sku        String?  @unique @db.VarChar(40)
+  barcode    String?  @unique @db.VarChar(32)
+  priceCents Int      @map("price_cents")
+  sortOrder  Int      @default(0) @map("sort_order")
+  isActive   Boolean  @default(true) @map("is_active")
+  changeSeq  BigInt   @default(0) @map("change_seq") @db.BigInt
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  branchPrices BranchPrice[]
+
+  @@index([productId])
+  @@index([changeSeq])
+  @@map("product_variant")
+}
+
+model BranchPrice {
+  variantId  String    @map("variant_id") @db.Uuid
+  branchId   String    @map("branch_id") @db.Uuid
+  priceCents Int       @map("price_cents")
+  deletedAt  DateTime? @map("deleted_at") @db.Timestamptz(6)
+  changeSeq  BigInt    @default(0) @map("change_seq") @db.BigInt
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  branch  Branch         @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@id([variantId, branchId])
+  @@index([branchId])
+  @@index([changeSeq])
+  @@map("branch_price")
 }
 
