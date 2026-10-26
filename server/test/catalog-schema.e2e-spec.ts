@@ -1,9 +1,19 @@
 import { PrismaClient, ProductUnit, TaxKind } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import { v7 as uuidv7 } from 'uuid';
+import { isUUID } from 'class-validator';
 
 describe('Catalog Schema, Triggers, Constraints & Permissions (e2e)', () => {
   const prisma = new PrismaClient();
+
+  const createBranch = () =>
+    prisma.branch.create({
+      data: {
+        id: uuidv7(),
+        code: `T${randomBytes(4).toString('hex')}`,
+        name: 'Catalog schema test branch',
+      },
+    });
 
   afterAll(async () => {
     await prisma.$disconnect();
@@ -98,7 +108,7 @@ describe('Catalog Schema, Triggers, Constraints & Permissions (e2e)', () => {
     expect(updatedVariant.changeSeq).toBeGreaterThan(variant.changeSeq);
 
     // 7. Create a branch price
-    const branch = await prisma.branch.findFirstOrThrow();
+    const branch = await createBranch();
     const branchPrice = await prisma.branchPrice.create({
       data: {
         variantId: variant.id,
@@ -289,7 +299,7 @@ describe('Catalog Schema, Triggers, Constraints & Permissions (e2e)', () => {
 
   it('enforces branch_price price_cents > 0 check', async () => {
     const variant = await prisma.productVariant.findFirstOrThrow();
-    const branch = await prisma.branch.findFirstOrThrow();
+    const branch = await createBranch();
 
     // Raw query to test branch_price_price_cents_check
     await expect(
@@ -381,5 +391,66 @@ describe('Catalog Schema, Triggers, Constraints & Permissions (e2e)', () => {
     await expect(prisma.$executeRaw`DELETE FROM "audit_log"`).rejects.toThrow(
       /permission denied for table audit_log/i,
     );
+  });
+
+  it('seeded tax rate ids are UUIDs the API validators accept', async () => {
+    const rates = await prisma.taxRate.findMany();
+    expect(rates.length).toBeGreaterThanOrEqual(3);
+    for (const rate of rates) {
+      expect(isUUID(rate.id)).toBe(true);
+    }
+  });
+
+  it('change_seq follows commit order, so a till reading after a sequence never misses a row', async () => {
+    const make = (suffix: string) =>
+      prisma.category.create({
+        data: {
+          id: uuidv7(),
+          name: `Order-Test-${suffix}-${randomBytes(6).toString('hex')}`,
+        },
+      });
+    const first = await make('a');
+    const second = await make('b');
+    const other = new PrismaClient();
+    const committedAt: Record<string, bigint> = {};
+    const committed: string[] = [];
+    try {
+      let releaseFirst!: () => void;
+      const firstMayCommit = new Promise<void>((r) => (releaseFirst = r));
+      let firstUpdated!: () => void;
+      const firstHasUpdated = new Promise<void>((r) => (firstUpdated = r));
+
+      const slow = prisma
+        .$transaction(
+          async (tx) => {
+            const row = await tx.category.update({
+              where: { id: first.id },
+              data: { color: '#111111' },
+            });
+            committedAt.first = row.changeSeq;
+            firstUpdated();
+            await firstMayCommit;
+          },
+          { timeout: 10_000 },
+        )
+        .then(() => committed.push('first'));
+
+      await firstHasUpdated;
+      const fast = other.category
+        .update({ where: { id: second.id }, data: { color: '#222222' } })
+        .then((row) => {
+          committedAt.second = row.changeSeq;
+          committed.push('second');
+        });
+
+      await new Promise((r) => setTimeout(r, 300));
+      releaseFirst();
+      await Promise.all([slow, fast]);
+
+      const [earlier, later] = committed;
+      expect(committedAt[later]).toBeGreaterThan(committedAt[earlier]);
+    } finally {
+      await other.$disconnect();
+    }
   });
 });

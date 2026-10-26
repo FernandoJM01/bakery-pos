@@ -14,6 +14,11 @@ CREATE SEQUENCE IF NOT EXISTS "catalog_change_seq" START WITH 1 INCREMENT BY 1;
 CREATE OR REPLACE FUNCTION set_catalog_change_seq()
 RETURNS TRIGGER AS $$
 BEGIN
+    -- Catalog writes take one transaction-scoped lock before drawing a number,
+    -- so change_seq values are handed out in commit order. Without it a slow
+    -- transaction could commit a lower number after a till has already read
+    -- past it, and that till would never receive the row.
+    PERFORM pg_advisory_xact_lock(hashtext('catalog_change_seq'));
     NEW.change_seq := nextval('catalog_change_seq');
     RETURN NEW;
 END;
@@ -181,9 +186,9 @@ EXECUTE FUNCTION set_catalog_change_seq();
 -- Seed placeholder tax rates (needed in production)
 INSERT INTO "tax_rate" ("id", "kind", "name", "rate_bp", "is_active", "created_at", "updated_at")
 VALUES
-    ('10000000-0000-0000-0000-000000000001', 'IVA', 'IVA 0%', 0, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('10000000-0000-0000-0000-000000000002', 'IVA', 'IVA 16%', 1600, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('10000000-0000-0000-0000-000000000003', 'IEPS', 'IEPS 8%', 800, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    ('019a1e00-0000-7000-8000-000000000001', 'IVA', 'IVA 0%', 0, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('019a1e00-0000-7000-8000-000000000002', 'IVA', 'IVA 16%', 1600, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('019a1e00-0000-7000-8000-000000000003', 'IEPS', 'IEPS 8%', 800, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT ("id") DO NOTHING;
 
 -- Grant permissions to pos_app (least privilege: only SELECT, INSERT, UPDATE)
