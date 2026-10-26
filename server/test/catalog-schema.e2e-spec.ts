@@ -10,7 +10,7 @@ describe('Catalog Schema, Triggers, Constraints & Permissions (e2e)', () => {
     prisma.branch.create({
       data: {
         id: uuidv7(),
-        code: `T${randomBytes(4).toString('hex')}`,
+        code: `T${randomBytes(4).toString('hex').toUpperCase()}`,
         name: 'Catalog schema test branch',
       },
     });
