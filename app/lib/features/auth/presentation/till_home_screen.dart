@@ -261,6 +261,12 @@ class _TillHomeScreenState extends ConsumerState<TillHomeScreen> {
             tooltip: l10n.commonRetry,
             onPressed: () => _handleSync(context),
           ),
+          IconButton(
+            key: const Key('home-settings-button'),
+            icon: const Icon(Icons.palette_outlined),
+            tooltip: l10n.settingsAppearance,
+            onPressed: () => context.go(AppRoutes.tillSettings),
+          ),
           if (session != null)
             Padding(
               padding: const EdgeInsets.symmetric(

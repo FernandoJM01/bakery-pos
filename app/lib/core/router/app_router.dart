@@ -6,6 +6,7 @@ import '../../app.dart';
 import '../../features/backoffice/shell/presentation/backoffice_shell.dart';
 import '../../features/branches/presentation/branches_screen.dart';
 import '../../features/enrollment/presentation/enrollment_screen.dart';
+import '../../features/settings/presentation/appearance_settings_screen.dart';
 import '../storage/secure_storage.dart';
 
 class AppRoutes {
@@ -18,6 +19,7 @@ class AppRoutes {
   static const String tillOrders = '/till/pedidos';
   static const String tillOven = '/till/horno';
   static const String tillReports = '/till/reportes';
+  static const String tillSettings = '/till/ajustes';
 
   static const String backofficeLogin = '/backoffice/login';
   static const String backofficeDashboard = '/backoffice/dashboard';
@@ -293,6 +295,12 @@ GoRouter createAppRouter(
                   titleKey: 'navReports',
                   routeName: 'till-reports',
                 ),
+          ),
+          GoRoute(
+            path: AppRoutes.tillSettings,
+            builder: (context, state) =>
+                tillSectionBuilder?.call(context, AppRoutes.tillSettings) ??
+                const AppearanceSettingsScreen(),
           ),
         ],
       ),

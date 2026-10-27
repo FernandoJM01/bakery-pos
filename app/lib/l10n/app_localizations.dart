@@ -1395,6 +1395,180 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'autorizó {name}'**
   String auditApprovedBy(String name);
+
+  /// No description provided for @settingsAppearance.
+  ///
+  /// In es, this message translates to:
+  /// **'Apariencia'**
+  String get settingsAppearance;
+
+  /// No description provided for @settingsAppearanceBreadcrumb.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes · Apariencia'**
+  String get settingsAppearanceBreadcrumb;
+
+  /// No description provided for @settingsTheme.
+  ///
+  /// In es, this message translates to:
+  /// **'Tema'**
+  String get settingsTheme;
+
+  /// No description provided for @settingsThemeEspresso.
+  ///
+  /// In es, this message translates to:
+  /// **'Espresso'**
+  String get settingsThemeEspresso;
+
+  /// No description provided for @settingsThemeEspressoDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Oscuro cálido'**
+  String get settingsThemeEspressoDesc;
+
+  /// No description provided for @settingsThemeCrema.
+  ///
+  /// In es, this message translates to:
+  /// **'Crema'**
+  String get settingsThemeCrema;
+
+  /// No description provided for @settingsThemeCremaDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Claro suave'**
+  String get settingsThemeCremaDesc;
+
+  /// No description provided for @settingsThemeHighContrast.
+  ///
+  /// In es, this message translates to:
+  /// **'Alto contraste'**
+  String get settingsThemeHighContrast;
+
+  /// No description provided for @settingsThemeHighContrastDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Máxima legibilidad'**
+  String get settingsThemeHighContrastDesc;
+
+  /// No description provided for @settingsThemeSystem.
+  ///
+  /// In es, this message translates to:
+  /// **'Automático'**
+  String get settingsThemeSystem;
+
+  /// No description provided for @settingsThemeSystemDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Sigue al sistema'**
+  String get settingsThemeSystemDesc;
+
+  /// No description provided for @settingsAccentColor.
+  ///
+  /// In es, this message translates to:
+  /// **'Color de acento'**
+  String get settingsAccentColor;
+
+  /// No description provided for @settingsAccentAmber.
+  ///
+  /// In es, this message translates to:
+  /// **'Ámbar'**
+  String get settingsAccentAmber;
+
+  /// No description provided for @settingsAccentWheat.
+  ///
+  /// In es, this message translates to:
+  /// **'Trigo'**
+  String get settingsAccentWheat;
+
+  /// No description provided for @settingsAccentTerracotta.
+  ///
+  /// In es, this message translates to:
+  /// **'Terracota'**
+  String get settingsAccentTerracotta;
+
+  /// No description provided for @settingsAccentMint.
+  ///
+  /// In es, this message translates to:
+  /// **'Menta'**
+  String get settingsAccentMint;
+
+  /// No description provided for @settingsAccentBerry.
+  ///
+  /// In es, this message translates to:
+  /// **'Mora'**
+  String get settingsAccentBerry;
+
+  /// No description provided for @settingsTextSize.
+  ///
+  /// In es, this message translates to:
+  /// **'Tamaño de texto'**
+  String get settingsTextSize;
+
+  /// No description provided for @settingsTextSizeNormal.
+  ///
+  /// In es, this message translates to:
+  /// **'Normal'**
+  String get settingsTextSizeNormal;
+
+  /// No description provided for @settingsTextSizeLarge.
+  ///
+  /// In es, this message translates to:
+  /// **'Grande'**
+  String get settingsTextSizeLarge;
+
+  /// No description provided for @settingsTextSizeExtraLarge.
+  ///
+  /// In es, this message translates to:
+  /// **'Muy grande'**
+  String get settingsTextSizeExtraLarge;
+
+  /// No description provided for @settingsButtonStyle.
+  ///
+  /// In es, this message translates to:
+  /// **'Estilo de botón de producto'**
+  String get settingsButtonStyle;
+
+  /// No description provided for @settingsButtonStylePhotoAndName.
+  ///
+  /// In es, this message translates to:
+  /// **'Foto y nombre'**
+  String get settingsButtonStylePhotoAndName;
+
+  /// No description provided for @settingsButtonStyleNameOnly.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo nombre'**
+  String get settingsButtonStyleNameOnly;
+
+  /// No description provided for @settingsPreview.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista previa'**
+  String get settingsPreview;
+
+  /// No description provided for @settingsPreviewProductName.
+  ///
+  /// In es, this message translates to:
+  /// **'Concha de vainilla'**
+  String get settingsPreviewProductName;
+
+  /// No description provided for @settingsPreviewProductPrice.
+  ///
+  /// In es, this message translates to:
+  /// **'\$15.00'**
+  String get settingsPreviewProductPrice;
+
+  /// No description provided for @settingsPreviewSampleButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Botón de muestra'**
+  String get settingsPreviewSampleButton;
+
+  /// No description provided for @settingsSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes guardados'**
+  String get settingsSaved;
 }
 
 class _AppLocalizationsDelegate
