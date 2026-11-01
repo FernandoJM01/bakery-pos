@@ -79,6 +79,14 @@ class BackofficeShell extends ConsumerWidget {
           selectedIcon: Icons.receipt_long,
         ),
       );
+      navItems.add(
+        _NavItem(
+          route: AppRoutes.backofficeShifts,
+          label: l10n.navShifts,
+          icon: Icons.point_of_sale_outlined,
+          selectedIcon: Icons.point_of_sale,
+        ),
+      );
     }
     if (permissions.contains('settings.manage')) {
       navItems.add(
@@ -198,6 +206,8 @@ class BackofficeSectionPlaceholder extends StatelessWidget {
           title = l10n.navSync;
         } else if (route == AppRoutes.backofficeSales) {
           title = l10n.navSales;
+        } else if (route == AppRoutes.backofficeShifts) {
+          title = l10n.navShifts;
         } else {
           title = l10n.placeholderSectionTitle;
         }

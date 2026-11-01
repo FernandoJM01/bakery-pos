@@ -9,49 +9,9 @@ import '../../../l10n/app_localizations.dart';
 import '../../printing/data/printer_service.dart';
 import '../../printing/domain/documents.dart';
 import '../../printing/domain/escpos.dart';
+import '../../printing/presentation/document_view.dart';
 import '../../sale/data/sale_repository.dart';
 import '../data/shift_repository.dart';
-
-/// Lines of a printed document, on screen (M11.2).
-class DocumentView extends StatelessWidget {
-  const DocumentView({super.key, required this.lines});
-
-  final List<PrintLine> lines;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (final l in lines)
-          if (l.isRule)
-            const Divider()
-          else
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      l.left,
-                      textAlign: l.center ? TextAlign.center : TextAlign.start,
-                      style: l.bold ? theme.textTheme.titleSmall : null,
-                    ),
-                  ),
-                  if (l.right != null)
-                    Text(
-                      l.right!,
-                      style: l.bold ? theme.textTheme.titleSmall : null,
-                    ),
-                ],
-              ),
-            ),
-      ],
-    );
-  }
-}
 
 /// The Z report of a closed shift on this till. Prints when a printer is set
 /// and can be opened again later (M4.4).

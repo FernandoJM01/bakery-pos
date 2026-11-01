@@ -72,6 +72,9 @@ class FakeCatalog {
     'shift.closed',
   };
 
+  /// `ShiftDetail` rows, as tests seed them.
+  final List<Map<String, dynamic>> shifts = [];
+
   int _seq = 0;
   int _ids = 0;
 
@@ -390,6 +393,29 @@ class FakeCatalog {
         final id = _id('7e');
         photoIds.add(id);
         return _ok({'id': id, 'width': 800, 'height': 800, 'bytes': 1024}, 201);
+
+      case ('GET', ['shifts']):
+        final flagged = query['flagged']?.toString() == 'true';
+        return _ok({
+          'items': [
+            for (final s in shifts)
+              if (!flagged || s['flagged'] == true) s,
+          ],
+          'nextCursor': null,
+        });
+      case ('GET', ['shifts', final id]):
+        final shift = shifts.where((s) => s['id'] == id).firstOrNull;
+        if (shift == null) return _err(404, 'NOT_FOUND', 'Shift not found');
+        return _ok(shift);
+      case ('POST', ['shifts', final id, 'notes']):
+        final shift = shifts.where((s) => s['id'] == id).firstOrNull;
+        if (shift == null) return _err(404, 'NOT_FOUND', 'Shift not found');
+        (shift['notes'] as List).add({
+          'staffId': shift['openedByStaffId'],
+          'note': (body as Map)['note'],
+          'createdAt': DateTime.now().toUtc().toIso8601String(),
+        });
+        return _ok(shift);
 
       case ('GET', ['sales']):
         return _ok(_listSales(query));

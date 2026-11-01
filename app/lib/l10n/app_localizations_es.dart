@@ -1923,4 +1923,80 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get saleOpenShift => 'Ir a Caja';
+
+  @override
+  String get navShifts => 'Turnos';
+
+  @override
+  String get shiftsFlaggedOnly => 'Solo diferencias';
+
+  @override
+  String get shiftsEmpty => 'No hay turnos con estos filtros';
+
+  @override
+  String get shiftsForbidden =>
+      'No tienes permiso para ver los turnos de esta sucursal';
+
+  @override
+  String get shiftsColZ => 'Corte';
+
+  @override
+  String get shiftsColOpened => 'Abierto';
+
+  @override
+  String get shiftsColCashier => 'Abrió';
+
+  @override
+  String get shiftsOpenStatus => 'Abierto';
+
+  @override
+  String get shiftsFlagged => 'Diferencia marcada';
+
+  @override
+  String get shiftsMovements => 'Movimientos de efectivo';
+
+  @override
+  String get shiftsNotes => 'Notas';
+
+  @override
+  String get shiftsAddNote => 'Agregar nota';
+
+  @override
+  String get shiftsNoteHint => 'Corrección o comentario. El conteo no cambia.';
+
+  @override
+  String get shiftsLoadMore => 'Cargar más';
+
+  @override
+  String get shiftsAllDates => 'Todas las fechas';
+
+  @override
+  String get auditSaleDiscountOverLimit => 'Descuento sobre el límite';
+
+  @override
+  String get auditSaleRefunded => 'Devolución';
+
+  @override
+  String get auditSaleVoided => 'Venta cancelada';
+
+  @override
+  String get auditSaleTicketDiscarded => 'Ticket descartado';
+
+  @override
+  String get auditCashShiftOpened => 'Turno abierto';
+
+  @override
+  String get auditCashMovement => 'Movimiento de efectivo';
+
+  @override
+  String get auditCashShiftClosed => 'Turno cerrado';
+
+  @override
+  String get auditCashVarianceFlagged => 'Diferencia de caja marcada';
+
+  @override
+  String get auditCashDrawerOpened => 'Cajón abierto sin venta';
+
+  @override
+  String get auditCashNoteAdded => 'Nota en turno';
 }

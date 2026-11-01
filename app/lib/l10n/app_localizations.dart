@@ -3485,6 +3485,156 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ir a Caja'**
   String get saleOpenShift;
+
+  /// No description provided for @navShifts.
+  ///
+  /// In es, this message translates to:
+  /// **'Turnos'**
+  String get navShifts;
+
+  /// No description provided for @shiftsFlaggedOnly.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo diferencias'**
+  String get shiftsFlaggedOnly;
+
+  /// No description provided for @shiftsEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay turnos con estos filtros'**
+  String get shiftsEmpty;
+
+  /// No description provided for @shiftsForbidden.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes permiso para ver los turnos de esta sucursal'**
+  String get shiftsForbidden;
+
+  /// No description provided for @shiftsColZ.
+  ///
+  /// In es, this message translates to:
+  /// **'Corte'**
+  String get shiftsColZ;
+
+  /// No description provided for @shiftsColOpened.
+  ///
+  /// In es, this message translates to:
+  /// **'Abierto'**
+  String get shiftsColOpened;
+
+  /// No description provided for @shiftsColCashier.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrió'**
+  String get shiftsColCashier;
+
+  /// No description provided for @shiftsOpenStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'Abierto'**
+  String get shiftsOpenStatus;
+
+  /// No description provided for @shiftsFlagged.
+  ///
+  /// In es, this message translates to:
+  /// **'Diferencia marcada'**
+  String get shiftsFlagged;
+
+  /// No description provided for @shiftsMovements.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimientos de efectivo'**
+  String get shiftsMovements;
+
+  /// No description provided for @shiftsNotes.
+  ///
+  /// In es, this message translates to:
+  /// **'Notas'**
+  String get shiftsNotes;
+
+  /// No description provided for @shiftsAddNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar nota'**
+  String get shiftsAddNote;
+
+  /// No description provided for @shiftsNoteHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Corrección o comentario. El conteo no cambia.'**
+  String get shiftsNoteHint;
+
+  /// No description provided for @shiftsLoadMore.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargar más'**
+  String get shiftsLoadMore;
+
+  /// No description provided for @shiftsAllDates.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las fechas'**
+  String get shiftsAllDates;
+
+  /// No description provided for @auditSaleDiscountOverLimit.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuento sobre el límite'**
+  String get auditSaleDiscountOverLimit;
+
+  /// No description provided for @auditSaleRefunded.
+  ///
+  /// In es, this message translates to:
+  /// **'Devolución'**
+  String get auditSaleRefunded;
+
+  /// No description provided for @auditSaleVoided.
+  ///
+  /// In es, this message translates to:
+  /// **'Venta cancelada'**
+  String get auditSaleVoided;
+
+  /// No description provided for @auditSaleTicketDiscarded.
+  ///
+  /// In es, this message translates to:
+  /// **'Ticket descartado'**
+  String get auditSaleTicketDiscarded;
+
+  /// No description provided for @auditCashShiftOpened.
+  ///
+  /// In es, this message translates to:
+  /// **'Turno abierto'**
+  String get auditCashShiftOpened;
+
+  /// No description provided for @auditCashMovement.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimiento de efectivo'**
+  String get auditCashMovement;
+
+  /// No description provided for @auditCashShiftClosed.
+  ///
+  /// In es, this message translates to:
+  /// **'Turno cerrado'**
+  String get auditCashShiftClosed;
+
+  /// No description provided for @auditCashVarianceFlagged.
+  ///
+  /// In es, this message translates to:
+  /// **'Diferencia de caja marcada'**
+  String get auditCashVarianceFlagged;
+
+  /// No description provided for @auditCashDrawerOpened.
+  ///
+  /// In es, this message translates to:
+  /// **'Cajón abierto sin venta'**
+  String get auditCashDrawerOpened;
+
+  /// No description provided for @auditCashNoteAdded.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota en turno'**
+  String get auditCashNoteAdded;
 }
 
 class _AppLocalizationsDelegate
