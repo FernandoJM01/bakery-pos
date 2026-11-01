@@ -66,7 +66,21 @@ export const OFFLINE_AUDIT_ACTIONS = [
   'auth.login_failure',
   'auth.locked',
   'auth.approval_granted',
+  'sale.ticket_discarded',
 ] as const;
+
+/** What a discarded ticket held (`sale.ticket_discarded`, M3 brief 4.1). */
+export class DiscardedTicketDto {
+  @IsInt()
+  @Min(1)
+  @Max(500)
+  lineCount!: number;
+
+  @IsInt()
+  @Min(0)
+  @Max(100_000_000)
+  amountCents!: number;
+}
 
 /** `OfflineAuditPayload`; checked per record, so a bad one is quarantined. */
 export class OfflineAuditPayloadDto {
@@ -96,6 +110,15 @@ export class OfflineAuditPayloadDto {
   @IsString()
   @MaxLength(100)
   reference?: string | null;
+
+  @ValidateIf(
+    (o: OfflineAuditPayloadDto) =>
+      o.action === 'sale.ticket_discarded' || o.ticket != null,
+  )
+  @IsObject()
+  @ValidateNested()
+  @Type(() => DiscardedTicketDto)
+  ticket?: DiscardedTicketDto | null;
 }
 
 export class QuarantineQueryDto {

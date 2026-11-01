@@ -19,6 +19,7 @@ import { StaffModule } from './staff/staff.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { PhotosModule } from './photos/photos.module';
 import { SyncModule } from './sync/sync.module';
+import { SalesModule } from './sales/sales.module';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { SyncModule } from './sync/sync.module';
     CatalogModule,
     PhotosModule,
     SyncModule,
+    SalesModule,
     HealthModule,
   ],
   providers: [

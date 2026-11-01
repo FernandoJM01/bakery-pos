@@ -44,6 +44,8 @@ describe('ApprovalService', () => {
     createdBy: null,
     createdAt: new Date(),
     revokedAt: null,
+    tillNumber: 1,
+    folioPrefix: 'SUC1-01',
   };
 
   const mockRequester: AuthenticatedUser = {
