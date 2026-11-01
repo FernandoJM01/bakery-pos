@@ -388,9 +388,15 @@ class FakeCatalog {
         photoIds.add(id);
         return _ok({'id': id, 'width': 800, 'height': 800, 'bytes': 1024}, 201);
 
+      case ('GET', ['sales']):
+        return _ok(_listSales(query));
       case ('GET', ['sales', 'lookup']):
         final folio = query['folio']?.toString();
         final sale = sales.where((x) => x['folio'] == folio).firstOrNull;
+        if (sale == null) return _err(404, 'NOT_FOUND', 'Sale not found');
+        return _ok(saleView(sale));
+      case ('GET', ['sales', final saleId]):
+        final sale = sales.where((x) => x['id'] == saleId).firstOrNull;
         if (sale == null) return _err(404, 'NOT_FOUND', 'Sale not found');
         return _ok(saleView(sale));
 
@@ -471,6 +477,50 @@ class FakeCatalog {
     };
   }
 
+  /// Sales newest first, filtered like the server: `from` inclusive, `to`
+  /// exclusive, exact folio and branch; `cursor` is the offset as text.
+  Map<String, dynamic> _listSales(Map<String, dynamic> query) {
+    final from = DateTime.tryParse(query['from']?.toString() ?? '');
+    final to = DateTime.tryParse(query['to']?.toString() ?? '');
+    final branch = query['branchId']?.toString();
+    final folio = query['folio']?.toString();
+    final limit = int.tryParse(query['limit']?.toString() ?? '') ?? 50;
+    final offset = int.tryParse(query['cursor']?.toString() ?? '') ?? 0;
+    final matches =
+        [
+          for (final s in sales.map(saleView))
+            if ((branch == null || s['branchId'] == branch) &&
+                (folio == null || s['folio'] == folio) &&
+                (from == null ||
+                    !DateTime.parse(s['occurredAt'] as String)
+                        .isBefore(from)) &&
+                (to == null ||
+                    DateTime.parse(s['occurredAt'] as String).isBefore(to)))
+              s,
+        ]..sort(
+          (a, b) =>
+              (b['occurredAt'] as String).compareTo(a['occurredAt'] as String),
+        );
+    final page = matches.skip(offset).take(limit).toList();
+    final next = offset + page.length;
+    return {
+      'items': [
+        for (final s in page)
+          {...s}
+            ..remove('folioNumber')
+            ..remove('shiftId')
+            ..remove('receivedAt')
+            ..remove('lines')
+            ..remove('discounts')
+            ..remove('taxes')
+            ..remove('payments')
+            ..remove('voidedLines')
+            ..remove('refunds'),
+      ],
+      'nextCursor': next < matches.length ? next.toString() : null,
+    };
+  }
+
   /// A stored `sale.completed` payload as the contract's `Sale`.
   Map<String, dynamic> saleView(Map<String, dynamic> p) {
     final lines = [
@@ -485,10 +535,10 @@ class FakeCatalog {
       'id': p['id'],
       'folio': p['folio'],
       'folioNumber': p['folioNumber'],
-      'branchId': deviceBranchId,
+      'branchId': p['branchId'] ?? deviceBranchId,
       'deviceId': p['deviceId'] ?? 'fake-other-till',
       'cashierStaffId': p['cashierStaffId'],
-      'cashierName': 'Ana (Cajera)',
+      'cashierName': p['cashierName'] ?? 'Ana (Cajera)',
       'occurredAt': p['occurredAt'],
       'receivedAt': p['occurredAt'],
       'status': p['status'] ?? 'COMPLETED',
@@ -499,11 +549,11 @@ class FakeCatalog {
       'refundedCents': p['refundedCents'] ?? 0,
       'shiftId': null,
       'lines': lines,
-      'discounts': <Object>[],
-      'taxes': <Object>[],
+      'discounts': p['discounts'] ?? <Object>[],
+      'taxes': p['taxes'] ?? <Object>[],
       'payments': p['payments'],
       'voidedLines': p['voidedLines'] ?? <Object>[],
-      'refunds': <Object>[],
+      'refunds': p['refunds'] ?? <Object>[],
     };
   }
 

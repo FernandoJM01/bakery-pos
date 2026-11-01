@@ -2839,6 +2839,292 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Venta cancelada'**
   String get voidDoneTitle;
+
+  /// No description provided for @salesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ventas'**
+  String get salesTitle;
+
+  /// No description provided for @salesFolioSearch.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar folio'**
+  String get salesFolioSearch;
+
+  /// No description provided for @salesEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay ventas con estos filtros'**
+  String get salesEmpty;
+
+  /// No description provided for @salesLoadMore.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargar más'**
+  String get salesLoadMore;
+
+  /// No description provided for @salesShownSummary.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} ventas mostradas · cobrado {total} · devuelto {refunded}'**
+  String salesShownSummary(int count, String total, String refunded);
+
+  /// No description provided for @salesForbidden.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes acceso a las ventas de esa sucursal'**
+  String get salesForbidden;
+
+  /// No description provided for @salesColFolio.
+  ///
+  /// In es, this message translates to:
+  /// **'Folio'**
+  String get salesColFolio;
+
+  /// No description provided for @salesColDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get salesColDate;
+
+  /// No description provided for @salesColCashier.
+  ///
+  /// In es, this message translates to:
+  /// **'Atendió'**
+  String get salesColCashier;
+
+  /// No description provided for @salesColStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'Estado'**
+  String get salesColStatus;
+
+  /// No description provided for @salesColItems.
+  ///
+  /// In es, this message translates to:
+  /// **'Renglones'**
+  String get salesColItems;
+
+  /// No description provided for @salesColTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Total'**
+  String get salesColTotal;
+
+  /// No description provided for @salesColRefunded.
+  ///
+  /// In es, this message translates to:
+  /// **'Devuelto'**
+  String get salesColRefunded;
+
+  /// No description provided for @salesStatusCompleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Completada'**
+  String get salesStatusCompleted;
+
+  /// No description provided for @salesStatusPartiallyRefunded.
+  ///
+  /// In es, this message translates to:
+  /// **'Devolución parcial'**
+  String get salesStatusPartiallyRefunded;
+
+  /// No description provided for @salesStatusRefunded.
+  ///
+  /// In es, this message translates to:
+  /// **'Devuelta'**
+  String get salesStatusRefunded;
+
+  /// No description provided for @salesStatusVoided.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelada'**
+  String get salesStatusVoided;
+
+  /// No description provided for @salesDetailTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Venta {folio}'**
+  String salesDetailTitle(String folio);
+
+  /// No description provided for @salesDetailMeta.
+  ///
+  /// In es, this message translates to:
+  /// **'{date} · {branch} · {device} · atendió {cashier}'**
+  String salesDetailMeta(
+    String date,
+    String branch,
+    String device,
+    String cashier,
+  );
+
+  /// No description provided for @salesDetailLines.
+  ///
+  /// In es, this message translates to:
+  /// **'Productos'**
+  String get salesDetailLines;
+
+  /// No description provided for @salesLineName.
+  ///
+  /// In es, this message translates to:
+  /// **'{product} · {variant}'**
+  String salesLineName(String product, String variant);
+
+  /// No description provided for @salesLineQty.
+  ///
+  /// In es, this message translates to:
+  /// **'{quantity} × {price}'**
+  String salesLineQty(int quantity, String price);
+
+  /// No description provided for @salesLineDiscount.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuento {amount}'**
+  String salesLineDiscount(String amount);
+
+  /// No description provided for @salesLineRefunded.
+  ///
+  /// In es, this message translates to:
+  /// **'Devueltas: {quantity}'**
+  String salesLineRefunded(int quantity);
+
+  /// No description provided for @salesDetailDiscounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuentos'**
+  String get salesDetailDiscounts;
+
+  /// No description provided for @salesDiscountOrder.
+  ///
+  /// In es, this message translates to:
+  /// **'A toda la venta'**
+  String get salesDiscountOrder;
+
+  /// No description provided for @salesDiscountLine.
+  ///
+  /// In es, this message translates to:
+  /// **'Al renglón {lineNo}'**
+  String salesDiscountLine(int lineNo);
+
+  /// No description provided for @salesDiscountRow.
+  ///
+  /// In es, this message translates to:
+  /// **'{scope}: {value} = {amount} · {reason}'**
+  String salesDiscountRow(
+    String scope,
+    String value,
+    String amount,
+    String reason,
+  );
+
+  /// No description provided for @salesDiscountApproved.
+  ///
+  /// In es, this message translates to:
+  /// **'Autorizó: {name}'**
+  String salesDiscountApproved(String name);
+
+  /// No description provided for @salesDetailTaxes.
+  ///
+  /// In es, this message translates to:
+  /// **'Impuestos por tasa'**
+  String get salesDetailTaxes;
+
+  /// No description provided for @salesDetailPayment.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago'**
+  String get salesDetailPayment;
+
+  /// No description provided for @salesPaymentCash.
+  ///
+  /// In es, this message translates to:
+  /// **'Efectivo {amount} · recibido {tendered} · cambio {change}'**
+  String salesPaymentCash(String amount, String tendered, String change);
+
+  /// No description provided for @salesDetailVoided.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitados del ticket antes de cobrar'**
+  String get salesDetailVoided;
+
+  /// No description provided for @salesVoidedRow.
+  ///
+  /// In es, this message translates to:
+  /// **'{quantity} × {price} · {time} · {staff}'**
+  String salesVoidedRow(int quantity, String price, String time, String staff);
+
+  /// No description provided for @salesDetailRefunds.
+  ///
+  /// In es, this message translates to:
+  /// **'Devoluciones y cancelaciones'**
+  String get salesDetailRefunds;
+
+  /// No description provided for @salesRefundKindRefund.
+  ///
+  /// In es, this message translates to:
+  /// **'Devolución'**
+  String get salesRefundKindRefund;
+
+  /// No description provided for @salesRefundKindVoid.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelación'**
+  String get salesRefundKindVoid;
+
+  /// No description provided for @salesRefundRow.
+  ///
+  /// In es, this message translates to:
+  /// **'{kind} · {date} · {amount} · {reason}'**
+  String salesRefundRow(String kind, String date, String amount, String reason);
+
+  /// No description provided for @salesRefundLineRow.
+  ///
+  /// In es, this message translates to:
+  /// **'Renglón {lineNo}: {quantity} pza · {amount}'**
+  String salesRefundLineRow(int lineNo, int quantity, String amount);
+
+  /// No description provided for @salesNone.
+  ///
+  /// In es, this message translates to:
+  /// **'Ninguno'**
+  String get salesNone;
+
+  /// No description provided for @salesGross.
+  ///
+  /// In es, this message translates to:
+  /// **'Subtotal'**
+  String get salesGross;
+
+  /// No description provided for @salesDiscountTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuentos'**
+  String get salesDiscountTotal;
+
+  /// No description provided for @salesTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Total'**
+  String get salesTotal;
+
+  /// No description provided for @salesRefundedTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Devuelto'**
+  String get salesRefundedTotal;
+
+  /// No description provided for @deviceFolioPrefix.
+  ///
+  /// In es, this message translates to:
+  /// **'Prefijo de folio'**
+  String get deviceFolioPrefix;
+
+  /// No description provided for @salesDateRange.
+  ///
+  /// In es, this message translates to:
+  /// **'{from} – {to}'**
+  String salesDateRange(String from, String to);
 }
 
 class _AppLocalizationsDelegate

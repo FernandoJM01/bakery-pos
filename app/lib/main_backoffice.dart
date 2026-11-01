@@ -11,6 +11,7 @@ import 'features/branches/presentation/branches_screen.dart';
 import 'features/catalog/presentation/catalog_screen.dart';
 import 'features/devices/presentation/devices_screen.dart';
 import 'features/staff/presentation/staff_screen.dart';
+import 'features/sales_admin/presentation/sales_admin_screen.dart';
 import 'features/sync_admin/presentation/sync_admin_screen.dart';
 
 void main() => runApp(const ProviderScope(child: BackofficeAppRoot()));
@@ -47,6 +48,9 @@ class BackofficeAppRoot extends ConsumerWidget {
         }
         if (route == AppRoutes.backofficeSync) {
           return const SyncAdminScreen();
+        }
+        if (route == AppRoutes.backofficeSales) {
+          return const SalesAdminScreen();
         }
         return BackofficeSectionPlaceholder.forRoute(route);
       },

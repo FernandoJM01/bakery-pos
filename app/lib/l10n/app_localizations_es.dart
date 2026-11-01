@@ -1533,4 +1533,187 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get voidDoneTitle => 'Venta cancelada';
+
+  @override
+  String get salesTitle => 'Ventas';
+
+  @override
+  String get salesFolioSearch => 'Buscar folio';
+
+  @override
+  String get salesEmpty => 'No hay ventas con estos filtros';
+
+  @override
+  String get salesLoadMore => 'Cargar más';
+
+  @override
+  String salesShownSummary(int count, String total, String refunded) {
+    return '$count ventas mostradas · cobrado $total · devuelto $refunded';
+  }
+
+  @override
+  String get salesForbidden => 'No tienes acceso a las ventas de esa sucursal';
+
+  @override
+  String get salesColFolio => 'Folio';
+
+  @override
+  String get salesColDate => 'Fecha';
+
+  @override
+  String get salesColCashier => 'Atendió';
+
+  @override
+  String get salesColStatus => 'Estado';
+
+  @override
+  String get salesColItems => 'Renglones';
+
+  @override
+  String get salesColTotal => 'Total';
+
+  @override
+  String get salesColRefunded => 'Devuelto';
+
+  @override
+  String get salesStatusCompleted => 'Completada';
+
+  @override
+  String get salesStatusPartiallyRefunded => 'Devolución parcial';
+
+  @override
+  String get salesStatusRefunded => 'Devuelta';
+
+  @override
+  String get salesStatusVoided => 'Cancelada';
+
+  @override
+  String salesDetailTitle(String folio) {
+    return 'Venta $folio';
+  }
+
+  @override
+  String salesDetailMeta(
+    String date,
+    String branch,
+    String device,
+    String cashier,
+  ) {
+    return '$date · $branch · $device · atendió $cashier';
+  }
+
+  @override
+  String get salesDetailLines => 'Productos';
+
+  @override
+  String salesLineName(String product, String variant) {
+    return '$product · $variant';
+  }
+
+  @override
+  String salesLineQty(int quantity, String price) {
+    return '$quantity × $price';
+  }
+
+  @override
+  String salesLineDiscount(String amount) {
+    return 'Descuento $amount';
+  }
+
+  @override
+  String salesLineRefunded(int quantity) {
+    return 'Devueltas: $quantity';
+  }
+
+  @override
+  String get salesDetailDiscounts => 'Descuentos';
+
+  @override
+  String get salesDiscountOrder => 'A toda la venta';
+
+  @override
+  String salesDiscountLine(int lineNo) {
+    return 'Al renglón $lineNo';
+  }
+
+  @override
+  String salesDiscountRow(
+    String scope,
+    String value,
+    String amount,
+    String reason,
+  ) {
+    return '$scope: $value = $amount · $reason';
+  }
+
+  @override
+  String salesDiscountApproved(String name) {
+    return 'Autorizó: $name';
+  }
+
+  @override
+  String get salesDetailTaxes => 'Impuestos por tasa';
+
+  @override
+  String get salesDetailPayment => 'Pago';
+
+  @override
+  String salesPaymentCash(String amount, String tendered, String change) {
+    return 'Efectivo $amount · recibido $tendered · cambio $change';
+  }
+
+  @override
+  String get salesDetailVoided => 'Quitados del ticket antes de cobrar';
+
+  @override
+  String salesVoidedRow(int quantity, String price, String time, String staff) {
+    return '$quantity × $price · $time · $staff';
+  }
+
+  @override
+  String get salesDetailRefunds => 'Devoluciones y cancelaciones';
+
+  @override
+  String get salesRefundKindRefund => 'Devolución';
+
+  @override
+  String get salesRefundKindVoid => 'Cancelación';
+
+  @override
+  String salesRefundRow(
+    String kind,
+    String date,
+    String amount,
+    String reason,
+  ) {
+    return '$kind · $date · $amount · $reason';
+  }
+
+  @override
+  String salesRefundLineRow(int lineNo, int quantity, String amount) {
+    return 'Renglón $lineNo: $quantity pza · $amount';
+  }
+
+  @override
+  String get salesNone => 'Ninguno';
+
+  @override
+  String get salesGross => 'Subtotal';
+
+  @override
+  String get salesDiscountTotal => 'Descuentos';
+
+  @override
+  String get salesTotal => 'Total';
+
+  @override
+  String get salesRefundedTotal => 'Devuelto';
+
+  @override
+  String get deviceFolioPrefix => 'Prefijo de folio';
+
+  @override
+  String salesDateRange(String from, String to) {
+    return '$from – $to';
+  }
 }

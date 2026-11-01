@@ -62,6 +62,8 @@ class FakeApiInterceptor extends Interceptor {
       'name': 'Caja 1',
       'type': 'TILL',
       'status': 'ACTIVE',
+      'tillNumber': 1,
+      'folioPrefix': 'SUC1-01',
       'lastSeenAt': '2026-10-25T13:05:00.000Z',
       'createdAt': '2026-10-01T00:00:00.000Z',
     },
@@ -128,6 +130,21 @@ class FakeApiInterceptor extends Interceptor {
 
   Map<String, dynamic> _publicStaff(Map<String, dynamic> s) =>
       Map<String, dynamic>.from(s);
+
+  /// The next till number of a branch and its folio prefix, like the
+  /// server's trigger: `SUC1-02` for the second till of SUC1.
+  Map<String, dynamic> _nextTill(Object? branchId) {
+    final n =
+        devices
+            .where((d) => d['branchId'] == branchId && d['type'] == 'TILL')
+            .length +
+        1;
+    final code = branches.firstWhere((b) => b['id'] == branchId)['code'];
+    return {
+      'tillNumber': n,
+      'folioPrefix': '$code-${n.toString().padLeft(2, '0')}',
+    };
+  }
 
   Map<String, dynamic> _enrollment(Map<String, dynamic> device) => {
     'device': device,
@@ -979,6 +996,7 @@ class FakeApiInterceptor extends Interceptor {
         'name': body['name'],
         'type': body['type'] ?? 'TILL',
         'status': 'PENDING',
+        if ((body['type'] ?? 'TILL') == 'TILL') ..._nextTill(body['branchId']),
         'createdAt': now.toIso8601String(),
       };
       devices.add(device);
