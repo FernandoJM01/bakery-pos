@@ -1916,7 +1916,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get printerTestOk => 'Prueba enviada';
 
   @override
-  String get printerTestPage => 'Prueba de impresora';
+  String get printerTestPage =>
+      'Prueba de impresora: Piña, café, jamón, ñ á é í ó ú \$12.50';
 
   @override
   String get saleNoShift => 'Abre un turno para vender';

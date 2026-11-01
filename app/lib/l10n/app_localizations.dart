@@ -3471,7 +3471,7 @@ abstract class AppLocalizations {
   /// No description provided for @printerTestPage.
   ///
   /// In es, this message translates to:
-  /// **'Prueba de impresora'**
+  /// **'Prueba de impresora: Piña, café, jamón, ñ á é í ó ú \$12.50'**
   String get printerTestPage;
 
   /// No description provided for @saleNoShift.

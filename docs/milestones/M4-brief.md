@@ -120,7 +120,7 @@ Stock and adjustments in the audit log (Sprint 5), claim tickets, pick lists and
 
 ## 8. Open for Fernando
 
-- Which printer and cash drawer will the branches use? E14 needs one, and it must have a network port.
+- Printer and cash drawer are not chosen yet (1 Nov 2026). Any 80 mm ESC/POS printer with an Ethernet port and an RJ11 drawer port fits, with no code change. E14 stays pending until the hardware arrives; the printer's test page shows whether Spanish letters print correctly.
 - Is $50.00 the right difference to flag?
 - Are the cash-out reasons right (change fund, supplier payment, bank drop, other)?
 - Should a shift belong to the till (as written) or to one cashier at a time?

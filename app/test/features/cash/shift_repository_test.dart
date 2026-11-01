@@ -256,10 +256,7 @@ void main() {
       final closed = await shifts.confirmCount(
         shift: (await shifts.current())!,
         staff: manager,
-        count: {
-          100000: expected ~/ 100000,
-          50: (expected % 100000) ~/ 50,
-        },
+        count: {100000: expected ~/ 100000, 50: (expected % 100000) ~/ 50},
         now: now.add(const Duration(hours: 9)),
       );
       expect(closed.expectedCents, expected);
