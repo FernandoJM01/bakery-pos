@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Device } from '@prisma/client';
+import { Device, Prisma } from '@prisma/client';
 import { formatCategory, formatTaxRate } from '../catalog/catalog-format';
 import { ClockService } from '../common/clock.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -31,17 +31,24 @@ export class CatalogFeedService {
   async pull(device: Device, since: bigint, limit: number) {
     const after = { changeSeq: { gt: since } };
     const page = { orderBy: { changeSeq: 'asc' as const }, take: limit + 1 };
+    // One snapshot for all five lists. Read separately, a tax rate committed
+    // after its query ran could sit below a product committed before the
+    // product query ran; the till would store the higher number and skip the
+    // tax rate for good.
     const [taxRates, categories, products, variants, branchPrices] =
-      await Promise.all([
-        this.prisma.taxRate.findMany({ where: after, ...page }),
-        this.prisma.category.findMany({ where: after, ...page }),
-        this.prisma.product.findMany({ where: after, ...page }),
-        this.prisma.productVariant.findMany({ where: after, ...page }),
-        this.prisma.branchPrice.findMany({
-          where: { ...after, branchId: device.branchId },
-          ...page,
-        }),
-      ]);
+      await this.prisma.$transaction(
+        [
+          this.prisma.taxRate.findMany({ where: after, ...page }),
+          this.prisma.category.findMany({ where: after, ...page }),
+          this.prisma.product.findMany({ where: after, ...page }),
+          this.prisma.productVariant.findMany({ where: after, ...page }),
+          this.prisma.branchPrice.findMany({
+            where: { ...after, branchId: device.branchId },
+            ...page,
+          }),
+        ],
+        { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead },
+      );
 
     const rows: Row[] = [
       ...taxRates.map((t) => row(t.changeSeq, 'taxRates', formatTaxRate(t))),

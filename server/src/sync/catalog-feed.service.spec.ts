@@ -24,6 +24,12 @@ function table<T extends { changeSeq: bigint; branchId?: string }>(rows: T[]) {
   };
 }
 
+/** Runs the queries it is given and records the options, like $transaction. */
+const transaction = jest.fn<
+  Promise<unknown[]>,
+  [Promise<unknown>[], { isolationLevel?: string }?]
+>((ops) => Promise.all(ops));
+
 const T0 = new Date('2026-11-01T12:00:00Z');
 const device = { id: 'd1', branchId: 'b1' } as Device;
 
@@ -90,10 +96,24 @@ function service() {
     ]),
   };
   const clock = { now: () => T0 } as ClockService;
-  return new CatalogFeedService(prisma as unknown as PrismaService, clock);
+  const withTx = {
+    ...prisma,
+    $transaction: transaction,
+  };
+  return new CatalogFeedService(withTx as unknown as PrismaService, clock);
 }
 
 describe('CatalogFeedService', () => {
+  it('reads every list from one snapshot, so no row is skipped', async () => {
+    transaction.mockClear();
+    await service().pull(device, 0n, 10);
+
+    expect(transaction).toHaveBeenCalledTimes(1);
+    expect(transaction.mock.calls[0][1]).toEqual({
+      isolationLevel: 'RepeatableRead',
+    });
+  });
+
   it('merges the tables in change order and pages by total rows', async () => {
     const feed = service();
     const first = await feed.pull(device, 0n, 4);
