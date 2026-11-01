@@ -457,6 +457,65 @@ describe('Cash shifts (e2e)', () => {
     }
   });
 
+  it('E8: 200 sales and refunds give a Z report matching the stored rows', async () => {
+    const t = await newTill(branchId);
+    const open = opened();
+    expect((await pushOne(t, open)).status).toBe('APPLIED');
+    const sold = Array.from({ length: 200 }, (_, i) =>
+      sale(t, open.id, 500 + i * 7),
+    );
+    for (let i = 0; i < sold.length; i += 100) {
+      const res = await push(t.token, sold.slice(i, i + 100));
+      expect(res.every((r) => r.status === 'APPLIED')).toBe(true);
+    }
+    for (const i of [3, 50]) {
+      const price = 500 + i * 7;
+      expect(
+        (await pushOne(t, refund(sold[i].id, open.id, price))).status,
+      ).toBe('APPLIED');
+    }
+    await pushOne(t, movement(open.id));
+
+    const stored = await prisma.sale.aggregate({
+      where: { shiftId: open.id },
+      _sum: { totalCents: true, grossCents: true },
+      _count: true,
+    });
+    const returned = await prisma.refund.aggregate({
+      where: { shiftId: open.id },
+      _sum: { totalCents: true },
+    });
+    const net = stored._sum.totalCents!;
+    const back = returned._sum.totalCents!;
+    const expected = 100000 + net + 20000 - back;
+    const close = closed(t, open.id, expected, expected - (expected % 50));
+    const payload = close.payload;
+    payload.varianceCents = -(expected % 50);
+    expect((await pushOne(t, close)).status).toBe('APPLIED');
+
+    const res = await request(server)
+      .get(`/v1/shifts/${open.id}`)
+      .set('Authorization', `Bearer ${ownerToken}`);
+    const body = res.body as {
+      expectedCents: number;
+      zReport: {
+        saleCount: number;
+        netCents: number;
+        grossCents: number;
+        refundCents: number;
+        taxes: { baseCents: number; taxCents: number }[];
+      };
+    };
+    expect(body.expectedCents).toBe(expected);
+    expect(body.zReport.saleCount).toBe(200);
+    expect(body.zReport.netCents).toBe(net);
+    expect(body.zReport.grossCents).toBe(stored._sum.grossCents);
+    expect(body.zReport.refundCents).toBe(back);
+    expect(
+      body.zReport.taxes.reduce((a, x) => a + x.baseCents + x.taxCents, 0),
+    ).toBe(net - back);
+  });
+
   it('E13: shifts list, flag filter, Z report, notes and scope', async () => {
     const t = await newTill(branchId);
     const open = opened();

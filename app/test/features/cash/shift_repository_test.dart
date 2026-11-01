@@ -150,6 +150,122 @@ void main() {
     expect(await shifts.current(), isNull);
   });
 
+  test(
+    'E8: a day of 200 sales gives a Z report that matches to the centavo',
+    () async {
+      final id = await shifts.open(staff: cashier, count: thousand, now: now);
+      final refunds = RefundRepository(db, null);
+      const off = TicketDiscount(
+        kind: DiscountKind.percent,
+        value: 700,
+        reason: DiscountReason.promotion,
+      );
+      final folios = <String>[];
+      for (var i = 0; i < 200; i++) {
+        final r = await sales.completeSale(
+          ticket: Ticket(
+            lines: [
+              TicketLine(
+                item: pastel,
+                quantity: i % 3 + 1,
+                discount: i % 4 == 0 ? off : null,
+              ),
+              TicketLine(item: galletas, quantity: i % 2 + 1),
+              if (i % 5 == 0) const TicketLine(item: concha, quantity: 2),
+            ],
+            orderDiscount: i % 7 == 0 ? off : null,
+          ),
+          cashier: cashier,
+          tenderedCents: 1000000,
+          now: now.add(Duration(minutes: i)),
+        );
+        folios.add(r.folio);
+      }
+      Future<void> give(
+        String folio,
+        Map<int, int> units,
+        RefundKind kind,
+      ) async {
+        final sale = await refunds.find(folio, online: false);
+        await refunds.record(
+          sale: sale,
+          units: units,
+          restock: const {},
+          kind: kind,
+          reason: RefundReason.quality,
+          staffId: cashier.id,
+          approverStaffId: manager.id,
+          now: now.add(const Duration(hours: 5)),
+        );
+      }
+
+      await give(folios[10], {1: 1}, RefundKind.refund);
+      await give(folios[20], {1: 1, 2: 1}, RefundKind.refund);
+      final toVoid = await refunds.find(folios[30], online: false);
+      await give(folios[30], {
+        for (final l in toVoid.lines) l.lineNo: l.left,
+      }, RefundKind.voidSale);
+      await shifts.addMovement(
+        shiftId: id,
+        kind: CashKind.cashIn,
+        amountCents: 20000,
+        reason: CashReason.changeFund,
+        staffId: manager.id,
+        now: now,
+      );
+      await shifts.addMovement(
+        shiftId: id,
+        kind: CashKind.cashOut,
+        amountCents: 7550,
+        reason: CashReason.bankDrop,
+        staffId: manager.id,
+        now: now,
+      );
+
+      final saleRows = await db.select(db.localSales).get();
+      final lineRows = await db.select(db.localSaleLines).get();
+      final refundRows = await db.select(db.localRefunds).get();
+      final z = await shifts.zReport(id);
+      int sum<T>(Iterable<T> xs, int Function(T) f) =>
+          xs.fold(0, (a, x) => a + f(x));
+
+      expect(z.saleCount, 200);
+      expect(z.grossCents, sum(saleRows, (s) => s.grossCents));
+      expect(z.discountCents, sum(saleRows, (s) => s.discountCents));
+      expect(z.netCents, sum(saleRows, (s) => s.totalCents));
+      expect(z.refundCount, 2);
+      expect(z.voidCount, 1);
+      final back = sum(refundRows, (r) => r.totalCents);
+      expect(z.refundCents + z.voidCents, back);
+      expect(z.cashInCents, 20000);
+      expect(z.cashOutCents, 7550);
+
+      // Tax parts always add back to the money: sold minus returned.
+      final parts = sum(
+        z.taxes.where((t) => t.kind == 'IVA'),
+        (t) => t.baseCents + t.taxCents,
+      );
+      expect(parts, z.netCents - back);
+      expect(z.grossCents - z.discountCents, z.netCents);
+      expect(
+        sum(lineRows, (l) => l.baseCents + l.iepsCents + l.ivaCents),
+        z.netCents,
+      );
+
+      final expected = 100000 + z.netCents + 20000 - 7550 - back;
+      final closed = await shifts.confirmCount(
+        shift: (await shifts.current())!,
+        staff: manager,
+        count: {
+          100000: expected ~/ 100000,
+          50: (expected % 100000) ~/ 50,
+        },
+        now: now.add(const Duration(hours: 9)),
+      );
+      expect(closed.expectedCents, expected);
+    },
+  );
+
   test('Z numbers run with no gaps and the last count is remembered', () async {
     for (final n in [1, 2]) {
       await shifts.open(staff: cashier, count: thousand, now: now);
