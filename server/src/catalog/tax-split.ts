@@ -5,7 +5,7 @@ export interface TaxSplit {
 }
 
 /** Integer division rounded half up, for non-negative operands. */
-function divRoundHalfUp(numerator: number, denominator: number): number {
+export function divRoundHalfUp(numerator: number, denominator: number): number {
   return Math.floor((2 * numerator + denominator) / (2 * denominator));
 }
 

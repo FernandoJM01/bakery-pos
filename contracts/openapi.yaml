@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
   title: Bakery POS API
-  version: 0.2.0-m2
+  version: 0.3.0-m3
   description: |
-    Contract for Milestones 1 (foundation, access, roles, devices) and 2 (catalog and sync).
+    Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync) and 3 (sales).
     Owned by the architect. Developers must not edit this file; open an issue labelled `contract` instead.
 
     Conventions:
@@ -31,6 +31,8 @@ tags:
     description: Categories, products, variants, prices, tax rates and photos (M2)
   - name: sync
     description: Till catalog feed, outbox push and quarantine (M2)
+  - name: sales
+    description: Sales and refunds made on tills, received through sync (M3)
 
 paths:
   /health:
@@ -981,6 +983,93 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
 
+  /v1/sales:
+    get:
+      tags: [sales]
+      operationId: listSales
+      summary: Sales for the back office, newest first
+      description: |
+        Owners (`reports.all`) see every branch. Staff with only `reports.branch` see their own branches;
+        asking for another branch returns 403.
+      x-permission: reports.branch
+      parameters:
+        - name: from
+          in: query
+          description: Sales that occurred at or after this time
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          description: Sales that occurred before this time
+          schema: { type: string, format: date-time }
+        - name: branchId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: deviceId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: folio
+          in: query
+          description: Exact folio, for example `SUC1-02-000153`
+          schema: { type: string, maxLength: 30 }
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+      responses:
+        '200':
+          description: Newest first by occurredAt
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalePage' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/sales/lookup:
+    get:
+      tags: [sales]
+      operationId: lookupSale
+      summary: Find a sale of this till's branch by folio, to refund or void it
+      x-permission: sale.create
+      x-device: required
+      security:
+        - bearerAuth: []
+          deviceToken: []
+      parameters:
+        - name: folio
+          in: query
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 30 }
+      responses:
+        '200':
+          description: The sale with its refunds
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Sale' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/sales/{saleId}:
+    parameters:
+      - $ref: '#/components/parameters/SaleId'
+    get:
+      tags: [sales]
+      operationId: getSale
+      summary: One sale with its lines, discounts, payments and refunds
+      x-permission: reports.branch
+      responses:
+        '200':
+          description: The sale
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Sale' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1038,6 +1127,11 @@ components:
       schema: { type: string, format: uuid }
     RecordId:
       name: recordId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    SaleId:
+      name: saleId
       in: path
       required: true
       schema: { type: string, format: uuid }
@@ -1241,9 +1335,17 @@ components:
     StaffBundle:
       type: object
       required: [branchId, generatedAt, staff, roles]
+      description: |
+        `folioPrefix` and `saleSettings` are sent by every server from 0.3.0-m3. They are optional in the schema only so
+        a till can tell an older server apart; a till without `folioPrefix` must not sell.
       properties:
         branchId: { type: string, format: uuid }
         generatedAt: { type: string, format: date-time }
+        folioPrefix:
+          type: [string, 'null']
+          description: This device's folio prefix (`Device.folioPrefix`); null for production stations.
+          examples: [SUC1-02]
+        saleSettings: { $ref: '#/components/schemas/SaleSettings' }
         staff:
           type: array
           items: { $ref: '#/components/schemas/StaffBundleEntry' }
@@ -1288,6 +1390,15 @@ components:
         appVersion: { type: [string, 'null'] }
         createdAt: { type: string, format: date-time }
         revokedAt: { type: [string, 'null'], format: date-time }
+        tillNumber:
+          type: [integer, 'null']
+          minimum: 1
+          maximum: 99
+          description: Set by the server for TILL devices (1 + the highest number used in the branch, never reused); null for PRODUCTION.
+        folioPrefix:
+          type: [string, 'null']
+          description: '`<branch code>-<till number, 2 digits>`; null for PRODUCTION.'
+          examples: [SUC1-02]
     DeviceCreate:
       type: object
       required: [branchId, name, type]
@@ -1422,6 +1533,10 @@ components:
         - catalog.tax_rate_created
         - catalog.tax_rate_updated
         - sync.quarantine_resolved
+        - sale.discount_over_limit
+        - sale.refunded
+        - sale.voided
+        - sale.ticket_discarded
     AuditEntry:
       type: object
       required: [id, occurredAt, action]
@@ -1717,9 +1832,11 @@ components:
     SyncRecordType:
       type: string
       description: |
-        Known types: `audit.offline_event` (payload `OfflineAuditPayload`). The server accepts any string
-        and quarantines unknown types with `SYNC_UNKNOWN_TYPE`, so an older server never rejects a whole batch.
-      examples: [audit.offline_event]
+        Known types: `audit.offline_event` (payload `OfflineAuditPayload`), `sale.completed`
+        (payload `SaleCompletedPayload`, record `id` = sale ID) and `sale.refunded` (payload
+        `SaleRefundedPayload`, record `id` = refund ID). The server accepts any string and quarantines
+        unknown types with `SYNC_UNKNOWN_TYPE`, so an older server never rejects a whole batch.
+      examples: [audit.offline_event, sale.completed, sale.refunded]
     SyncRecord:
       type: object
       required: [id, type, occurredAt, payload]
@@ -1742,7 +1859,7 @@ components:
       properties:
         action:
           type: string
-          enum: [auth.login_success, auth.login_failure, auth.locked, auth.approval_granted]
+          enum: [auth.login_success, auth.login_failure, auth.locked, auth.approval_granted, sale.ticket_discarded]
         staffId:
           type: string
           format: uuid
@@ -1755,6 +1872,14 @@ components:
           type: [string, 'null']
           description: The permission key (`PermissionKey`) that was approved; required for `auth.approval_granted`
         reference: { type: [string, 'null'], maxLength: 100 }
+        ticket:
+          type: [object, 'null']
+          description: Required for `sale.ticket_discarded` - what was on the ticket that was never paid.
+          required: [lineCount, amountCents]
+          additionalProperties: false
+          properties:
+            lineCount: { type: integer, minimum: 1, maximum: 500 }
+            amountCents: { type: integer, minimum: 0, maximum: 100000000 }
     SyncPushRequest:
       type: object
       required: [records]
@@ -1819,3 +1944,309 @@ components:
       additionalProperties: false
       properties:
         note: { type: string, minLength: 1, maxLength: 500 }
+
+    SaleSettings:
+      type: object
+      required: [discountLimitBp]
+      properties:
+        discountLimitBp:
+          allOf: [{ $ref: '#/components/schemas/BasisPoints' }]
+          description: Largest discount share a cashier may give without a manager (`1000` = 10%). M3 brief 4.2 step 7.
+    AnyCents:
+      type: integer
+      minimum: 0
+      maximum: 100000000
+      description: Integer centavos that may be zero (totals, discounts, change)
+    Folio:
+      type: string
+      pattern: '^[A-Z0-9]{1,10}-[0-9]{2}-[0-9]{6}$'
+      examples: [SUC1-02-000153]
+    DiscountKind:
+      type: string
+      enum: [PERCENT, AMOUNT]
+    DiscountReason:
+      type: string
+      enum: [FREQUENT_CUSTOMER, DAMAGED, PROMOTION, OTHER]
+    DiscountInput:
+      type: object
+      required: [kind, value, reason]
+      additionalProperties: false
+      properties:
+        kind: { $ref: '#/components/schemas/DiscountKind' }
+        value:
+          type: integer
+          minimum: 1
+          maximum: 100000000
+          description: Basis points for PERCENT (at most 10000), centavos for AMOUNT
+        reason: { $ref: '#/components/schemas/DiscountReason' }
+        note: { type: [string, 'null'], maxLength: 120 }
+        approverStaffId:
+          type: [string, 'null']
+          format: uuid
+          description: Required when the discount's share is above `discountLimitBp`; must hold `sale.discount_over_limit`
+    PaymentMethod:
+      type: string
+      enum: [CASH]
+    SaleLineInput:
+      type: object
+      required: [lineNo, variantId, productName, variantName, quantity, unitPriceCents, ivaRateId, ivaBp, iepsBp, grossCents, lineDiscountCents, orderDiscountCents, netCents, baseCents, iepsCents, ivaCents]
+      additionalProperties: false
+      properties:
+        lineNo: { type: integer, minimum: 1, maximum: 500 }
+        variantId: { type: string, format: uuid }
+        productName: { type: string, minLength: 1, maxLength: 120 }
+        variantName: { type: string, minLength: 1, maxLength: 120 }
+        quantity: { type: integer, minimum: 1, maximum: 9999 }
+        unitPriceCents: { $ref: '#/components/schemas/Cents' }
+        ivaRateId: { type: string, format: uuid }
+        ivaBp: { $ref: '#/components/schemas/BasisPoints' }
+        iepsRateId: { type: [string, 'null'], format: uuid }
+        iepsBp: { $ref: '#/components/schemas/BasisPoints' }
+        discount:
+          oneOf:
+            - { $ref: '#/components/schemas/DiscountInput' }
+            - { type: 'null' }
+        grossCents: { $ref: '#/components/schemas/AnyCents' }
+        lineDiscountCents: { $ref: '#/components/schemas/AnyCents' }
+        orderDiscountCents: { $ref: '#/components/schemas/AnyCents' }
+        netCents: { $ref: '#/components/schemas/AnyCents' }
+        baseCents: { $ref: '#/components/schemas/AnyCents' }
+        iepsCents: { $ref: '#/components/schemas/AnyCents' }
+        ivaCents: { $ref: '#/components/schemas/AnyCents' }
+    VoidedLineInput:
+      type: object
+      required: [variantId, quantity, unitPriceCents, voidedAt, staffId]
+      additionalProperties: false
+      properties:
+        variantId: { type: string, format: uuid }
+        quantity: { type: integer, minimum: 1, maximum: 9999 }
+        unitPriceCents: { $ref: '#/components/schemas/Cents' }
+        voidedAt: { type: string, format: date-time }
+        staffId: { type: string, format: uuid }
+    PaymentInput:
+      type: object
+      required: [method, amountCents, tenderedCents, changeCents]
+      additionalProperties: false
+      properties:
+        method: { $ref: '#/components/schemas/PaymentMethod' }
+        amountCents: { $ref: '#/components/schemas/AnyCents' }
+        tenderedCents: { $ref: '#/components/schemas/AnyCents' }
+        changeCents: { $ref: '#/components/schemas/AnyCents' }
+    SaleCompletedPayload:
+      type: object
+      description: |
+        Payload of `sale.completed`. The record `id` is the sale ID. Every amount must match the totals in M3 brief
+        section 4.2, recomputed by the server. Exactly one CASH payment in M3.
+      required: [folio, folioNumber, cashierStaffId, lines, voidedLines, grossCents, discountCents, totalCents, payments]
+      additionalProperties: false
+      properties:
+        folio: { $ref: '#/components/schemas/Folio' }
+        folioNumber: { type: integer, minimum: 1, maximum: 999999 }
+        cashierStaffId: { type: string, format: uuid }
+        shiftId: { type: [string, 'null'], format: uuid, description: 'Null until cash shifts (M4)' }
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items: { $ref: '#/components/schemas/SaleLineInput' }
+        orderDiscount:
+          oneOf:
+            - { $ref: '#/components/schemas/DiscountInput' }
+            - { type: 'null' }
+        voidedLines:
+          type: array
+          maxItems: 500
+          items: { $ref: '#/components/schemas/VoidedLineInput' }
+        grossCents: { $ref: '#/components/schemas/AnyCents' }
+        discountCents: { $ref: '#/components/schemas/AnyCents' }
+        totalCents: { $ref: '#/components/schemas/AnyCents' }
+        payments:
+          type: array
+          minItems: 1
+          maxItems: 1
+          items: { $ref: '#/components/schemas/PaymentInput' }
+    RefundKind:
+      type: string
+      enum: [REFUND, VOID]
+    RefundReason:
+      type: string
+      enum: [CUSTOMER_RETURN, WRONG_ITEM, QUALITY, CASHIER_ERROR, OTHER]
+    RefundLineInput:
+      type: object
+      required: [lineNo, quantity, amountCents, baseCents, iepsCents, ivaCents, restock]
+      additionalProperties: false
+      properties:
+        lineNo: { type: integer, minimum: 1, maximum: 500 }
+        quantity: { type: integer, minimum: 1, maximum: 9999 }
+        amountCents: { $ref: '#/components/schemas/AnyCents' }
+        baseCents: { $ref: '#/components/schemas/AnyCents' }
+        iepsCents: { $ref: '#/components/schemas/AnyCents' }
+        ivaCents: { $ref: '#/components/schemas/AnyCents' }
+        restock: { type: boolean, description: 'The units go back to stock (used from Sprint 5)' }
+    SaleRefundedPayload:
+      type: object
+      description: |
+        Payload of `sale.refunded`. The record `id` is the refund ID. Amounts follow M3 brief section 4.3.
+        A VOID covers every remaining unit of a sale made on the same device on the same local day.
+      required: [saleId, kind, reason, staffId, lines, totalCents]
+      additionalProperties: false
+      properties:
+        saleId: { type: string, format: uuid }
+        kind: { $ref: '#/components/schemas/RefundKind' }
+        reason: { $ref: '#/components/schemas/RefundReason' }
+        note: { type: [string, 'null'], maxLength: 120 }
+        staffId: { type: string, format: uuid }
+        approverStaffId:
+          type: [string, 'null']
+          format: uuid
+          description: Required when `staffId` lacks the permission (`sale.refund` or `sale.void_after_payment`); the approver must hold it
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items: { $ref: '#/components/schemas/RefundLineInput' }
+        totalCents: { $ref: '#/components/schemas/AnyCents' }
+    SaleStatus:
+      type: string
+      enum: [COMPLETED, PARTIALLY_REFUNDED, REFUNDED, VOIDED]
+    SaleDiscount:
+      type: object
+      required: [lineNo, kind, value, cents, reason, note, approverStaffId]
+      properties:
+        lineNo: { type: [integer, 'null'], description: 'Null for a ticket discount' }
+        kind: { $ref: '#/components/schemas/DiscountKind' }
+        value: { type: integer }
+        cents: { $ref: '#/components/schemas/AnyCents' }
+        reason: { $ref: '#/components/schemas/DiscountReason' }
+        note: { type: [string, 'null'] }
+        approverStaffId: { type: [string, 'null'], format: uuid }
+    SaleLine:
+      type: object
+      required: [lineNo, variantId, productName, variantName, quantity, unitPriceCents, grossCents, lineDiscountCents, orderDiscountCents, netCents, ivaRateId, ivaBp, iepsRateId, iepsBp, baseCents, iepsCents, ivaCents, refundedQuantity]
+      properties:
+        lineNo: { type: integer }
+        variantId: { type: string, format: uuid }
+        productName: { type: string }
+        variantName: { type: string }
+        quantity: { type: integer }
+        unitPriceCents: { $ref: '#/components/schemas/Cents' }
+        grossCents: { $ref: '#/components/schemas/AnyCents' }
+        lineDiscountCents: { $ref: '#/components/schemas/AnyCents' }
+        orderDiscountCents: { $ref: '#/components/schemas/AnyCents' }
+        netCents: { $ref: '#/components/schemas/AnyCents' }
+        ivaRateId: { type: string, format: uuid }
+        ivaBp: { $ref: '#/components/schemas/BasisPoints' }
+        iepsRateId: { type: [string, 'null'], format: uuid }
+        iepsBp: { $ref: '#/components/schemas/BasisPoints' }
+        baseCents: { $ref: '#/components/schemas/AnyCents' }
+        iepsCents: { $ref: '#/components/schemas/AnyCents' }
+        ivaCents: { $ref: '#/components/schemas/AnyCents' }
+        refundedQuantity: { type: integer, minimum: 0 }
+        refundedCents: { $ref: '#/components/schemas/AnyCents' }
+    TaxByRate:
+      type: object
+      required: [kind, rateBp, baseCents, taxCents]
+      properties:
+        kind: { $ref: '#/components/schemas/TaxKind' }
+        rateBp: { $ref: '#/components/schemas/BasisPoints' }
+        baseCents:
+          allOf: [{ $ref: '#/components/schemas/AnyCents' }]
+          description: The amount this rate applies to (for IVA, base plus IEPS)
+        taxCents: { $ref: '#/components/schemas/AnyCents' }
+    Payment:
+      type: object
+      required: [method, amountCents, tenderedCents, changeCents]
+      properties:
+        method: { $ref: '#/components/schemas/PaymentMethod' }
+        amountCents: { $ref: '#/components/schemas/AnyCents' }
+        tenderedCents: { $ref: '#/components/schemas/AnyCents' }
+        changeCents: { $ref: '#/components/schemas/AnyCents' }
+    VoidedLine:
+      type: object
+      required: [variantId, quantity, unitPriceCents, voidedAt, staffId]
+      properties:
+        variantId: { type: string, format: uuid }
+        quantity: { type: integer }
+        unitPriceCents: { $ref: '#/components/schemas/Cents' }
+        voidedAt: { type: string, format: date-time }
+        staffId: { type: string, format: uuid }
+    RefundLine:
+      type: object
+      required: [lineNo, quantity, amountCents, baseCents, iepsCents, ivaCents, restock]
+      properties:
+        lineNo: { type: integer }
+        quantity: { type: integer }
+        amountCents: { $ref: '#/components/schemas/AnyCents' }
+        baseCents: { $ref: '#/components/schemas/AnyCents' }
+        iepsCents: { $ref: '#/components/schemas/AnyCents' }
+        ivaCents: { $ref: '#/components/schemas/AnyCents' }
+        restock: { type: boolean }
+    Refund:
+      type: object
+      required: [id, kind, reason, note, deviceId, staffId, approverStaffId, occurredAt, totalCents, lines]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { $ref: '#/components/schemas/RefundKind' }
+        reason: { $ref: '#/components/schemas/RefundReason' }
+        note: { type: [string, 'null'] }
+        deviceId: { type: string, format: uuid }
+        staffId: { type: string, format: uuid }
+        approverStaffId: { type: [string, 'null'], format: uuid }
+        occurredAt: { type: string, format: date-time }
+        totalCents: { $ref: '#/components/schemas/AnyCents' }
+        lines:
+          type: array
+          items: { $ref: '#/components/schemas/RefundLine' }
+    SaleSummary:
+      type: object
+      required: [id, folio, branchId, deviceId, cashierStaffId, cashierName, occurredAt, status, lineCount, grossCents, discountCents, totalCents, refundedCents]
+      properties:
+        id: { type: string, format: uuid }
+        folio: { $ref: '#/components/schemas/Folio' }
+        branchId: { type: string, format: uuid }
+        deviceId: { type: string, format: uuid }
+        cashierStaffId: { type: string, format: uuid }
+        cashierName: { type: string }
+        occurredAt: { type: string, format: date-time }
+        status: { $ref: '#/components/schemas/SaleStatus' }
+        lineCount: { type: integer }
+        grossCents: { $ref: '#/components/schemas/AnyCents' }
+        discountCents: { $ref: '#/components/schemas/AnyCents' }
+        totalCents: { $ref: '#/components/schemas/AnyCents' }
+        refundedCents: { $ref: '#/components/schemas/AnyCents' }
+    Sale:
+      allOf:
+        - { $ref: '#/components/schemas/SaleSummary' }
+        - type: object
+          required: [folioNumber, shiftId, receivedAt, lines, discounts, taxes, payments, voidedLines, refunds]
+          properties:
+            folioNumber: { type: integer }
+            shiftId: { type: [string, 'null'], format: uuid }
+            receivedAt: { type: string, format: date-time }
+            lines:
+              type: array
+              items: { $ref: '#/components/schemas/SaleLine' }
+            discounts:
+              type: array
+              items: { $ref: '#/components/schemas/SaleDiscount' }
+            taxes:
+              type: array
+              description: Sum of the lines' tax parts by kind and rate, before refunds
+              items: { $ref: '#/components/schemas/TaxByRate' }
+            payments:
+              type: array
+              items: { $ref: '#/components/schemas/Payment' }
+            voidedLines:
+              type: array
+              items: { $ref: '#/components/schemas/VoidedLine' }
+            refunds:
+              type: array
+              items: { $ref: '#/components/schemas/Refund' }
+    SalePage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/SaleSummary' }
+        nextCursor: { type: [string, 'null'] }

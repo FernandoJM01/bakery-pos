@@ -1,4 +1,5 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { NextFunction, Request, Response } from 'express';
 
 interface ExpressInstance {
@@ -14,6 +15,10 @@ export function configureApp(app: INestApplication): void {
     disable?(setting: string): void;
   };
   http.disable?.('x-powered-by');
+
+  // A sync push carries up to 100 sales with all their lines, well over
+  // Express's 100 kB default.
+  (app as NestExpressApplication).useBodyParser?.('json', { limit: '4mb' });
 
   // Configure trust proxy if specified (e.g., behind nginx or AWS ALB)
   const trustProxy = process.env.TRUST_PROXY;

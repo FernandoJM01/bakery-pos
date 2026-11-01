@@ -457,7 +457,7 @@ describe('Sync (e2e)', () => {
       },
     });
     const results = await push(till1, [
-      { ...login(cashierId), type: 'sale.completed' },
+      { ...login(cashierId), type: 'stock.counted' },
       login(otherBranchCashierId),
       approval(managerId),
       approval(cashierId),
