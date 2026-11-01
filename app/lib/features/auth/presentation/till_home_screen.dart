@@ -12,6 +12,9 @@ import '../../staff/data/staff_sync_service.dart';
 import '../data/till_auth_service.dart';
 import '../domain/session_lock_manager.dart';
 import '../domain/till_auth_state.dart';
+import '../../sync/data/sync_worker.dart';
+import '../../sync/presentation/sync_indicator.dart';
+import '../../sale/presentation/sale_screen.dart';
 import '../../till_catalog/presentation/product_grid_screen.dart';
 import 'approval_dialog.dart';
 
@@ -110,7 +113,20 @@ class _TillHomeScreenState extends ConsumerState<TillHomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadPermissions();
+      // The home appears right after login: sync at once, then every 15 s.
+      if (!mounted || !ref.read(syncAutoStartProvider)) return;
+      final worker = ref.read(syncWorkerProvider);
+      _syncWorker = worker;
+      worker.start();
     });
+  }
+
+  SyncWorker? _syncWorker;
+
+  @override
+  void dispose() {
+    _syncWorker?.stop();
+    super.dispose();
   }
 
   Future<void> _loadPermissions() async {
@@ -257,6 +273,7 @@ class _TillHomeScreenState extends ConsumerState<TillHomeScreen> {
               ],
             ),
           ),
+          const SyncIndicator(),
           IconButton(
             key: const Key('home-sync-button'),
             icon: const Icon(Icons.sync_rounded),
@@ -305,6 +322,8 @@ class _TillHomeScreenState extends ConsumerState<TillHomeScreen> {
             icon: const Icon(Icons.logout_rounded),
             tooltip: l10n.commonLogout,
             onPressed: () async {
+              // A ticket being rung up is not left for the next person.
+              if (!await confirmDiscardTicket(context, ref)) return;
               ref.read(sessionLockManagerProvider).clearLockedState();
               await ref.read(tillSessionProvider.notifier).logout();
             },
@@ -402,9 +421,7 @@ class _TillHomeScreenState extends ConsumerState<TillHomeScreen> {
                         child:
                             widget.child ??
                             (currentSection == TillSection.sales
-                                ? const ProductGridScreen(
-                                    key: Key('section-sales'),
-                                  )
+                                ? const SaleScreen(key: Key('section-sales'))
                                 : TillSectionPlaceholder(
                                     key: Key('section-${currentSection.name}'),
                                     section: currentSection,
@@ -427,7 +444,7 @@ class TillSectionPlaceholder extends ConsumerWidget {
   static Widget forRoute(String route) {
     switch (route) {
       case AppRoutes.tillSales:
-        return const ProductGridScreen(key: Key('section-sales'));
+        return const SaleScreen(key: Key('section-sales'));
       case AppRoutes.tillCash:
         return const TillSectionPlaceholder(
           key: Key('section-cash'),

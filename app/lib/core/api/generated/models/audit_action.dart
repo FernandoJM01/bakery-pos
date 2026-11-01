@@ -110,6 +110,22 @@ enum AuditAction {
   @JsonValue('sync.quarantine_resolved')
   undefined25('sync.quarantine_resolved'),
 
+  /// Incorrect name has been replaced. Original name: `sale.discount_over_limit`.
+  @JsonValue('sale.discount_over_limit')
+  undefined26('sale.discount_over_limit'),
+
+  /// Incorrect name has been replaced. Original name: `sale.refunded`.
+  @JsonValue('sale.refunded')
+  undefined27('sale.refunded'),
+
+  /// Incorrect name has been replaced. Original name: `sale.voided`.
+  @JsonValue('sale.voided')
+  undefined28('sale.voided'),
+
+  /// Incorrect name has been replaced. Original name: `sale.ticket_discarded`.
+  @JsonValue('sale.ticket_discarded')
+  undefined29('sale.ticket_discarded'),
+
   /// Default value for all unparsed values, allows backward compatibility when adding new values on the backend.
   $unknown(null);
 

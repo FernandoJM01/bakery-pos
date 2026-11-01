@@ -8,32 +8,25 @@ import '../../../core/theme/app_dimensions.dart';
 import '../../../core/theme/appearance_settings.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/photo_cache.dart';
+import '../../sync/data/sync_worker.dart';
 import '../data/till_catalog_repository.dart';
 
-/// The local catalog; refreshed after each pull.
-final tillCatalogProvider = FutureProvider<TillCatalog>(
-  (ref) => ref.watch(tillCatalogRepositoryProvider).load(),
-);
-
-/// Pulls from the server, then reloads the grid. Offline is normal: the
-/// till keeps showing what it already has.
+/// Pushes the outbox and pulls the catalog now, then reloads the grid.
+/// Offline is normal: the till keeps showing what it already has.
 Future<bool> refreshTillCatalog(WidgetRef ref) async {
-  var ok = true;
-  try {
-    await ref.read(tillCatalogRepositoryProvider).pull();
-  } catch (_) {
-    ok = false;
-  }
+  final ok = await ref.read(syncWorkerProvider).syncNow();
   ref.invalidate(tillCatalogProvider);
   return ok;
 }
 
-/// The till home for cashiers and managers: the read-only product grid from
-/// the approved wireframe. Tapping a tile does nothing until M3 adds the cart.
-/// It shows the local copy; pulls happen from the top bar's sync button and
-/// the sync worker, so the grid works the same online and offline.
+/// The product grid from the approved wireframe; the sale screen puts it
+/// beside the ticket and passes [onProductTap]. It shows the local copy;
+/// pulls happen from the top bar's sync button and the sync worker, so the
+/// grid works the same online and offline.
 class ProductGridScreen extends ConsumerStatefulWidget {
-  const ProductGridScreen({super.key});
+  const ProductGridScreen({super.key, this.onProductTap});
+
+  final void Function(GridProduct product)? onProductTap;
 
   @override
   ConsumerState<ProductGridScreen> createState() => _ProductGridScreenState();
@@ -128,6 +121,9 @@ class _ProductGridScreenState extends ConsumerState<ProductGridScreen> {
                           product: shown[i],
                           color: colors[shown[i].categoryId],
                           showPhoto: style == ProductButtonStyle.photoAndName,
+                          onTap: widget.onProductTap == null
+                              ? null
+                              : () => widget.onProductTap!(shown[i]),
                         ),
                       ),
               ),
@@ -165,11 +161,13 @@ class ProductTile extends StatelessWidget {
     required this.product,
     required this.color,
     required this.showPhoto,
+    this.onTap,
   });
 
   final GridProduct product;
   final String? color;
   final bool showPhoto;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -180,8 +178,7 @@ class ProductTile extends StatelessWidget {
       key: Key('grid-tile-${product.id}'),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        // M3 adds the cart; for now a tap does nothing.
-        onTap: () {},
+        onTap: onTap ?? () {},
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

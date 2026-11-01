@@ -1,0 +1,802 @@
+{
+  "description": "Shared cases for sale totals in M3 brief section 4.2 (acceptance test D3). Both server and app tests must reproduce every row: per line gross, line and ticket discount, net and its tax split, sale totals and tax by rate.",
+  "cases": [
+    {
+      "name": "No discounts, IVA 0% bread",
+      "lines": [
+        {
+          "lineNo": 1,
+          "unitPriceCents": 450,
+          "quantity": 3,
+          "ivaBp": 0,
+          "iepsBp": 0
+        },
+        {
+          "lineNo": 2,
+          "unitPriceCents": 1200,
+          "quantity": 1,
+          "ivaBp": 0,
+          "iepsBp": 0
+        }
+      ],
+      "expected": {
+        "lines": [
+          {
+            "lineNo": 1,
+            "grossCents": 1350,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 0,
+            "netCents": 1350,
+            "baseCents": 1350,
+            "iepsCents": 0,
+            "ivaCents": 0
+          },
+          {
+            "lineNo": 2,
+            "grossCents": 1200,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 0,
+            "netCents": 1200,
+            "baseCents": 1200,
+            "iepsCents": 0,
+            "ivaCents": 0
+          }
+        ],
+        "grossCents": 2550,
+        "discountCents": 0,
+        "totalCents": 2550,
+        "taxes": [
+          {
+            "kind": "IVA",
+            "rateBp": 0,
+            "baseCents": 2550,
+            "taxCents": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "No discounts, mixed IVA 16% and IEPS 8%",
+      "lines": [
+        {
+          "lineNo": 1,
+          "unitPriceCents": 1000,
+          "quantity": 1,
+          "ivaBp": 1600,
+          "iepsBp": 0
+        },
+        {
+          "lineNo": 2,
+          "unitPriceCents": 1000,
+          "quantity": 1,
+          "ivaBp": 1600,
+          "iepsBp": 800
+        },
+        {
+          "lineNo": 3,
+          "unitPriceCents": 2550,
+          "quantity": 2,
+          "ivaBp": 1600,
+          "iepsBp": 0
+        }
+      ],
+      "expected": {
+        "lines": [
+          {
+            "lineNo": 1,
+            "grossCents": 1000,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 0,
+            "netCents": 1000,
+            "baseCents": 862,
+            "iepsCents": 0,
+            "ivaCents": 138
+          },
+          {
+            "lineNo": 2,
+            "grossCents": 1000,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 0,
+            "netCents": 1000,
+            "baseCents": 798,
+            "iepsCents": 64,
+            "ivaCents": 138
+          },
+          {
+            "lineNo": 3,
+            "grossCents": 5100,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 0,
+            "netCents": 5100,
+            "baseCents": 4397,
+            "iepsCents": 0,
+            "ivaCents": 703
+          }
+        ],
+        "grossCents": 7100,
+        "discountCents": 0,
+        "totalCents": 7100,
+        "taxes": [
+          {
+            "kind": "IEPS",
+            "rateBp": 800,
+            "baseCents": 798,
+            "taxCents": 64
+          },
+          {
+            "kind": "IVA",
+            "rateBp": 1600,
+            "baseCents": 6121,
+            "taxCents": 979
+          }
+        ]
+      }
+    },
+    {
+      "name": "D4: 10% line discount and $5.00 ticket discount",
+      "lines": [
+        {
+          "lineNo": 1,
+          "unitPriceCents": 1500,
+          "quantity": 2,
+          "ivaBp": 1600,
+          "iepsBp": 0,
+          "discount": {
+            "kind": "PERCENT",
+            "value": 1000
+          }
+        },
+        {
+          "lineNo": 2,
+          "unitPriceCents": 800,
+          "quantity": 3,
+          "ivaBp": 0,
+          "iepsBp": 0
+        },
+        {
+          "lineNo": 3,
+          "unitPriceCents": 2200,
+          "quantity": 1,
+          "ivaBp": 1600,
+          "iepsBp": 800
+        }
+      ],
+      "orderDiscount": {
+        "kind": "AMOUNT",
+        "value": 500
+      },
+      "expected": {
+        "lines": [
+          {
+            "lineNo": 1,
+            "grossCents": 3000,
+            "lineDiscountCents": 300,
+            "orderDiscountCents": 185,
+            "netCents": 2515,
+            "baseCents": 2168,
+            "iepsCents": 0,
+            "ivaCents": 347
+          },
+          {
+            "lineNo": 2,
+            "grossCents": 2400,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 164,
+            "netCents": 2236,
+            "baseCents": 2236,
+            "iepsCents": 0,
+            "ivaCents": 0
+          },
+          {
+            "lineNo": 3,
+            "grossCents": 2200,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 151,
+            "netCents": 2049,
+            "baseCents": 1635,
+            "iepsCents": 131,
+            "ivaCents": 283
+          }
+        ],
+        "grossCents": 7600,
+        "discountCents": 800,
+        "totalCents": 6800,
+        "taxes": [
+          {
+            "kind": "IEPS",
+            "rateBp": 800,
+            "baseCents": 1635,
+            "taxCents": 131
+          },
+          {
+            "kind": "IVA",
+            "rateBp": 0,
+            "baseCents": 2236,
+            "taxCents": 0
+          },
+          {
+            "kind": "IVA",
+            "rateBp": 1600,
+            "baseCents": 3934,
+            "taxCents": 630
+          }
+        ]
+      }
+    },
+    {
+      "name": "Ticket percent discount spread with remainders",
+      "lines": [
+        {
+          "lineNo": 1,
+          "unitPriceCents": 333,
+          "quantity": 1,
+          "ivaBp": 0,
+          "iepsBp": 0
+        },
+        {
+          "lineNo": 2,
+          "unitPriceCents": 333,
+          "quantity": 1,
+          "ivaBp": 0,
+          "iepsBp": 0
+        },
+        {
+          "lineNo": 3,
+          "unitPriceCents": 334,
+          "quantity": 1,
+          "ivaBp": 0,
+          "iepsBp": 0
+        }
+      ],
+      "orderDiscount": {
+        "kind": "PERCENT",
+        "value": 1000
+      },
+      "expected": {
+        "lines": [
+          {
+            "lineNo": 1,
+            "grossCents": 333,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 33,
+            "netCents": 300,
+            "baseCents": 300,
+            "iepsCents": 0,
+            "ivaCents": 0
+          },
+          {
+            "lineNo": 2,
+            "grossCents": 333,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 33,
+            "netCents": 300,
+            "baseCents": 300,
+            "iepsCents": 0,
+            "ivaCents": 0
+          },
+          {
+            "lineNo": 3,
+            "grossCents": 334,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 34,
+            "netCents": 300,
+            "baseCents": 300,
+            "iepsCents": 0,
+            "ivaCents": 0
+          }
+        ],
+        "grossCents": 1000,
+        "discountCents": 100,
+        "totalCents": 900,
+        "taxes": [
+          {
+            "kind": "IVA",
+            "rateBp": 0,
+            "baseCents": 900,
+            "taxCents": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "Ticket amount discount, ties go to the lower line",
+      "lines": [
+        {
+          "lineNo": 1,
+          "unitPriceCents": 500,
+          "quantity": 1,
+          "ivaBp": 0,
+          "iepsBp": 0
+        },
+        {
+          "lineNo": 2,
+          "unitPriceCents": 500,
+          "quantity": 1,
+          "ivaBp": 0,
+          "iepsBp": 0
+        },
+        {
+          "lineNo": 3,
+          "unitPriceCents": 500,
+          "quantity": 1,
+          "ivaBp": 0,
+          "iepsBp": 0
+        }
+      ],
+      "orderDiscount": {
+        "kind": "AMOUNT",
+        "value": 100
+      },
+      "expected": {
+        "lines": [
+          {
+            "lineNo": 1,
+            "grossCents": 500,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 34,
+            "netCents": 466,
+            "baseCents": 466,
+            "iepsCents": 0,
+            "ivaCents": 0
+          },
+          {
+            "lineNo": 2,
+            "grossCents": 500,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 33,
+            "netCents": 467,
+            "baseCents": 467,
+            "iepsCents": 0,
+            "ivaCents": 0
+          },
+          {
+            "lineNo": 3,
+            "grossCents": 500,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 33,
+            "netCents": 467,
+            "baseCents": 467,
+            "iepsCents": 0,
+            "ivaCents": 0
+          }
+        ],
+        "grossCents": 1500,
+        "discountCents": 100,
+        "totalCents": 1400,
+        "taxes": [
+          {
+            "kind": "IVA",
+            "rateBp": 0,
+            "baseCents": 1400,
+            "taxCents": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "Line amount discount equal to the line",
+      "lines": [
+        {
+          "lineNo": 1,
+          "unitPriceCents": 900,
+          "quantity": 1,
+          "ivaBp": 0,
+          "iepsBp": 0,
+          "discount": {
+            "kind": "AMOUNT",
+            "value": 900
+          }
+        },
+        {
+          "lineNo": 2,
+          "unitPriceCents": 1250,
+          "quantity": 2,
+          "ivaBp": 1600,
+          "iepsBp": 0
+        }
+      ],
+      "expected": {
+        "lines": [
+          {
+            "lineNo": 1,
+            "grossCents": 900,
+            "lineDiscountCents": 900,
+            "orderDiscountCents": 0,
+            "netCents": 0,
+            "baseCents": 0,
+            "iepsCents": 0,
+            "ivaCents": 0
+          },
+          {
+            "lineNo": 2,
+            "grossCents": 2500,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 0,
+            "netCents": 2500,
+            "baseCents": 2155,
+            "iepsCents": 0,
+            "ivaCents": 345
+          }
+        ],
+        "grossCents": 3400,
+        "discountCents": 900,
+        "totalCents": 2500,
+        "taxes": [
+          {
+            "kind": "IVA",
+            "rateBp": 0,
+            "baseCents": 0,
+            "taxCents": 0
+          },
+          {
+            "kind": "IVA",
+            "rateBp": 1600,
+            "baseCents": 2155,
+            "taxCents": 345
+          }
+        ]
+      }
+    },
+    {
+      "name": "100% ticket discount",
+      "lines": [
+        {
+          "lineNo": 1,
+          "unitPriceCents": 1999,
+          "quantity": 1,
+          "ivaBp": 1600,
+          "iepsBp": 800
+        },
+        {
+          "lineNo": 2,
+          "unitPriceCents": 350,
+          "quantity": 4,
+          "ivaBp": 0,
+          "iepsBp": 0
+        }
+      ],
+      "orderDiscount": {
+        "kind": "PERCENT",
+        "value": 10000
+      },
+      "expected": {
+        "lines": [
+          {
+            "lineNo": 1,
+            "grossCents": 1999,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 1999,
+            "netCents": 0,
+            "baseCents": 0,
+            "iepsCents": 0,
+            "ivaCents": 0
+          },
+          {
+            "lineNo": 2,
+            "grossCents": 1400,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 1400,
+            "netCents": 0,
+            "baseCents": 0,
+            "iepsCents": 0,
+            "ivaCents": 0
+          }
+        ],
+        "grossCents": 3399,
+        "discountCents": 3399,
+        "totalCents": 0,
+        "taxes": [
+          {
+            "kind": "IEPS",
+            "rateBp": 800,
+            "baseCents": 0,
+            "taxCents": 0
+          },
+          {
+            "kind": "IVA",
+            "rateBp": 0,
+            "baseCents": 0,
+            "taxCents": 0
+          },
+          {
+            "kind": "IVA",
+            "rateBp": 1600,
+            "baseCents": 0,
+            "taxCents": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "Half-up on line percent",
+      "lines": [
+        {
+          "lineNo": 1,
+          "unitPriceCents": 125,
+          "quantity": 1,
+          "ivaBp": 1600,
+          "iepsBp": 0,
+          "discount": {
+            "kind": "PERCENT",
+            "value": 1000
+          }
+        },
+        {
+          "lineNo": 2,
+          "unitPriceCents": 135,
+          "quantity": 1,
+          "ivaBp": 1600,
+          "iepsBp": 0,
+          "discount": {
+            "kind": "PERCENT",
+            "value": 1000
+          }
+        }
+      ],
+      "expected": {
+        "lines": [
+          {
+            "lineNo": 1,
+            "grossCents": 125,
+            "lineDiscountCents": 13,
+            "orderDiscountCents": 0,
+            "netCents": 112,
+            "baseCents": 97,
+            "iepsCents": 0,
+            "ivaCents": 15
+          },
+          {
+            "lineNo": 2,
+            "grossCents": 135,
+            "lineDiscountCents": 14,
+            "orderDiscountCents": 0,
+            "netCents": 121,
+            "baseCents": 104,
+            "iepsCents": 0,
+            "ivaCents": 17
+          }
+        ],
+        "grossCents": 260,
+        "discountCents": 27,
+        "totalCents": 233,
+        "taxes": [
+          {
+            "kind": "IVA",
+            "rateBp": 1600,
+            "baseCents": 201,
+            "taxCents": 32
+          }
+        ]
+      }
+    },
+    {
+      "name": "15% line discount (needs approval)",
+      "lines": [
+        {
+          "lineNo": 1,
+          "unitPriceCents": 4000,
+          "quantity": 1,
+          "ivaBp": 1600,
+          "iepsBp": 0,
+          "discount": {
+            "kind": "PERCENT",
+            "value": 1500
+          }
+        }
+      ],
+      "expected": {
+        "lines": [
+          {
+            "lineNo": 1,
+            "grossCents": 4000,
+            "lineDiscountCents": 600,
+            "orderDiscountCents": 0,
+            "netCents": 3400,
+            "baseCents": 2931,
+            "iepsCents": 0,
+            "ivaCents": 469
+          }
+        ],
+        "grossCents": 4000,
+        "discountCents": 600,
+        "totalCents": 3400,
+        "taxes": [
+          {
+            "kind": "IVA",
+            "rateBp": 1600,
+            "baseCents": 2931,
+            "taxCents": 469
+          }
+        ]
+      }
+    },
+    {
+      "name": "Single cent line",
+      "lines": [
+        {
+          "lineNo": 1,
+          "unitPriceCents": 1,
+          "quantity": 1,
+          "ivaBp": 1600,
+          "iepsBp": 800
+        }
+      ],
+      "expected": {
+        "lines": [
+          {
+            "lineNo": 1,
+            "grossCents": 1,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 0,
+            "netCents": 1,
+            "baseCents": 1,
+            "iepsCents": 0,
+            "ivaCents": 0
+          }
+        ],
+        "grossCents": 1,
+        "discountCents": 0,
+        "totalCents": 1,
+        "taxes": [
+          {
+            "kind": "IEPS",
+            "rateBp": 800,
+            "baseCents": 1,
+            "taxCents": 0
+          },
+          {
+            "kind": "IVA",
+            "rateBp": 1600,
+            "baseCents": 1,
+            "taxCents": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "Large ticket",
+      "lines": [
+        {
+          "lineNo": 1,
+          "unitPriceCents": 9999,
+          "quantity": 37,
+          "ivaBp": 1600,
+          "iepsBp": 800
+        },
+        {
+          "lineNo": 2,
+          "unitPriceCents": 450,
+          "quantity": 120,
+          "ivaBp": 0,
+          "iepsBp": 0
+        },
+        {
+          "lineNo": 3,
+          "unitPriceCents": 12345,
+          "quantity": 3,
+          "ivaBp": 1600,
+          "iepsBp": 0
+        }
+      ],
+      "orderDiscount": {
+        "kind": "PERCENT",
+        "value": 725
+      },
+      "expected": {
+        "lines": [
+          {
+            "lineNo": 1,
+            "grossCents": 369963,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 26822,
+            "netCents": 343141,
+            "baseCents": 273899,
+            "iepsCents": 21912,
+            "ivaCents": 47330
+          },
+          {
+            "lineNo": 2,
+            "grossCents": 54000,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 3915,
+            "netCents": 50085,
+            "baseCents": 50085,
+            "iepsCents": 0,
+            "ivaCents": 0
+          },
+          {
+            "lineNo": 3,
+            "grossCents": 37035,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 2685,
+            "netCents": 34350,
+            "baseCents": 29612,
+            "iepsCents": 0,
+            "ivaCents": 4738
+          }
+        ],
+        "grossCents": 460998,
+        "discountCents": 33422,
+        "totalCents": 427576,
+        "taxes": [
+          {
+            "kind": "IEPS",
+            "rateBp": 800,
+            "baseCents": 273899,
+            "taxCents": 21912
+          },
+          {
+            "kind": "IVA",
+            "rateBp": 0,
+            "baseCents": 50085,
+            "taxCents": 0
+          },
+          {
+            "kind": "IVA",
+            "rateBp": 1600,
+            "baseCents": 325423,
+            "taxCents": 52068
+          }
+        ]
+      }
+    },
+    {
+      "name": "Zero-net line after spreading",
+      "lines": [
+        {
+          "lineNo": 1,
+          "unitPriceCents": 1,
+          "quantity": 1,
+          "ivaBp": 0,
+          "iepsBp": 0
+        },
+        {
+          "lineNo": 2,
+          "unitPriceCents": 99999,
+          "quantity": 1,
+          "ivaBp": 0,
+          "iepsBp": 0
+        }
+      ],
+      "orderDiscount": {
+        "kind": "AMOUNT",
+        "value": 99999
+      },
+      "expected": {
+        "lines": [
+          {
+            "lineNo": 1,
+            "grossCents": 1,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 1,
+            "netCents": 0,
+            "baseCents": 0,
+            "iepsCents": 0,
+            "ivaCents": 0
+          },
+          {
+            "lineNo": 2,
+            "grossCents": 99999,
+            "lineDiscountCents": 0,
+            "orderDiscountCents": 99998,
+            "netCents": 1,
+            "baseCents": 1,
+            "iepsCents": 0,
+            "ivaCents": 0
+          }
+        ],
+        "grossCents": 100000,
+        "discountCents": 99999,
+        "totalCents": 1,
+        "taxes": [
+          {
+            "kind": "IVA",
+            "rateBp": 0,
+            "baseCents": 1,
+            "taxCents": 0
+          }
+        ]
+      }
+    }
+  ]
+}

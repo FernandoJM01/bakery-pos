@@ -69,7 +69,7 @@ void main() {
           .first
           .values
           .first;
-      expect(userVerAfter, 4);
+      expect(userVerAfter, 6);
 
       await appDb.close();
     });
@@ -123,12 +123,12 @@ void main() {
           .first
           .values
           .first;
-      expect(userVer, 4);
+      expect(userVer, 6);
 
       await appDb.close();
     });
 
-    test('upgrades v3 to v4: adds the catalog tables and keeps M1 data', () async {
+    test('upgrades v3 to the current version: adds the catalog, outbox and sale tables and keeps M1 data', () async {
       final sqliteDb = sqlite3.openInMemory();
       sqliteDb.execute('''
         CREATE TABLE staff_entries (
@@ -182,6 +182,10 @@ void main() {
         'catalog_products',
         'catalog_variants',
         'sync_state_entries',
+        'outbox_entries',
+        'local_sales',
+        'local_sale_lines',
+        'local_sale_discounts',
       ]) {
         expect(
           sqliteDb.select(
@@ -192,7 +196,7 @@ void main() {
           reason: table,
         );
       }
-      expect(sqliteDb.select('PRAGMA user_version;').first.values.first, 4);
+      expect(sqliteDb.select('PRAGMA user_version;').first.values.first, 6);
       await appDb.close();
     });
   });
