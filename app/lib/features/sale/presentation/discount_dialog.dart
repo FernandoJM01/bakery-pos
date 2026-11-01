@@ -29,15 +29,6 @@ class DiscountChoice {
   final TicketDiscount? discount;
 }
 
-/// `10%` from basis points; `12.5%` when it has decimals.
-String formatPercentBp(int bp) {
-  final whole = bp ~/ 100;
-  final rest = bp % 100;
-  if (rest == 0) return '$whole%';
-  final dec = rest.toString().padLeft(2, '0').replaceFirst(RegExp(r'0$'), '');
-  return '$whole.$dec%';
-}
-
 /// Line or ticket discount, as a percentage or an amount, with a reason
 /// (M3 brief 2 and 4.2). Above the cashier limit it asks a manager's PIN
 /// unless the person selling may give it.

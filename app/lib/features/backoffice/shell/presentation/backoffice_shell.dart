@@ -30,6 +30,16 @@ class BackofficeShell extends ConsumerWidget {
         ),
       );
     }
+    if (permissions.contains('catalog.manage')) {
+      navItems.add(
+        _NavItem(
+          route: AppRoutes.backofficeCatalog,
+          label: l10n.navCatalog,
+          icon: Icons.bakery_dining_outlined,
+          selectedIcon: Icons.bakery_dining,
+        ),
+      );
+    }
     if (permissions.contains('staff.manage')) {
       navItems.add(
         _NavItem(
@@ -57,6 +67,26 @@ class BackofficeShell extends ConsumerWidget {
           label: l10n.navAudit,
           icon: Icons.history_outlined,
           selectedIcon: Icons.history,
+        ),
+      );
+    }
+    if (permissions.contains('reports.branch')) {
+      navItems.add(
+        _NavItem(
+          route: AppRoutes.backofficeSales,
+          label: l10n.navSales,
+          icon: Icons.receipt_long_outlined,
+          selectedIcon: Icons.receipt_long,
+        ),
+      );
+    }
+    if (permissions.contains('settings.manage')) {
+      navItems.add(
+        _NavItem(
+          route: AppRoutes.backofficeSync,
+          label: l10n.navSync,
+          icon: Icons.sync_problem_outlined,
+          selectedIcon: Icons.sync_problem,
         ),
       );
     }
@@ -162,6 +192,12 @@ class BackofficeSectionPlaceholder extends StatelessWidget {
           title = l10n.navDevices;
         } else if (route == AppRoutes.backofficeAudit) {
           title = l10n.navAudit;
+        } else if (route == AppRoutes.backofficeCatalog) {
+          title = l10n.navCatalog;
+        } else if (route == AppRoutes.backofficeSync) {
+          title = l10n.navSync;
+        } else if (route == AppRoutes.backofficeSales) {
+          title = l10n.navSales;
         } else {
           title = l10n.placeholderSectionTitle;
         }

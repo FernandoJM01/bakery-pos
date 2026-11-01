@@ -314,6 +314,189 @@
   "settingsPreviewProductPrice": "$15.00",
   "settingsPreviewSampleButton": "Botón de muestra",
   "settingsSaved": "Ajustes guardados",
+  "catalogTitle": "Catálogo",
+  "catalogTabProducts": "Productos",
+  "catalogTabCategories": "Categorías",
+  "catalogTabTaxes": "Impuestos",
+  "catalogSearchHint": "Buscar por nombre, SKU o código de barras",
+  "catalogAllCategories": "Todas las categorías",
+  "catalogShowInactive": "Mostrar inactivos",
+  "catalogNewProduct": "Nuevo producto",
+  "catalogEditProduct": "Editar producto",
+  "catalogNoProducts": "No hay productos con estos filtros",
+  "catalogErrorLoading": "No se pudo cargar el catálogo",
+  "catalogInactive": "Inactivo",
+  "catalogVariantCount": "{count, plural, =1{1 variante} other{{count} variantes}}",
+  "@catalogVariantCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "catalogNewCategory": "Nueva categoría",
+  "catalogEditCategory": "Editar categoría",
+  "catalogNoCategories": "Aún no hay categorías",
+  "catalogCategoryName": "Nombre de la categoría",
+  "catalogCategoryColor": "Color",
+  "catalogCategoryNoColor": "Sin color",
+  "catalogMoveUp": "Subir",
+  "catalogMoveDown": "Bajar",
+  "catalogActive": "Activo",
+  "catalogNewTaxRate": "Nuevo impuesto",
+  "catalogEditTaxRate": "Editar impuesto",
+  "catalogTaxKind": "Tipo",
+  "catalogTaxName": "Nombre",
+  "catalogTaxRatePercent": "Tasa (%)",
+  "catalogTaxRateInvalid": "Escribe una tasa entre 0 y 100",
+  "catalogTaxInUse": "Este impuesto lo usan productos; cámbialos antes de desactivarlo",
+  "catalogTaxPlaceholderNote": "Las tasas son provisionales hasta que el contador las confirme.",
+  "catalogProductName": "Nombre del producto",
+  "catalogProductCategory": "Categoría",
+  "catalogProductUnit": "Unidad",
+  "catalogUnitPiece": "Pieza",
+  "catalogUnitKg": "Kilo",
+  "catalogUnitPackage": "Paquete",
+  "catalogProductDescription": "Descripción (opcional)",
+  "catalogIva": "IVA",
+  "catalogIeps": "IEPS",
+  "catalogNoIeps": "Sin IEPS",
+  "catalogPhoto": "Foto",
+  "catalogPhotoChoose": "Elegir foto",
+  "catalogPhotoRemove": "Quitar foto",
+  "catalogPhotoNone": "Sin foto",
+  "catalogDayOld": "Pan del día anterior",
+  "catalogDayOldDiscountDays": "Descuento después de (días)",
+  "catalogDayOldDiscountPercent": "Descuento (%)",
+  "catalogDayOldWasteDays": "Merma después de (días)",
+  "catalogDayOldPair": "Escribe los días y el porcentaje de descuento juntos, o deja ambos vacíos",
+  "catalogDayOldWasteAfter": "Los días de merma deben ser más que los días de descuento",
+  "catalogDayOldInvalid": "Escribe un número entero",
+  "catalogVariants": "Variantes",
+  "catalogAddVariant": "Agregar variante",
+  "catalogRemoveVariant": "Quitar variante",
+  "catalogVariantName": "Variante",
+  "catalogVariantPrice": "Precio",
+  "catalogVariantSku": "SKU",
+  "catalogVariantBarcode": "Código de barras",
+  "catalogBranchPrice": "Precio en {branch}",
+  "@catalogBranchPrice": {
+    "placeholders": {
+      "branch": {
+        "type": "String"
+      }
+    }
+  },
+  "catalogBranchPriceHint": "Igual que el precio base",
+  "catalogNeedsVariant": "El producto necesita al menos una variante",
+  "catalogRequired": "Obligatorio",
+  "catalogPriceInvalid": "Escribe un precio como 12.50",
+  "catalogTaxSplit": "Base {base} · IEPS {ieps} · IVA {iva}",
+  "@catalogTaxSplit": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "ieps": {
+        "type": "String"
+      },
+      "iva": {
+        "type": "String"
+      }
+    }
+  },
+  "catalogSkuInUse": "Ese SKU ya lo usa otra variante",
+  "catalogBarcodeInUse": "Ese código de barras ya lo usa otra variante",
+  "catalogNameInUse": "Ya existe una categoría activa con ese nombre",
+  "catalogNeedsActiveVariant": "Un producto activo necesita al menos una variante activa",
+  "catalogSaved": "Producto guardado",
+  "catalogCategorySaved": "Categoría guardada",
+  "catalogTaxSaved": "Impuesto guardado",
+  "catalogPhotoUploadFailed": "No se pudo subir la foto. Usa una imagen JPG, PNG o WebP de hasta 5 MB.",
+  "catalogProductSubtitle": "{category} · {variants}",
+  "@catalogProductSubtitle": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "variants": {
+        "type": "String"
+      }
+    }
+  },
+  "catalogTaxSubtitle": "{kind} · {rate}%",
+  "@catalogTaxSubtitle": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "navSync": "Sincronización",
+  "syncAdminDevicesTitle": "Dispositivos y última sincronización",
+  "syncAdminDeviceLastSync": "Última sincronización: {when}",
+  "@syncAdminDeviceLastSync": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "syncAdminDeviceNever": "Todavía no se ha sincronizado",
+  "syncAdminQuarantineTitle": "Registros en cuarentena",
+  "syncAdminQuarantineHelp": "Registros que una caja envió y el servidor no pudo aplicar. Marcarlos como resueltos no los vuelve a aplicar.",
+  "syncAdminFilterOpen": "Abiertos",
+  "syncAdminFilterResolved": "Resueltos",
+  "syncAdminFilterAll": "Todos",
+  "syncAdminEmpty": "No hay registros en cuarentena",
+  "syncAdminEntrySubtitle": "{device} · ocurrió {occurred} · recibido {received}",
+  "@syncAdminEntrySubtitle": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      },
+      "occurred": {
+        "type": "String"
+      },
+      "received": {
+        "type": "String"
+      }
+    }
+  },
+  "syncAdminUnknownDevice": "Dispositivo desconocido",
+  "syncAdminErrorLine": "{code}: {message}",
+  "@syncAdminErrorLine": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "syncAdminResolvedLine": "Resuelto el {when}: {note}",
+  "@syncAdminResolvedLine": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      },
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "syncAdminResolve": "Marcar resuelto",
+  "syncAdminResolveTitle": "Marcar registro como resuelto",
+  "syncAdminResolveHelp": "El registro no se vuelve a aplicar. Anota qué se hizo con él.",
+  "syncAdminNote": "Nota",
+  "syncAdminNoteRequired": "Escribe una nota",
+  "syncAdminResolved": "Registro marcado como resuelto",
+  "syncAdminAlreadyResolved": "Este registro ya estaba resuelto",
+  "syncAdminLoadMore": "Cargar más",
   "gridAll": "Todo",
   "gridSearchHint": "Buscar por nombre, SKU o código",
   "gridEmpty": "Aún no hay productos en esta caja",
@@ -609,5 +792,219 @@
   "voidAlreadyReturned": "Esta venta ya no tiene piezas por devolver",
   "refundAlreadyReturned": "Esta venta ya se devolvió completa",
   "refundDoneTitle": "Devolución registrada",
-  "voidDoneTitle": "Venta cancelada"
+  "voidDoneTitle": "Venta cancelada",
+  "salesTitle": "Ventas",
+  "salesFolioSearch": "Buscar folio",
+  "salesEmpty": "No hay ventas con estos filtros",
+  "salesLoadMore": "Cargar más",
+  "salesShownSummary": "{count} ventas mostradas · cobrado {total} · devuelto {refunded}",
+  "@salesShownSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      },
+      "refunded": {
+        "type": "String"
+      }
+    }
+  },
+  "salesForbidden": "No tienes acceso a las ventas de esa sucursal",
+  "salesColFolio": "Folio",
+  "salesColDate": "Fecha",
+  "salesColCashier": "Atendió",
+  "salesColStatus": "Estado",
+  "salesColItems": "Renglones",
+  "salesColTotal": "Total",
+  "salesColRefunded": "Devuelto",
+  "salesStatusCompleted": "Completada",
+  "salesStatusPartiallyRefunded": "Devolución parcial",
+  "salesStatusRefunded": "Devuelta",
+  "salesStatusVoided": "Cancelada",
+  "salesDetailTitle": "Venta {folio}",
+  "@salesDetailTitle": {
+    "placeholders": {
+      "folio": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDetailMeta": "{date} · {branch} · {device} · atendió {cashier}",
+  "@salesDetailMeta": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "branch": {
+        "type": "String"
+      },
+      "device": {
+        "type": "String"
+      },
+      "cashier": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDetailLines": "Productos",
+  "salesLineName": "{product} · {variant}",
+  "@salesLineName": {
+    "placeholders": {
+      "product": {
+        "type": "String"
+      },
+      "variant": {
+        "type": "String"
+      }
+    }
+  },
+  "salesLineQty": "{quantity} × {price}",
+  "@salesLineQty": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "salesLineDiscount": "Descuento {amount}",
+  "@salesLineDiscount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesLineRefunded": "Devueltas: {quantity}",
+  "@salesLineRefunded": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      }
+    }
+  },
+  "salesDetailDiscounts": "Descuentos",
+  "salesDiscountOrder": "A toda la venta",
+  "salesDiscountLine": "Al renglón {lineNo}",
+  "@salesDiscountLine": {
+    "placeholders": {
+      "lineNo": {
+        "type": "int"
+      }
+    }
+  },
+  "salesDiscountRow": "{scope}: {value} = {amount} · {reason}",
+  "@salesDiscountRow": {
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDiscountApproved": "Autorizó: {name}",
+  "@salesDiscountApproved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDetailTaxes": "Impuestos por tasa",
+  "salesDetailPayment": "Pago",
+  "salesPaymentCash": "Efectivo {amount} · recibido {tendered} · cambio {change}",
+  "@salesPaymentCash": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "tendered": {
+        "type": "String"
+      },
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDetailVoided": "Quitados del ticket antes de cobrar",
+  "salesVoidedRow": "{quantity} × {price} · {time} · {staff}",
+  "@salesVoidedRow": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      },
+      "price": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      },
+      "staff": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDetailRefunds": "Devoluciones y cancelaciones",
+  "salesRefundKindRefund": "Devolución",
+  "salesRefundKindVoid": "Cancelación",
+  "salesRefundRow": "{kind} · {date} · {amount} · {reason}",
+  "@salesRefundRow": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "salesRefundLineRow": "Renglón {lineNo}: {quantity} pza · {amount}",
+  "@salesRefundLineRow": {
+    "placeholders": {
+      "lineNo": {
+        "type": "int"
+      },
+      "quantity": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesNone": "Ninguno",
+  "salesGross": "Subtotal",
+  "salesDiscountTotal": "Descuentos",
+  "salesTotal": "Total",
+  "salesRefundedTotal": "Devuelto",
+  "deviceFolioPrefix": "Prefijo de folio",
+  "salesDateRange": "{from} – {to}",
+  "@salesDateRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  }
 }
