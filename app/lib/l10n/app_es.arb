@@ -313,5 +313,698 @@
   "settingsPreviewProductName": "Concha de vainilla",
   "settingsPreviewProductPrice": "$15.00",
   "settingsPreviewSampleButton": "Botón de muestra",
-  "settingsSaved": "Ajustes guardados"
+  "settingsSaved": "Ajustes guardados",
+  "catalogTitle": "Catálogo",
+  "catalogTabProducts": "Productos",
+  "catalogTabCategories": "Categorías",
+  "catalogTabTaxes": "Impuestos",
+  "catalogSearchHint": "Buscar por nombre, SKU o código de barras",
+  "catalogAllCategories": "Todas las categorías",
+  "catalogShowInactive": "Mostrar inactivos",
+  "catalogNewProduct": "Nuevo producto",
+  "catalogEditProduct": "Editar producto",
+  "catalogNoProducts": "No hay productos con estos filtros",
+  "catalogErrorLoading": "No se pudo cargar el catálogo",
+  "catalogInactive": "Inactivo",
+  "catalogVariantCount": "{count, plural, =1{1 variante} other{{count} variantes}}",
+  "@catalogVariantCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "catalogNewCategory": "Nueva categoría",
+  "catalogEditCategory": "Editar categoría",
+  "catalogNoCategories": "Aún no hay categorías",
+  "catalogCategoryName": "Nombre de la categoría",
+  "catalogCategoryColor": "Color",
+  "catalogCategoryNoColor": "Sin color",
+  "catalogMoveUp": "Subir",
+  "catalogMoveDown": "Bajar",
+  "catalogActive": "Activo",
+  "catalogNewTaxRate": "Nuevo impuesto",
+  "catalogEditTaxRate": "Editar impuesto",
+  "catalogTaxKind": "Tipo",
+  "catalogTaxName": "Nombre",
+  "catalogTaxRatePercent": "Tasa (%)",
+  "catalogTaxRateInvalid": "Escribe una tasa entre 0 y 100",
+  "catalogTaxInUse": "Este impuesto lo usan productos; cámbialos antes de desactivarlo",
+  "catalogTaxPlaceholderNote": "Las tasas son provisionales hasta que el contador las confirme.",
+  "catalogProductName": "Nombre del producto",
+  "catalogProductCategory": "Categoría",
+  "catalogProductUnit": "Unidad",
+  "catalogUnitPiece": "Pieza",
+  "catalogUnitKg": "Kilo",
+  "catalogUnitPackage": "Paquete",
+  "catalogProductDescription": "Descripción (opcional)",
+  "catalogIva": "IVA",
+  "catalogIeps": "IEPS",
+  "catalogNoIeps": "Sin IEPS",
+  "catalogPhoto": "Foto",
+  "catalogPhotoChoose": "Elegir foto",
+  "catalogPhotoRemove": "Quitar foto",
+  "catalogPhotoNone": "Sin foto",
+  "catalogDayOld": "Pan del día anterior",
+  "catalogDayOldDiscountDays": "Descuento después de (días)",
+  "catalogDayOldDiscountPercent": "Descuento (%)",
+  "catalogDayOldWasteDays": "Merma después de (días)",
+  "catalogDayOldPair": "Escribe los días y el porcentaje de descuento juntos, o deja ambos vacíos",
+  "catalogDayOldWasteAfter": "Los días de merma deben ser más que los días de descuento",
+  "catalogDayOldInvalid": "Escribe un número entero",
+  "catalogVariants": "Variantes",
+  "catalogAddVariant": "Agregar variante",
+  "catalogRemoveVariant": "Quitar variante",
+  "catalogVariantName": "Variante",
+  "catalogVariantPrice": "Precio",
+  "catalogVariantSku": "SKU",
+  "catalogVariantBarcode": "Código de barras",
+  "catalogBranchPrice": "Precio en {branch}",
+  "@catalogBranchPrice": {
+    "placeholders": {
+      "branch": {
+        "type": "String"
+      }
+    }
+  },
+  "catalogBranchPriceHint": "Igual que el precio base",
+  "catalogNeedsVariant": "El producto necesita al menos una variante",
+  "catalogRequired": "Obligatorio",
+  "catalogPriceInvalid": "Escribe un precio como 12.50",
+  "catalogTaxSplit": "Base {base} · IEPS {ieps} · IVA {iva}",
+  "@catalogTaxSplit": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "ieps": {
+        "type": "String"
+      },
+      "iva": {
+        "type": "String"
+      }
+    }
+  },
+  "catalogSkuInUse": "Ese SKU ya lo usa otra variante",
+  "catalogBarcodeInUse": "Ese código de barras ya lo usa otra variante",
+  "catalogNameInUse": "Ya existe una categoría activa con ese nombre",
+  "catalogNeedsActiveVariant": "Un producto activo necesita al menos una variante activa",
+  "catalogSaved": "Producto guardado",
+  "catalogCategorySaved": "Categoría guardada",
+  "catalogTaxSaved": "Impuesto guardado",
+  "catalogPhotoUploadFailed": "No se pudo subir la foto. Usa una imagen JPG, PNG o WebP de hasta 5 MB.",
+  "catalogProductSubtitle": "{category} · {variants}",
+  "@catalogProductSubtitle": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "variants": {
+        "type": "String"
+      }
+    }
+  },
+  "catalogTaxSubtitle": "{kind} · {rate}%",
+  "@catalogTaxSubtitle": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "navSync": "Sincronización",
+  "syncAdminDevicesTitle": "Dispositivos y última sincronización",
+  "syncAdminDeviceLastSync": "Última sincronización: {when}",
+  "@syncAdminDeviceLastSync": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "syncAdminDeviceNever": "Todavía no se ha sincronizado",
+  "syncAdminQuarantineTitle": "Registros en cuarentena",
+  "syncAdminQuarantineHelp": "Registros que una caja envió y el servidor no pudo aplicar. Marcarlos como resueltos no los vuelve a aplicar.",
+  "syncAdminFilterOpen": "Abiertos",
+  "syncAdminFilterResolved": "Resueltos",
+  "syncAdminFilterAll": "Todos",
+  "syncAdminEmpty": "No hay registros en cuarentena",
+  "syncAdminEntrySubtitle": "{device} · ocurrió {occurred} · recibido {received}",
+  "@syncAdminEntrySubtitle": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      },
+      "occurred": {
+        "type": "String"
+      },
+      "received": {
+        "type": "String"
+      }
+    }
+  },
+  "syncAdminUnknownDevice": "Dispositivo desconocido",
+  "syncAdminErrorLine": "{code}: {message}",
+  "@syncAdminErrorLine": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "syncAdminResolvedLine": "Resuelto el {when}: {note}",
+  "@syncAdminResolvedLine": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      },
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "syncAdminResolve": "Marcar resuelto",
+  "syncAdminResolveTitle": "Marcar registro como resuelto",
+  "syncAdminResolveHelp": "El registro no se vuelve a aplicar. Anota qué se hizo con él.",
+  "syncAdminNote": "Nota",
+  "syncAdminNoteRequired": "Escribe una nota",
+  "syncAdminResolved": "Registro marcado como resuelto",
+  "syncAdminAlreadyResolved": "Este registro ya estaba resuelto",
+  "syncAdminLoadMore": "Cargar más",
+  "gridAll": "Todo",
+  "gridSearchHint": "Buscar por nombre, SKU o código",
+  "gridEmpty": "Aún no hay productos en esta caja",
+  "gridRefresh": "Sincronizar",
+  "gridNoMatches": "Ningún producto coincide",
+  "gridPriceFrom": "Desde {price}",
+  "@gridPriceFrom": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "syncOnline": "En línea",
+  "syncOffline": "Sin conexión",
+  "syncWaiting": "{count} en espera",
+  "@syncWaiting": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncTitle": "Sincronización",
+  "syncWaitingCount": "{count, plural, =0{Nada en espera} =1{1 registro en espera} other{{count} registros en espera}}",
+  "@syncWaitingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQuarantinedCount": "{count, plural, =0{Ningún registro en cuarentena} =1{1 registro en cuarentena} other{{count} registros en cuarentena}}",
+  "@syncQuarantinedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQuarantinedHelp": "El servidor no pudo aplicar estos registros. El dueño los revisa en el panel, en Sincronización.",
+  "syncNow": "Sincronizar ahora",
+  "syncDone": "Sincronizado",
+  "syncFailed": "No se pudo conectar con el servidor; se reintentará solo",
+  "saleTicketTitle": "Ticket",
+  "saleTicketEmpty": "Toca un producto para agregarlo",
+  "saleClear": "Vaciar ticket",
+  "saleClearTitle": "¿Vaciar el ticket?",
+  "saleClearBody": "Se quitarán {count} productos sin cobrar. Queda registrado.",
+  "@saleClearBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "saleClearConfirm": "Vaciar",
+  "saleLineQuantityPrice": "{quantity} × {price}",
+  "@saleLineQuantityPrice": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "saleSubtotal": "Subtotal",
+  "saleDiscounts": "Descuentos",
+  "saleTotal": "Total",
+  "saleDiscountButton": "Descuento",
+  "salePay": "Cobrar",
+  "saleLineTitle": "{product} · {variant}",
+  "@saleLineTitle": {
+    "placeholders": {
+      "product": {
+        "type": "String"
+      },
+      "variant": {
+        "type": "String"
+      }
+    }
+  },
+  "saleLineRemove": "Quitar",
+  "saleLineDiscount": "Descuento a esta línea",
+  "saleLineDone": "Listo",
+  "saleNoFolio": "Esta caja aún no tiene folio. Sincronízala con el servidor una vez para poder cobrar.",
+  "saleDiscountLineTitle": "Descuento: {name}",
+  "@saleDiscountLineTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "saleDiscountTicketTitle": "Descuento al ticket",
+  "saleDiscountPercent": "%",
+  "saleDiscountAmount": "$",
+  "saleDiscountValuePercent": "Porcentaje",
+  "saleDiscountValueAmount": "Monto en pesos",
+  "saleDiscountPreview": "Descuenta {amount}",
+  "@saleDiscountPreview": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "saleDiscountReason": "Motivo",
+  "saleReasonFrequent": "Cliente frecuente",
+  "saleReasonDamaged": "Producto dañado",
+  "saleReasonPromotion": "Promoción",
+  "saleReasonOther": "Otro",
+  "saleDiscountNote": "Nota",
+  "saleDiscountNoteRequired": "Escribe una nota para el motivo Otro",
+  "saleDiscountInvalid": "Escribe un descuento válido que no pase del importe",
+  "saleDiscountOverLimit": "Más de {limit} necesita la autorización de un gerente",
+  "@saleDiscountOverLimit": {
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "saleDiscountApprovalNeeded": "Sin la autorización de un gerente no se puede aplicar este descuento",
+  "saleDiscountApply": "Aplicar",
+  "saleDiscountRemove": "Quitar descuento",
+  "saleDiscountTicketLabel": "Descuento al ticket",
+  "salePaymentTitle": "Cobrar en efectivo",
+  "salePaymentTotal": "Total a cobrar",
+  "salePaymentReceived": "Recibido",
+  "salePaymentExact": "Exacto",
+  "salePaymentChange": "Cambio",
+  "salePaymentMissing": "Faltan {amount}",
+  "@salePaymentMissing": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salePaymentFinish": "Finalizar",
+  "salePaymentFailed": "No se pudo guardar la venta. Inténtalo de nuevo.",
+  "receiptTitle": "Venta registrada",
+  "receiptFolio": "Folio {folio}",
+  "@receiptFolio": {
+    "placeholders": {
+      "folio": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptCashier": "Atendió: {name}",
+  "@receiptCashier": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptTaxIncluded": "IVA incluido",
+  "receiptTaxLine": "{kind} {rate}: base {base}, impuesto {tax}",
+  "@receiptTaxLine": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      },
+      "base": {
+        "type": "String"
+      },
+      "tax": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptReceived": "Recibido",
+  "receiptChange": "Cambio",
+  "receiptNewSale": "Nueva venta",
+  "saleDiscountReasonRequired": "Elige un motivo",
+  "receiptLineDiscountPercent": "Descuento {percent}",
+  "@receiptLineDiscountPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "saleChooseVariantTitle": "{product}: elige la presentación",
+  "@saleChooseVariantTitle": {
+    "placeholders": {
+      "product": {
+        "type": "String"
+      }
+    }
+  },
+  "saleHold": "Guardar",
+  "saleHoldTitle": "Guardar ticket",
+  "saleHoldName": "Nombre (opcional)",
+  "saleHoldNameHint": "Por ejemplo: Señora del rebozo",
+  "saleHeldOpen": "En espera ({count})",
+  "@saleHeldOpen": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "saleHeldTitle": "Tickets en espera",
+  "saleHeldEmpty": "No hay tickets en espera",
+  "saleHeldUnnamed": "Ticket sin nombre",
+  "saleHeldSubtitle": "{time} · {count} productos · {total}",
+  "@saleHeldSubtitle": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "saleHeldResume": "Retomar",
+  "saleHeldDiscard": "Descartar",
+  "saleHeldBusy": "Cobra o guarda el ticket actual antes de retomar otro",
+  "saleMenu": "Más opciones",
+  "saleMenuRefund": "Devolución",
+  "saleMenuVoid": "Cancelar venta",
+  "refundFolio": "Folio del ticket",
+  "refundFolioHint": "Por ejemplo: SUC1-02-000153",
+  "refundSearch": "Buscar",
+  "refundNotFound": "No se encontró esa venta. Sin conexión solo se encuentran las ventas de esta caja.",
+  "refundSaleTitle": "Venta {folio}",
+  "@refundSaleTitle": {
+    "placeholders": {
+      "folio": {
+        "type": "String"
+      }
+    }
+  },
+  "refundLineUnits": "{left} de {quantity} por devolver",
+  "@refundLineUnits": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      },
+      "quantity": {
+        "type": "int"
+      }
+    }
+  },
+  "refundRestock": "Vuelve al inventario",
+  "refundReason": "Motivo",
+  "refundReasonCustomerReturn": "El cliente lo devolvió",
+  "refundReasonWrongItem": "Producto equivocado",
+  "refundReasonQuality": "Calidad",
+  "refundReasonCashierError": "Error de cobro",
+  "refundReasonOther": "Otro",
+  "refundNote": "Nota",
+  "refundNoteRequired": "Escribe una nota para el motivo Otro",
+  "refundReasonRequired": "Elige un motivo",
+  "refundNothing": "Elige al menos una pieza",
+  "refundGiveBack": "Entregar {amount} al cliente",
+  "@refundGiveBack": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "refundConfirm": "Devolver",
+  "voidConfirm": "Cancelar venta",
+  "refundApprovalNeeded": "Sin la autorización de un gerente no se puede hacer",
+  "refundTooMany": "En la línea {lineNo} solo quedan {left} piezas",
+  "@refundTooMany": {
+    "placeholders": {
+      "lineNo": {
+        "type": "int"
+      },
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "voidOtherTill": "Solo se puede cancelar en la caja que hizo la venta",
+  "voidOtherDay": "Solo se puede cancelar el mismo día de la venta",
+  "voidAlreadyReturned": "Esta venta ya no tiene piezas por devolver",
+  "refundAlreadyReturned": "Esta venta ya se devolvió completa",
+  "refundDoneTitle": "Devolución registrada",
+  "voidDoneTitle": "Venta cancelada",
+  "salesTitle": "Ventas",
+  "salesFolioSearch": "Buscar folio",
+  "salesEmpty": "No hay ventas con estos filtros",
+  "salesLoadMore": "Cargar más",
+  "salesShownSummary": "{count} ventas mostradas · cobrado {total} · devuelto {refunded}",
+  "@salesShownSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      },
+      "refunded": {
+        "type": "String"
+      }
+    }
+  },
+  "salesForbidden": "No tienes acceso a las ventas de esa sucursal",
+  "salesColFolio": "Folio",
+  "salesColDate": "Fecha",
+  "salesColCashier": "Atendió",
+  "salesColStatus": "Estado",
+  "salesColItems": "Renglones",
+  "salesColTotal": "Total",
+  "salesColRefunded": "Devuelto",
+  "salesStatusCompleted": "Completada",
+  "salesStatusPartiallyRefunded": "Devolución parcial",
+  "salesStatusRefunded": "Devuelta",
+  "salesStatusVoided": "Cancelada",
+  "salesDetailTitle": "Venta {folio}",
+  "@salesDetailTitle": {
+    "placeholders": {
+      "folio": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDetailMeta": "{date} · {branch} · {device} · atendió {cashier}",
+  "@salesDetailMeta": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "branch": {
+        "type": "String"
+      },
+      "device": {
+        "type": "String"
+      },
+      "cashier": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDetailLines": "Productos",
+  "salesLineName": "{product} · {variant}",
+  "@salesLineName": {
+    "placeholders": {
+      "product": {
+        "type": "String"
+      },
+      "variant": {
+        "type": "String"
+      }
+    }
+  },
+  "salesLineQty": "{quantity} × {price}",
+  "@salesLineQty": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "salesLineDiscount": "Descuento {amount}",
+  "@salesLineDiscount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesLineRefunded": "Devueltas: {quantity}",
+  "@salesLineRefunded": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      }
+    }
+  },
+  "salesDetailDiscounts": "Descuentos",
+  "salesDiscountOrder": "A toda la venta",
+  "salesDiscountLine": "Al renglón {lineNo}",
+  "@salesDiscountLine": {
+    "placeholders": {
+      "lineNo": {
+        "type": "int"
+      }
+    }
+  },
+  "salesDiscountRow": "{scope}: {value} = {amount} · {reason}",
+  "@salesDiscountRow": {
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDiscountApproved": "Autorizó: {name}",
+  "@salesDiscountApproved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDetailTaxes": "Impuestos por tasa",
+  "salesDetailPayment": "Pago",
+  "salesPaymentCash": "Efectivo {amount} · recibido {tendered} · cambio {change}",
+  "@salesPaymentCash": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "tendered": {
+        "type": "String"
+      },
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDetailVoided": "Quitados del ticket antes de cobrar",
+  "salesVoidedRow": "{quantity} × {price} · {time} · {staff}",
+  "@salesVoidedRow": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      },
+      "price": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      },
+      "staff": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDetailRefunds": "Devoluciones y cancelaciones",
+  "salesRefundKindRefund": "Devolución",
+  "salesRefundKindVoid": "Cancelación",
+  "salesRefundRow": "{kind} · {date} · {amount} · {reason}",
+  "@salesRefundRow": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "salesRefundLineRow": "Renglón {lineNo}: {quantity} pza · {amount}",
+  "@salesRefundLineRow": {
+    "placeholders": {
+      "lineNo": {
+        "type": "int"
+      },
+      "quantity": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesNone": "Ninguno",
+  "salesGross": "Subtotal",
+  "salesDiscountTotal": "Descuentos",
+  "salesTotal": "Total",
+  "salesRefundedTotal": "Devuelto",
+  "deviceFolioPrefix": "Prefijo de folio",
+  "salesDateRange": "{from} – {to}",
+  "@salesDateRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  }
 }

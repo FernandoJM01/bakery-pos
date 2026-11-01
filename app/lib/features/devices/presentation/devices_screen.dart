@@ -187,6 +187,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
                           DataColumn(label: Text(l10n.deviceName)),
                           DataColumn(label: Text(l10n.staffBranch)),
                           DataColumn(label: Text(l10n.deviceType)),
+                          DataColumn(label: Text(l10n.deviceFolioPrefix)),
                           DataColumn(label: Text(l10n.branchesStatus)),
                           DataColumn(label: Text(l10n.deviceLastSeen)),
                           const DataColumn(label: SizedBox.shrink()),
@@ -205,6 +206,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
                                 ),
                                 DataCell(Text(branchNames[d.branchId] ?? '—')),
                                 DataCell(Text(deviceTypeLabel(d.type, l10n))),
+                                DataCell(Text(d.folioPrefix ?? '—')),
                                 DataCell(_statusChip(d.status, l10n)),
                                 DataCell(
                                   Text(

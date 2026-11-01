@@ -21,6 +21,8 @@ class Device {
     this.lastSeenAt,
     this.appVersion,
     this.revokedAt,
+    this.tillNumber,
+    this.folioPrefix,
   });
 
   factory Device.fromJson(Map<String, Object?> json) => _$DeviceFromJson(json);
@@ -34,6 +36,12 @@ class Device {
   final String? appVersion;
   final DateTime createdAt;
   final DateTime? revokedAt;
+
+  /// Set by the server for TILL devices (1 + the highest number used in the branch, never reused); null for PRODUCTION.
+  final int? tillNumber;
+
+  /// `<branch code>-<till number, 2 digits>`; null for PRODUCTION.
+  final String? folioPrefix;
 
   Map<String, Object?> toJson() => _$DeviceToJson(this);
 }

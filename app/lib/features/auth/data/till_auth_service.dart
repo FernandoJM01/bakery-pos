@@ -220,14 +220,14 @@ class TillAuthService extends ChangeNotifier {
   ) async {
     final isValid = await verifier.verify(pin, staff.offlinePinVerifier);
     if (!isValid) {
-      final lockedUntil = await database.recordFailedPinAttempt(staff.id, now);
+      final lockedUntil = await database.recordOfflinePinFailure(staff.id, now);
       if (lockedUntil != null) {
         throw TillAuthLockoutException(lockedUntil);
       }
       throw const TillAuthInvalidPinException();
     }
 
-    await database.resetLockout(staff.id);
+    await database.recordOfflineLoginSuccess(staff.id, now);
     final permissions = await database.getPermissionsForRole(staff.role);
     final session = TillSession(
       staff: staff,
