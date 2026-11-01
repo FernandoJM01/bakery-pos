@@ -4,6 +4,8 @@
 /// SKU or barcode, the outbox push with duplicates and quarantine.
 library;
 
+import 'dart:convert';
+
 /// A fake response: an HTTP status and its JSON body.
 typedef FakeReply = ({int status, Object? body});
 
@@ -176,8 +178,10 @@ class FakeCatalog {
     Map<String, dynamic> query,
     Object? data,
   ) {
+    // A round trip through JSON, as on the wire: generated models put
+    // nested objects (such as VariantCreate) in their toJson maps.
     final body = data is Map
-        ? Map<String, dynamic>.from(data)
+        ? jsonDecode(jsonEncode(data)) as Map<String, dynamic>
         : <String, dynamic>{};
     final seg = path.split('?').first.split('/v1/').last.split('/');
     final includeInactive = query['includeInactive']?.toString() == 'true';
