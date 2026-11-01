@@ -792,4 +792,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsSaved => 'Ajustes guardados';
+
+  @override
+  String get gridAll => 'Todo';
+
+  @override
+  String get gridSearchHint => 'Buscar por nombre, SKU o código';
+
+  @override
+  String get gridEmpty => 'Aún no hay productos en esta caja';
+
+  @override
+  String get gridRefresh => 'Sincronizar';
+
+  @override
+  String get gridNoMatches => 'Ningún producto coincide';
+
+  @override
+  String gridPriceFrom(String price) {
+    return 'Desde $price';
+  }
 }

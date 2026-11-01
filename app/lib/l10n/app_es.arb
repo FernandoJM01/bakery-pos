@@ -313,5 +313,18 @@
   "settingsPreviewProductName": "Concha de vainilla",
   "settingsPreviewProductPrice": "$15.00",
   "settingsPreviewSampleButton": "Botón de muestra",
-  "settingsSaved": "Ajustes guardados"
+  "settingsSaved": "Ajustes guardados",
+  "gridAll": "Todo",
+  "gridSearchHint": "Buscar por nombre, SKU o código",
+  "gridEmpty": "Aún no hay productos en esta caja",
+  "gridRefresh": "Sincronizar",
+  "gridNoMatches": "Ningún producto coincide",
+  "gridPriceFrom": "Desde {price}",
+  "@gridPriceFrom": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  }
 }

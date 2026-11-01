@@ -12,6 +12,7 @@ import '../../staff/data/staff_sync_service.dart';
 import '../data/till_auth_service.dart';
 import '../domain/session_lock_manager.dart';
 import '../domain/till_auth_state.dart';
+import '../../till_catalog/presentation/product_grid_screen.dart';
 import 'approval_dialog.dart';
 
 enum TillSection {
@@ -149,6 +150,7 @@ class _TillHomeScreenState extends ConsumerState<TillHomeScreen> {
     try {
       await ref.read(staffSyncServiceProvider).syncStaffBundle();
       await ref.read(tillSessionProvider.notifier).refreshPermissions();
+      if (!await refreshTillCatalog(ref)) throw StateError('catalog');
       if (context.mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(l10n.loginSyncSuccess)));
@@ -399,10 +401,14 @@ class _TillHomeScreenState extends ConsumerState<TillHomeScreen> {
                       Expanded(
                         child:
                             widget.child ??
-                            TillSectionPlaceholder(
-                              key: Key('section-${currentSection.name}'),
-                              section: currentSection,
-                            ),
+                            (currentSection == TillSection.sales
+                                ? const ProductGridScreen(
+                                    key: Key('section-sales'),
+                                  )
+                                : TillSectionPlaceholder(
+                                    key: Key('section-${currentSection.name}'),
+                                    section: currentSection,
+                                  )),
                       ),
                     ],
                   ),
@@ -421,10 +427,7 @@ class TillSectionPlaceholder extends ConsumerWidget {
   static Widget forRoute(String route) {
     switch (route) {
       case AppRoutes.tillSales:
-        return const TillSectionPlaceholder(
-          key: Key('section-sales'),
-          section: TillSection.sales,
-        );
+        return const ProductGridScreen(key: Key('section-sales'));
       case AppRoutes.tillCash:
         return const TillSectionPlaceholder(
           key: Key('section-cash'),

@@ -1569,6 +1569,42 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ajustes guardados'**
   String get settingsSaved;
+
+  /// No description provided for @gridAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo'**
+  String get gridAll;
+
+  /// No description provided for @gridSearchHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar por nombre, SKU o código'**
+  String get gridSearchHint;
+
+  /// No description provided for @gridEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay productos en esta caja'**
+  String get gridEmpty;
+
+  /// No description provided for @gridRefresh.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronizar'**
+  String get gridRefresh;
+
+  /// No description provided for @gridNoMatches.
+  ///
+  /// In es, this message translates to:
+  /// **'Ningún producto coincide'**
+  String get gridNoMatches;
+
+  /// No description provided for @gridPriceFrom.
+  ///
+  /// In es, this message translates to:
+  /// **'Desde {price}'**
+  String gridPriceFrom(String price);
 }
 
 class _AppLocalizationsDelegate
