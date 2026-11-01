@@ -2013,6 +2013,142 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{kind} · {rate}%'**
   String catalogTaxSubtitle(String kind, String rate);
+
+  /// No description provided for @navSync.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronización'**
+  String get navSync;
+
+  /// No description provided for @syncAdminDevicesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Dispositivos y última sincronización'**
+  String get syncAdminDevicesTitle;
+
+  /// No description provided for @syncAdminDeviceLastSync.
+  ///
+  /// In es, this message translates to:
+  /// **'Última sincronización: {when}'**
+  String syncAdminDeviceLastSync(String when);
+
+  /// No description provided for @syncAdminDeviceNever.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no se ha sincronizado'**
+  String get syncAdminDeviceNever;
+
+  /// No description provided for @syncAdminQuarantineTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Registros en cuarentena'**
+  String get syncAdminQuarantineTitle;
+
+  /// No description provided for @syncAdminQuarantineHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Registros que una caja envió y el servidor no pudo aplicar. Marcarlos como resueltos no los vuelve a aplicar.'**
+  String get syncAdminQuarantineHelp;
+
+  /// No description provided for @syncAdminFilterOpen.
+  ///
+  /// In es, this message translates to:
+  /// **'Abiertos'**
+  String get syncAdminFilterOpen;
+
+  /// No description provided for @syncAdminFilterResolved.
+  ///
+  /// In es, this message translates to:
+  /// **'Resueltos'**
+  String get syncAdminFilterResolved;
+
+  /// No description provided for @syncAdminFilterAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos'**
+  String get syncAdminFilterAll;
+
+  /// No description provided for @syncAdminEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay registros en cuarentena'**
+  String get syncAdminEmpty;
+
+  /// No description provided for @syncAdminEntrySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{device} · ocurrió {occurred} · recibido {received}'**
+  String syncAdminEntrySubtitle(
+    String device,
+    String occurred,
+    String received,
+  );
+
+  /// No description provided for @syncAdminUnknownDevice.
+  ///
+  /// In es, this message translates to:
+  /// **'Dispositivo desconocido'**
+  String get syncAdminUnknownDevice;
+
+  /// No description provided for @syncAdminErrorLine.
+  ///
+  /// In es, this message translates to:
+  /// **'{code}: {message}'**
+  String syncAdminErrorLine(String code, String message);
+
+  /// No description provided for @syncAdminResolvedLine.
+  ///
+  /// In es, this message translates to:
+  /// **'Resuelto el {when}: {note}'**
+  String syncAdminResolvedLine(String when, String note);
+
+  /// No description provided for @syncAdminResolve.
+  ///
+  /// In es, this message translates to:
+  /// **'Marcar resuelto'**
+  String get syncAdminResolve;
+
+  /// No description provided for @syncAdminResolveTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Marcar registro como resuelto'**
+  String get syncAdminResolveTitle;
+
+  /// No description provided for @syncAdminResolveHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'El registro no se vuelve a aplicar. Anota qué se hizo con él.'**
+  String get syncAdminResolveHelp;
+
+  /// No description provided for @syncAdminNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get syncAdminNote;
+
+  /// No description provided for @syncAdminNoteRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe una nota'**
+  String get syncAdminNoteRequired;
+
+  /// No description provided for @syncAdminResolved.
+  ///
+  /// In es, this message translates to:
+  /// **'Registro marcado como resuelto'**
+  String get syncAdminResolved;
+
+  /// No description provided for @syncAdminAlreadyResolved.
+  ///
+  /// In es, this message translates to:
+  /// **'Este registro ya estaba resuelto'**
+  String get syncAdminAlreadyResolved;
+
+  /// No description provided for @syncAdminLoadMore.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargar más'**
+  String get syncAdminLoadMore;
 }
 
 class _AppLocalizationsDelegate

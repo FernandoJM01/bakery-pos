@@ -434,5 +434,67 @@
         "type": "String"
       }
     }
-  }
+  },
+  "navSync": "Sincronización",
+  "syncAdminDevicesTitle": "Dispositivos y última sincronización",
+  "syncAdminDeviceLastSync": "Última sincronización: {when}",
+  "@syncAdminDeviceLastSync": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "syncAdminDeviceNever": "Todavía no se ha sincronizado",
+  "syncAdminQuarantineTitle": "Registros en cuarentena",
+  "syncAdminQuarantineHelp": "Registros que una caja envió y el servidor no pudo aplicar. Marcarlos como resueltos no los vuelve a aplicar.",
+  "syncAdminFilterOpen": "Abiertos",
+  "syncAdminFilterResolved": "Resueltos",
+  "syncAdminFilterAll": "Todos",
+  "syncAdminEmpty": "No hay registros en cuarentena",
+  "syncAdminEntrySubtitle": "{device} · ocurrió {occurred} · recibido {received}",
+  "@syncAdminEntrySubtitle": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      },
+      "occurred": {
+        "type": "String"
+      },
+      "received": {
+        "type": "String"
+      }
+    }
+  },
+  "syncAdminUnknownDevice": "Dispositivo desconocido",
+  "syncAdminErrorLine": "{code}: {message}",
+  "@syncAdminErrorLine": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "syncAdminResolvedLine": "Resuelto el {when}: {note}",
+  "@syncAdminResolvedLine": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      },
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "syncAdminResolve": "Marcar resuelto",
+  "syncAdminResolveTitle": "Marcar registro como resuelto",
+  "syncAdminResolveHelp": "El registro no se vuelve a aplicar. Anota qué se hizo con él.",
+  "syncAdminNote": "Nota",
+  "syncAdminNoteRequired": "Escribe una nota",
+  "syncAdminResolved": "Registro marcado como resuelto",
+  "syncAdminAlreadyResolved": "Este registro ya estaba resuelto",
+  "syncAdminLoadMore": "Cargar más"
 }

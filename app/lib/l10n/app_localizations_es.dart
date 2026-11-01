@@ -1039,4 +1039,84 @@ class AppLocalizationsEs extends AppLocalizations {
   String catalogTaxSubtitle(String kind, String rate) {
     return '$kind · $rate%';
   }
+
+  @override
+  String get navSync => 'Sincronización';
+
+  @override
+  String get syncAdminDevicesTitle => 'Dispositivos y última sincronización';
+
+  @override
+  String syncAdminDeviceLastSync(String when) {
+    return 'Última sincronización: $when';
+  }
+
+  @override
+  String get syncAdminDeviceNever => 'Todavía no se ha sincronizado';
+
+  @override
+  String get syncAdminQuarantineTitle => 'Registros en cuarentena';
+
+  @override
+  String get syncAdminQuarantineHelp =>
+      'Registros que una caja envió y el servidor no pudo aplicar. Marcarlos como resueltos no los vuelve a aplicar.';
+
+  @override
+  String get syncAdminFilterOpen => 'Abiertos';
+
+  @override
+  String get syncAdminFilterResolved => 'Resueltos';
+
+  @override
+  String get syncAdminFilterAll => 'Todos';
+
+  @override
+  String get syncAdminEmpty => 'No hay registros en cuarentena';
+
+  @override
+  String syncAdminEntrySubtitle(
+    String device,
+    String occurred,
+    String received,
+  ) {
+    return '$device · ocurrió $occurred · recibido $received';
+  }
+
+  @override
+  String get syncAdminUnknownDevice => 'Dispositivo desconocido';
+
+  @override
+  String syncAdminErrorLine(String code, String message) {
+    return '$code: $message';
+  }
+
+  @override
+  String syncAdminResolvedLine(String when, String note) {
+    return 'Resuelto el $when: $note';
+  }
+
+  @override
+  String get syncAdminResolve => 'Marcar resuelto';
+
+  @override
+  String get syncAdminResolveTitle => 'Marcar registro como resuelto';
+
+  @override
+  String get syncAdminResolveHelp =>
+      'El registro no se vuelve a aplicar. Anota qué se hizo con él.';
+
+  @override
+  String get syncAdminNote => 'Nota';
+
+  @override
+  String get syncAdminNoteRequired => 'Escribe una nota';
+
+  @override
+  String get syncAdminResolved => 'Registro marcado como resuelto';
+
+  @override
+  String get syncAdminAlreadyResolved => 'Este registro ya estaba resuelto';
+
+  @override
+  String get syncAdminLoadMore => 'Cargar más';
 }

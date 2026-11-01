@@ -25,6 +25,7 @@ class FakeApiInterceptor extends Interceptor {
   /// Catalog and sync routes (M2), sharing this fake's branches.
   late final FakeCatalog catalog = FakeCatalog(
     branchIds: [branchId1, branchId2],
+    deviceId: deviceId,
   );
 
   late final List<Map<String, dynamic>> branches = [
@@ -659,6 +660,8 @@ class FakeApiInterceptor extends Interceptor {
         'branches.manage',
         'audit.view',
         'sale.create',
+        'catalog.manage',
+        'settings.manage',
       ];
 
       if (email == 'manager@panaderia.com') {
@@ -809,6 +812,8 @@ class FakeApiInterceptor extends Interceptor {
               'branches.manage',
               'audit.view',
               'sale.create',
+              'catalog.manage',
+              'settings.manage',
             ];
       final isOwner = role == 'OWNER';
 
