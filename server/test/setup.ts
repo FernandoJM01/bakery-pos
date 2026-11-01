@@ -1,5 +1,7 @@
 import 'reflect-metadata';
 import 'dotenv/config';
+import { tmpdir } from 'os';
+import { join } from 'path';
 
 process.env.NODE_ENV = 'test';
 process.env.DATABASE_URL =
@@ -13,3 +15,5 @@ process.env.JWT_SECRET =
   process.env.JWT_SECRET ?? 'ci-only-jwt-secret-not-for-production';
 process.env.DEVICE_TOKEN_PEPPER =
   process.env.DEVICE_TOKEN_PEPPER ?? 'ci-only-pepper-not-for-production';
+process.env.PHOTO_DIR =
+  process.env.PHOTO_DIR ?? join(tmpdir(), 'bakery-pos-test-photos');

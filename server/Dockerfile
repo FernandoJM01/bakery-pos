@@ -31,6 +31,9 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/dist ./dist
 COPY package.json ./
+# A new named volume copies this folder's owner, so node can write photos.
+RUN mkdir -p /data/photos && chown node:node /data/photos
+ENV PHOTO_DIR=/data/photos
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \

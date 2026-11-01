@@ -45,6 +45,7 @@ model Branch {
   staffBranches StaffBranch[]
   devices       Device[]
   auditLogs     AuditLog[]
+  sales         Sale[]
   branchPrices  BranchPrice[]
 
   @@map("branch")
@@ -69,14 +70,17 @@ model Staff {
   createdAt                  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt                  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  staffBranches     StaffBranch[]
-  createdDevices    Device[]      @relation("DeviceCreatedBy")
-  createdPhotos     Photo[]       @relation("PhotoCreatedBy")
-  authSessions      AuthSession[]
-  actorAuditLogs    AuditLog[]    @relation("AuditLogActor")
-  approverAuditLogs AuditLog[]    @relation("AuditLogApprover")
-  approverApprovals Approval[]    @relation("ApprovalApprover")
-  requesterApprovals Approval[]   @relation("ApprovalRequester")
+  staffBranches      StaffBranch[]
+  createdDevices     Device[]         @relation("DeviceCreatedBy")
+  createdPhotos      Photo[]          @relation("PhotoCreatedBy")
+  authSessions       AuthSession[]
+  actorAuditLogs     AuditLog[]       @relation("AuditLogActor")
+  approverAuditLogs  AuditLog[]       @relation("AuditLogApprover")
+  approverApprovals  Approval[]       @relation("ApprovalApprover")
+  requesterApprovals Approval[]       @relation("ApprovalRequester")
+  resolvedQuarantine SyncQuarantine[] @relation("QuarantineResolvedBy")
+  sales              Sale[]           @relation("SaleCashier")
+  refunds            Refund[]         @relation("RefundStaff")
 
   @@map("staff")
 }
@@ -126,13 +130,21 @@ model Device {
   createdBy           String?      @map("created_by") @db.Uuid
   createdAt           DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
   revokedAt           DateTime?    @map("revoked_at") @db.Timestamptz(6)
+  // Sales tills only (M3): numbered per branch, never reused; the folio
+  // prefix is fixed at creation so queued sales keep matching it.
+  tillNumber          Int?         @map("till_number")
+  folioPrefix         String?      @map("folio_prefix") @db.VarChar(16)
 
   branch       Branch        @relation(fields: [branchId], references: [id], onDelete: Cascade)
   creator      Staff?        @relation("DeviceCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
   authSessions AuthSession[]
   auditLogs    AuditLog[]
   approvals    Approval[]
+  sales        Sale[]
+  refunds      Refund[]
+  syncInbox    SyncInbox[]
 
+  @@unique([branchId, tillNumber])
   @@map("device")
 }
 
@@ -307,6 +319,7 @@ model ProductVariant {
 
   product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
   branchPrices BranchPrice[]
+  saleLines    SaleLine[]
 
   @@index([productId])
   @@index([changeSeq])
@@ -331,3 +344,219 @@ model BranchPrice {
   @@map("branch_price")
 }
 
+enum SyncInboxStatus {
+  APPLIED
+  QUARANTINED
+
+  @@map("sync_inbox_status")
+}
+
+/// One row per record a till ever delivered; the primary key makes delivery
+/// idempotent (M2 brief 4.4).
+model SyncInbox {
+  recordId   String          @id @map("record_id") @db.Uuid
+  deviceId   String          @map("device_id") @db.Uuid
+  type       String          @db.VarChar(60)
+  occurredAt DateTime        @map("occurred_at") @db.Timestamptz(6)
+  receivedAt DateTime        @map("received_at") @db.Timestamptz(6)
+  status     SyncInboxStatus
+
+  device     Device          @relation(fields: [deviceId], references: [id], onDelete: Restrict)
+  quarantine SyncQuarantine?
+
+  @@index([deviceId])
+  @@map("sync_inbox")
+}
+
+/// Records the server could not apply, kept for the owner to review.
+model SyncQuarantine {
+  recordId       String    @id @map("record_id") @db.Uuid
+  deviceId       String    @map("device_id") @db.Uuid
+  branchId       String    @map("branch_id") @db.Uuid
+  type           String    @db.VarChar(60)
+  payload        Json
+  errorCode      String    @map("error_code") @db.VarChar(40)
+  errorMessage   String    @map("error_message") @db.VarChar(500)
+  occurredAt     DateTime  @map("occurred_at") @db.Timestamptz(6)
+  receivedAt     DateTime  @map("received_at") @db.Timestamptz(6)
+  resolvedAt     DateTime? @map("resolved_at") @db.Timestamptz(6)
+  resolvedBy     String?   @map("resolved_by") @db.Uuid
+  resolutionNote String?   @map("resolution_note") @db.VarChar(500)
+
+  inbox    SyncInbox @relation(fields: [recordId], references: [recordId], onDelete: Restrict)
+  resolver Staff?    @relation("QuarantineResolvedBy", fields: [resolvedBy], references: [id], onDelete: Restrict)
+
+  @@index([receivedAt(sort: Desc), recordId(sort: Desc)])
+  @@map("sync_quarantine")
+}
+
+// ---------------------------------------------------------------- M3 sales
+// Sales are written on the till and arrive as `sale.completed` sync records;
+// their IDs come from the till. Money is integer centavos, tax included.
+
+enum SaleStatus {
+  COMPLETED
+  PARTIALLY_REFUNDED
+  REFUNDED
+  VOIDED
+}
+
+enum DiscountKind {
+  PERCENT
+  AMOUNT
+}
+
+enum PaymentMethod {
+  CASH
+}
+
+enum RefundKind {
+  REFUND
+  VOID
+}
+
+model Sale {
+  id             String     @id @db.Uuid
+  deviceId       String     @map("device_id") @db.Uuid
+  branchId       String     @map("branch_id") @db.Uuid
+  folio          String     @unique @db.VarChar(30)
+  folioNumber    Int        @map("folio_number")
+  cashierStaffId String     @map("cashier_staff_id") @db.Uuid
+  shiftId        String?    @map("shift_id") @db.Uuid
+  occurredAt     DateTime   @map("occurred_at") @db.Timestamptz(6)
+  receivedAt     DateTime   @map("received_at") @db.Timestamptz(6)
+  grossCents     Int        @map("gross_cents")
+  discountCents  Int        @map("discount_cents")
+  totalCents     Int        @map("total_cents")
+  refundedCents  Int        @default(0) @map("refunded_cents")
+  status         SaleStatus @default(COMPLETED)
+  createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  device      Device           @relation(fields: [deviceId], references: [id], onDelete: Restrict)
+  branch      Branch           @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  cashier     Staff            @relation("SaleCashier", fields: [cashierStaffId], references: [id], onDelete: Restrict)
+  lines       SaleLine[]
+  discounts   SaleDiscount[]
+  voidedLines SaleVoidedLine[]
+  payments    Payment[]
+  refunds     Refund[]
+
+  @@unique([deviceId, folioNumber])
+  @@index([branchId, occurredAt])
+  @@index([occurredAt])
+  @@map("sale")
+}
+
+model SaleLine {
+  saleId             String  @map("sale_id") @db.Uuid
+  lineNo             Int     @map("line_no")
+  variantId          String  @map("variant_id") @db.Uuid
+  productName        String  @map("product_name") @db.VarChar(120)
+  variantName        String  @map("variant_name") @db.VarChar(120)
+  quantity           Int
+  unitPriceCents     Int     @map("unit_price_cents")
+  grossCents         Int     @map("gross_cents")
+  lineDiscountCents  Int     @map("line_discount_cents")
+  orderDiscountCents Int     @map("order_discount_cents")
+  netCents           Int     @map("net_cents")
+  ivaRateId          String  @map("iva_rate_id") @db.Uuid
+  ivaBp              Int     @map("iva_bp")
+  iepsRateId         String? @map("ieps_rate_id") @db.Uuid
+  iepsBp             Int     @map("ieps_bp")
+  baseCents          Int     @map("base_cents")
+  iepsCents          Int     @map("ieps_cents")
+  ivaCents           Int     @map("iva_cents")
+  refundedQuantity   Int     @default(0) @map("refunded_quantity")
+  refundedCents      Int     @default(0) @map("refunded_cents")
+
+  sale    Sale           @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+
+  @@id([saleId, lineNo])
+  @@index([variantId])
+  @@map("sale_line")
+}
+
+model SaleDiscount {
+  id              String       @id @db.Uuid
+  saleId          String       @map("sale_id") @db.Uuid
+  lineNo          Int?         @map("line_no")
+  kind            DiscountKind
+  value           Int
+  cents           Int
+  reason          String       @db.VarChar(30)
+  note            String?      @db.VarChar(120)
+  approverStaffId String?      @map("approver_staff_id") @db.Uuid
+
+  sale Sale @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  @@index([saleId])
+  @@map("sale_discount")
+}
+
+model SaleVoidedLine {
+  saleId         String   @map("sale_id") @db.Uuid
+  seq            Int
+  variantId      String   @map("variant_id") @db.Uuid
+  quantity       Int
+  unitPriceCents Int      @map("unit_price_cents")
+  voidedAt       DateTime @map("voided_at") @db.Timestamptz(6)
+  staffId        String   @map("staff_id") @db.Uuid
+
+  sale Sale @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  @@id([saleId, seq])
+  @@map("sale_voided_line")
+}
+
+model Payment {
+  id            String        @id @db.Uuid
+  saleId        String        @map("sale_id") @db.Uuid
+  method        PaymentMethod
+  amountCents   Int           @map("amount_cents")
+  tenderedCents Int           @map("tendered_cents")
+  changeCents   Int           @map("change_cents")
+
+  sale Sale @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  @@index([saleId])
+  @@map("payment")
+}
+
+model Refund {
+  id              String     @id @db.Uuid
+  saleId          String     @map("sale_id") @db.Uuid
+  kind            RefundKind
+  reason          String     @db.VarChar(30)
+  note            String?    @db.VarChar(120)
+  deviceId        String     @map("device_id") @db.Uuid
+  staffId         String     @map("staff_id") @db.Uuid
+  approverStaffId String?    @map("approver_staff_id") @db.Uuid
+  occurredAt      DateTime   @map("occurred_at") @db.Timestamptz(6)
+  totalCents      Int        @map("total_cents")
+  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  sale   Sale         @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  device Device       @relation(fields: [deviceId], references: [id], onDelete: Restrict)
+  staff  Staff        @relation("RefundStaff", fields: [staffId], references: [id], onDelete: Restrict)
+  lines  RefundLine[]
+
+  @@index([saleId])
+  @@map("refund")
+}
+
+model RefundLine {
+  refundId    String  @map("refund_id") @db.Uuid
+  lineNo      Int     @map("line_no")
+  quantity    Int
+  amountCents Int     @map("amount_cents")
+  baseCents   Int     @map("base_cents")
+  iepsCents   Int     @map("ieps_cents")
+  ivaCents    Int     @map("iva_cents")
+  restock     Boolean
+
+  refund Refund @relation(fields: [refundId], references: [id], onDelete: Cascade)
+
+  @@id([refundId, lineNo])
+  @@map("refund_line")
+}

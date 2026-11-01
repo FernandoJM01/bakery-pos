@@ -51,16 +51,18 @@ Abre `https://panaderia.tu-red.ts.net/health`. Debe decir
 `server` como `healthy`.
 
 ### 5. Respaldos
-- Cada noche a las `BACKUP_AT` (02:30) se guarda un respaldo comprimido en
-  `BACKUP_DIR`, y se borran los de más de 30 días.
+- Cada noche a las `BACKUP_AT` (02:30) se guarda en `BACKUP_DIR` un respaldo
+  comprimido de la base (`pos-…dump`) y otro de las fotos de productos
+  (`photos-…tar.gz`, misma fecha y hora). Se borran los de más de 30 días.
 - Respaldo inmediato: `docker compose exec backup sh /backup.sh now`
 - Copia opcional a la nube: sincroniza `BACKUP_DIR` con Google Drive u
   OneDrive (gratis) con su aplicación de escritorio.
 - **Probar un respaldo (cada semana):** `./restore-test.sh`. Restaura el más
-  reciente en una base de prueba, compara los conteos y no toca los datos
-  reales. Debe terminar con `OK`.
+  reciente en una base de prueba, compara los conteos, revisa que cada foto
+  esté en su archivo de fotos y no toca los datos reales. Debe terminar con `OK`.
 - **Restaurar de verdad** (reemplaza todos los datos):
   `./restore.sh backups/pos-AAAAMMDD-HHMM.dump` y escribe `RESTAURAR`.
+  También restaura las fotos de esa misma fecha y hora.
 
 ### Solo para pruebas: red local sin Tailscale
 En `.env` pon `WEB_BIND=0.0.0.0` y `REQUIRE_HTTPS=false`, y abre
@@ -111,16 +113,18 @@ Open `https://panaderia.your-tailnet.ts.net/health`; it must show
 as `healthy`.
 
 ### 5. Backups
-- Every night at `BACKUP_AT` (02:30) a compressed dump goes to `BACKUP_DIR`;
-  dumps older than 30 days are deleted.
+- Every night at `BACKUP_AT` (02:30) a compressed database dump (`pos-…dump`)
+  and an archive of the product photos (`photos-…tar.gz`, same time stamp) go
+  to `BACKUP_DIR`; files older than 30 days are deleted.
 - Back up now: `docker compose exec backup sh /backup.sh now`
 - Optional cloud copy: sync `BACKUP_DIR` with Google Drive or OneDrive's free
   desktop app.
 - **Test a restore (weekly):** `./restore-test.sh` restores the newest dump
-  into a scratch database, compares row counts and leaves live data alone. It
-  must end with `OK`.
+  into a scratch database, compares row counts, checks every photo is in its
+  photo archive and leaves live data alone. It must end with `OK`.
 - **Real restore** (replaces all data):
-  `./restore.sh backups/pos-YYYYMMDD-HHMM.dump`, then type `RESTAURAR`.
+  `./restore.sh backups/pos-YYYYMMDD-HHMM.dump`, then type `RESTAURAR`. It
+  restores the photos with the same time stamp too.
 
 ### Testing only: plain LAN without Tailscale
 Set `WEB_BIND=0.0.0.0` and `REQUIRE_HTTPS=false` in `.env` and open
