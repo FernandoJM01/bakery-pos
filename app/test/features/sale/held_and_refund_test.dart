@@ -197,6 +197,91 @@ void main() {
     );
 
     test(
+      'a refund on another till counts here: the amount follows the server',
+      () async {
+        // Net 99.97 over 3 units, so each refund amount depends on the last.
+        final box = TicketLine(
+          item: const SaleItem(
+            variantId: '0192e2b0-0000-7000-8000-0000000000b1',
+            productName: 'Caja',
+            variantName: 'Tres',
+            unitPriceCents: 3333,
+            ivaRateId: iva0,
+            ivaBp: 0,
+          ),
+          quantity: 3,
+          discount: const TicketDiscount(
+            kind: DiscountKind.amount,
+            value: 2,
+            reason: DiscountReason.other,
+          ),
+        );
+        final receipt = await sell([box]);
+        final line = (await db.select(db.localSaleLines).get()).single;
+        fake.catalog.sales.add({
+          'id': receipt.saleId,
+          'folio': receipt.folio,
+          'folioNumber': 1,
+          'cashierStaffId': cashier.id,
+          'occurredAt': now.toUtc().toIso8601String(),
+          'status': 'PARTIALLY_REFUNDED',
+          'grossCents': line.grossCents,
+          'discountCents': line.lineDiscountCents,
+          'totalCents': line.netCents,
+          'refundedCents': 3332,
+          'payments': const <Object>[],
+          'lines': [
+            {
+              'lineNo': 1,
+              'variantId': line.variantId,
+              'productName': line.productName,
+              'variantName': line.variantName,
+              'quantity': 3,
+              'unitPriceCents': line.unitPriceCents,
+              'grossCents': line.grossCents,
+              'lineDiscountCents': line.lineDiscountCents,
+              'orderDiscountCents': 0,
+              'netCents': line.netCents,
+              'ivaRateId': iva0,
+              'ivaBp': 0,
+              'iepsBp': 0,
+              'baseCents': line.netCents,
+              'iepsCents': 0,
+              'ivaCents': 0,
+              'refundedQuantity': 1,
+              'refundedCents': 3332,
+            },
+          ],
+        });
+
+        // Offline the till cannot know; online it does.
+        expect(
+          (await refunds.find(receipt.folio, online: false)).lines.single.left,
+          3,
+        );
+        final sale = await refunds.find(receipt.folio, online: true);
+        expect(sale.madeHere, isTrue);
+        expect(sale.status, 'PARTIALLY_REFUNDED');
+        expect(sale.lines.single.left, 2);
+
+        final r = await refunds.record(
+          sale: sale,
+          units: {1: 2},
+          restock: const {},
+          kind: RefundKind.refund,
+          reason: RefundReason.other,
+          staffId: cashier.id,
+          approverStaffId: manager.id,
+          now: now,
+        );
+        expect(r.totalCents, line.netCents - 3332);
+        final local = (await db.select(db.localSales).get()).single;
+        expect(local.status, 'REFUNDED');
+        expect(local.refundedCents, line.netCents);
+      },
+    );
+
+    test(
       "D7: online, another till's sale is found through the server",
       () async {
         fake.catalog.sales.add({

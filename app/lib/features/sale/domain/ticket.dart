@@ -83,6 +83,14 @@ class TicketDiscount {
 
   TotalsDiscount get totals => TotalsDiscount(kind, value);
 
+  TicketDiscount withApprover(String? staffId) => TicketDiscount(
+    kind: kind,
+    value: value,
+    reason: reason,
+    note: note,
+    approverStaffId: staffId,
+  );
+
   /// The contract's `DiscountInput`.
   Map<String, Object?> toJson() => {
     'kind': kind.json,
@@ -195,6 +203,87 @@ class Ticket {
 
   SaleTotals get totals =>
       computeSaleTotals(totalsInput, orderDiscount?.totals);
+
+  /// Whether a discount is above [limitBp] with no manager behind it. A
+  /// discount within the limit when given can pass it later, when the
+  /// quantity drops, so the share is checked again before payment
+  /// (brief 4.2 step 7); the server would reject the paid sale otherwise.
+  bool needsApproval(int limitBp) {
+    final t = totals;
+    for (final (i, l) in lines.indexed) {
+      if (_unapproved(
+        l.discount,
+        t.lines[i].lineDiscountCents,
+        t.lines[i].grossCents,
+        limitBp,
+      )) {
+        return true;
+      }
+    }
+    return _unapproved(
+      orderDiscount,
+      t.orderDiscountCents,
+      t.afterLineCents,
+      limitBp,
+    );
+  }
+
+  /// The same ticket with [staffId] approving every discount that needs it.
+  Ticket approvedBy(String staffId, int limitBp) {
+    final t = totals;
+    return Ticket(
+      lines: [
+        for (final (i, l) in lines.indexed)
+          _unapproved(
+                l.discount,
+                t.lines[i].lineDiscountCents,
+                t.lines[i].grossCents,
+                limitBp,
+              )
+              ? l.copyWith(discount: l.discount!.withApprover(staffId))
+              : l,
+      ],
+      orderDiscount:
+          _unapproved(
+            orderDiscount,
+            t.orderDiscountCents,
+            t.afterLineCents,
+            limitBp,
+          )
+          ? orderDiscount!.withApprover(staffId)
+          : orderDiscount,
+      voided: voided,
+    );
+  }
+
+  /// The same ticket without approvals by [staffId]. A manager who resumes
+  /// a held ticket cannot approve their own sale; their permission covers it.
+  Ticket withoutApprovalsBy(String staffId) {
+    TicketDiscount? clean(TicketDiscount? d) =>
+        d?.approverStaffId == staffId ? d!.withApprover(null) : d;
+    return Ticket(
+      lines: [
+        for (final l in lines)
+          l.discount == null
+              ? l
+              : TicketLine(
+                  item: l.item,
+                  quantity: l.quantity,
+                  discount: clean(l.discount),
+                ),
+      ],
+      orderDiscount: clean(orderDiscount),
+      voided: voided,
+    );
+  }
+
+  static bool _unapproved(
+    TicketDiscount? d,
+    int cents,
+    int base,
+    int limitBp,
+  ) =>
+      d != null && d.approverStaffId == null && overLimit(cents, base, limitBp);
 
   Ticket copyWith({
     List<TicketLine>? lines,
