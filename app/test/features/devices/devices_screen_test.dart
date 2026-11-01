@@ -12,6 +12,9 @@ void main() {
 
     expect(find.text('Caja 1'), findsOneWidget);
     expect(find.text('Activo'), findsOneWidget);
+    // M3: each till shows its folio prefix.
+    expect(find.text('Prefijo de folio'), findsOneWidget);
+    expect(find.text('SUC1-01'), findsOneWidget);
 
     await tapKey(tester, 'create-device-button');
     await tapKey(tester, 'save-device-button');

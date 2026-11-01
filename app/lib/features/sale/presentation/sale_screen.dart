@@ -6,13 +6,18 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimensions.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/data/till_auth_service.dart';
+import '../../auth/domain/approval_models.dart';
 import '../../till_catalog/data/till_catalog_repository.dart';
 import '../../till_catalog/presentation/product_grid_screen.dart';
+import '../data/held_ticket_repository.dart';
+import '../data/refund_repository.dart';
 import '../data/sale_repository.dart';
 import '../domain/ticket.dart';
 import 'discount_dialog.dart';
+import 'held_tickets.dart';
 import 'payment_dialog.dart';
 import 'receipt_dialog.dart';
+import 'refund_dialog.dart';
 
 SaleItem saleItemOf(GridProduct p, GridVariant v) => SaleItem(
   variantId: v.id,
@@ -127,21 +132,43 @@ class TicketPanel extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context);
     final repo = ref.read(saleRepositoryProvider);
     final session = ref.read(tillSessionProvider);
-    final ticket = ref.read(ticketProvider);
-    if (session == null || ticket.isEmpty) return;
+    if (session == null || ref.read(ticketProvider).isEmpty) return;
+    var ticket = ref.read(ticketProvider).withoutApprovalsBy(session.staff.id);
     final prefix = await repo.folioPrefix();
     if (!context.mounted) return;
     if (prefix == null || prefix.isEmpty) {
       messenger.showSnackBar(SnackBar(content: Text(l10n.saleNoFolio)));
       return;
     }
+    final limit = await repo.discountLimitBp();
+    if (!context.mounted) return;
+    if (ticket.needsApproval(limit) &&
+        !session.hasPermission('sale.discount_over_limit')) {
+      final result = await ref.read(approvalRequesterProvider)(
+        context,
+        action: 'sale.discount_over_limit',
+      );
+      if (!context.mounted) return;
+      if (result == null) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.saleDiscountApprovalNeeded)),
+        );
+        return;
+      }
+      ticket = ticket.approvedBy(switch (result) {
+        OnlineApprovalResult r => r.approverStaffId,
+        OfflineApprovalResult r => r.approverStaffId,
+      }, limit);
+      ref.read(ticketProvider.notifier).restore(ticket);
+    }
+    final toPay = ticket;
     final receipt = await showDialog<SaleReceipt>(
       context: context,
       barrierDismissible: false,
       builder: (_) => PaymentDialog(
-        totalCents: ticket.totals.totalCents,
+        totalCents: toPay.totals.totalCents,
         onFinish: (tendered) => repo.completeSale(
-          ticket: ticket,
+          ticket: toPay,
           cashier: session.staff,
           tenderedCents: tendered,
           now: ref.read(saleClockProvider)(),
@@ -155,6 +182,13 @@ class TicketPanel extends ConsumerWidget {
       barrierDismissible: false,
       builder: (_) => ReceiptDialog(receipt: receipt),
     );
+  }
+
+  Future<void> _refund(BuildContext context, RefundKind kind) async {
+    final result = await showRefundFlow(context, kind);
+    if (result != null && context.mounted) {
+      await showRefundDone(context, kind, result);
+    }
   }
 
   Future<void> _ticketDiscount(BuildContext context, WidgetRef ref) async {
@@ -177,6 +211,7 @@ class TicketPanel extends ConsumerWidget {
     final theme = Theme.of(context);
     final ticket = ref.watch(ticketProvider);
     final totals = ticket.totals;
+    final heldCount = ref.watch(heldTicketsProvider).value?.length ?? 0;
 
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.paddingMedium),
@@ -198,6 +233,46 @@ class TicketPanel extends ConsumerWidget {
                 onPressed: ticket.isEmpty
                     ? null
                     : () => confirmDiscardTicket(context, ref),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              OutlinedButton.icon(
+                key: const Key('ticket-hold'),
+                icon: const Icon(Icons.pause_circle_outline),
+                label: Text(l10n.saleHold),
+                onPressed: ticket.isEmpty
+                    ? null
+                    : () => holdCurrentTicket(context, ref),
+              ),
+              const SizedBox(width: AppDimensions.paddingSmall),
+              Expanded(
+                child: TextButton(
+                  key: const Key('held-open'),
+                  onPressed: () => showDialog<void>(
+                    context: context,
+                    builder: (_) => const HeldTicketsDialog(),
+                  ),
+                  child: Text(l10n.saleHeldOpen(heldCount)),
+                ),
+              ),
+              PopupMenuButton<RefundKind>(
+                key: const Key('sale-menu'),
+                tooltip: l10n.saleMenu,
+                onSelected: (kind) => _refund(context, kind),
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    key: const Key('menu-refund'),
+                    value: RefundKind.refund,
+                    child: Text(l10n.saleMenuRefund),
+                  ),
+                  PopupMenuItem(
+                    key: const Key('menu-void'),
+                    value: RefundKind.voidSale,
+                    child: Text(l10n.saleMenuVoid),
+                  ),
+                ],
               ),
             ],
           ),

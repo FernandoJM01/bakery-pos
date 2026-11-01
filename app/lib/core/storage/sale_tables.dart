@@ -71,3 +71,43 @@ class LocalSaleDiscounts extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
+
+/// Tickets put on hold (M3 brief 4.4). Local only: never synced, no folio
+/// until paid. Any cashier on this till sees them.
+class LocalHeldTickets extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text().nullable()();
+  DateTimeColumn get heldAt => dateTime()();
+  TextColumn get heldByStaffId => text()();
+  IntColumn get lineCount => integer()();
+  IntColumn get totalCents => integer()();
+
+  /// The whole ticket (lines with their prices, discounts, voided units).
+  TextColumn get ticketJson => text()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Refunds and voids recorded on this till (M3 brief 4.3), for any sale of
+/// the branch. The sale's own rows are updated when it was made here.
+class LocalRefunds extends Table {
+  TextColumn get id => text()();
+  TextColumn get saleId => text()();
+  TextColumn get folio => text()();
+
+  /// `REFUND` or `VOID`.
+  TextColumn get kind => text()();
+  TextColumn get reason => text()();
+  TextColumn get note => text().nullable()();
+  TextColumn get staffId => text()();
+  TextColumn get approverStaffId => text().nullable()();
+  DateTimeColumn get occurredAt => dateTime()();
+  IntColumn get totalCents => integer()();
+
+  /// The refund lines, as the outbox payload's `lines`.
+  TextColumn get linesJson => text()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}

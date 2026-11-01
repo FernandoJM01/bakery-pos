@@ -794,6 +794,333 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsSaved => 'Ajustes guardados';
 
   @override
+  String get catalogTitle => 'Catálogo';
+
+  @override
+  String get catalogTabProducts => 'Productos';
+
+  @override
+  String get catalogTabCategories => 'Categorías';
+
+  @override
+  String get catalogTabTaxes => 'Impuestos';
+
+  @override
+  String get catalogSearchHint => 'Buscar por nombre, SKU o código de barras';
+
+  @override
+  String get catalogAllCategories => 'Todas las categorías';
+
+  @override
+  String get catalogShowInactive => 'Mostrar inactivos';
+
+  @override
+  String get catalogNewProduct => 'Nuevo producto';
+
+  @override
+  String get catalogEditProduct => 'Editar producto';
+
+  @override
+  String get catalogNoProducts => 'No hay productos con estos filtros';
+
+  @override
+  String get catalogErrorLoading => 'No se pudo cargar el catálogo';
+
+  @override
+  String get catalogInactive => 'Inactivo';
+
+  @override
+  String catalogVariantCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count variantes',
+      one: '1 variante',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get catalogNewCategory => 'Nueva categoría';
+
+  @override
+  String get catalogEditCategory => 'Editar categoría';
+
+  @override
+  String get catalogNoCategories => 'Aún no hay categorías';
+
+  @override
+  String get catalogCategoryName => 'Nombre de la categoría';
+
+  @override
+  String get catalogCategoryColor => 'Color';
+
+  @override
+  String get catalogCategoryNoColor => 'Sin color';
+
+  @override
+  String get catalogMoveUp => 'Subir';
+
+  @override
+  String get catalogMoveDown => 'Bajar';
+
+  @override
+  String get catalogActive => 'Activo';
+
+  @override
+  String get catalogNewTaxRate => 'Nuevo impuesto';
+
+  @override
+  String get catalogEditTaxRate => 'Editar impuesto';
+
+  @override
+  String get catalogTaxKind => 'Tipo';
+
+  @override
+  String get catalogTaxName => 'Nombre';
+
+  @override
+  String get catalogTaxRatePercent => 'Tasa (%)';
+
+  @override
+  String get catalogTaxRateInvalid => 'Escribe una tasa entre 0 y 100';
+
+  @override
+  String get catalogTaxInUse =>
+      'Este impuesto lo usan productos; cámbialos antes de desactivarlo';
+
+  @override
+  String get catalogTaxPlaceholderNote =>
+      'Las tasas son provisionales hasta que el contador las confirme.';
+
+  @override
+  String get catalogProductName => 'Nombre del producto';
+
+  @override
+  String get catalogProductCategory => 'Categoría';
+
+  @override
+  String get catalogProductUnit => 'Unidad';
+
+  @override
+  String get catalogUnitPiece => 'Pieza';
+
+  @override
+  String get catalogUnitKg => 'Kilo';
+
+  @override
+  String get catalogUnitPackage => 'Paquete';
+
+  @override
+  String get catalogProductDescription => 'Descripción (opcional)';
+
+  @override
+  String get catalogIva => 'IVA';
+
+  @override
+  String get catalogIeps => 'IEPS';
+
+  @override
+  String get catalogNoIeps => 'Sin IEPS';
+
+  @override
+  String get catalogPhoto => 'Foto';
+
+  @override
+  String get catalogPhotoChoose => 'Elegir foto';
+
+  @override
+  String get catalogPhotoRemove => 'Quitar foto';
+
+  @override
+  String get catalogPhotoNone => 'Sin foto';
+
+  @override
+  String get catalogDayOld => 'Pan del día anterior';
+
+  @override
+  String get catalogDayOldDiscountDays => 'Descuento después de (días)';
+
+  @override
+  String get catalogDayOldDiscountPercent => 'Descuento (%)';
+
+  @override
+  String get catalogDayOldWasteDays => 'Merma después de (días)';
+
+  @override
+  String get catalogDayOldPair =>
+      'Escribe los días y el porcentaje de descuento juntos, o deja ambos vacíos';
+
+  @override
+  String get catalogDayOldWasteAfter =>
+      'Los días de merma deben ser más que los días de descuento';
+
+  @override
+  String get catalogDayOldInvalid => 'Escribe un número entero';
+
+  @override
+  String get catalogVariants => 'Variantes';
+
+  @override
+  String get catalogAddVariant => 'Agregar variante';
+
+  @override
+  String get catalogRemoveVariant => 'Quitar variante';
+
+  @override
+  String get catalogVariantName => 'Variante';
+
+  @override
+  String get catalogVariantPrice => 'Precio';
+
+  @override
+  String get catalogVariantSku => 'SKU';
+
+  @override
+  String get catalogVariantBarcode => 'Código de barras';
+
+  @override
+  String catalogBranchPrice(String branch) {
+    return 'Precio en $branch';
+  }
+
+  @override
+  String get catalogBranchPriceHint => 'Igual que el precio base';
+
+  @override
+  String get catalogNeedsVariant =>
+      'El producto necesita al menos una variante';
+
+  @override
+  String get catalogRequired => 'Obligatorio';
+
+  @override
+  String get catalogPriceInvalid => 'Escribe un precio como 12.50';
+
+  @override
+  String catalogTaxSplit(String base, String ieps, String iva) {
+    return 'Base $base · IEPS $ieps · IVA $iva';
+  }
+
+  @override
+  String get catalogSkuInUse => 'Ese SKU ya lo usa otra variante';
+
+  @override
+  String get catalogBarcodeInUse =>
+      'Ese código de barras ya lo usa otra variante';
+
+  @override
+  String get catalogNameInUse =>
+      'Ya existe una categoría activa con ese nombre';
+
+  @override
+  String get catalogNeedsActiveVariant =>
+      'Un producto activo necesita al menos una variante activa';
+
+  @override
+  String get catalogSaved => 'Producto guardado';
+
+  @override
+  String get catalogCategorySaved => 'Categoría guardada';
+
+  @override
+  String get catalogTaxSaved => 'Impuesto guardado';
+
+  @override
+  String get catalogPhotoUploadFailed =>
+      'No se pudo subir la foto. Usa una imagen JPG, PNG o WebP de hasta 5 MB.';
+
+  @override
+  String catalogProductSubtitle(String category, String variants) {
+    return '$category · $variants';
+  }
+
+  @override
+  String catalogTaxSubtitle(String kind, String rate) {
+    return '$kind · $rate%';
+  }
+
+  @override
+  String get navSync => 'Sincronización';
+
+  @override
+  String get syncAdminDevicesTitle => 'Dispositivos y última sincronización';
+
+  @override
+  String syncAdminDeviceLastSync(String when) {
+    return 'Última sincronización: $when';
+  }
+
+  @override
+  String get syncAdminDeviceNever => 'Todavía no se ha sincronizado';
+
+  @override
+  String get syncAdminQuarantineTitle => 'Registros en cuarentena';
+
+  @override
+  String get syncAdminQuarantineHelp =>
+      'Registros que una caja envió y el servidor no pudo aplicar. Marcarlos como resueltos no los vuelve a aplicar.';
+
+  @override
+  String get syncAdminFilterOpen => 'Abiertos';
+
+  @override
+  String get syncAdminFilterResolved => 'Resueltos';
+
+  @override
+  String get syncAdminFilterAll => 'Todos';
+
+  @override
+  String get syncAdminEmpty => 'No hay registros en cuarentena';
+
+  @override
+  String syncAdminEntrySubtitle(
+    String device,
+    String occurred,
+    String received,
+  ) {
+    return '$device · ocurrió $occurred · recibido $received';
+  }
+
+  @override
+  String get syncAdminUnknownDevice => 'Dispositivo desconocido';
+
+  @override
+  String syncAdminErrorLine(String code, String message) {
+    return '$code: $message';
+  }
+
+  @override
+  String syncAdminResolvedLine(String when, String note) {
+    return 'Resuelto el $when: $note';
+  }
+
+  @override
+  String get syncAdminResolve => 'Marcar resuelto';
+
+  @override
+  String get syncAdminResolveTitle => 'Marcar registro como resuelto';
+
+  @override
+  String get syncAdminResolveHelp =>
+      'El registro no se vuelve a aplicar. Anota qué se hizo con él.';
+
+  @override
+  String get syncAdminNote => 'Nota';
+
+  @override
+  String get syncAdminNoteRequired => 'Escribe una nota';
+
+  @override
+  String get syncAdminResolved => 'Registro marcado como resuelto';
+
+  @override
+  String get syncAdminAlreadyResolved => 'Este registro ya estaba resuelto';
+
+  @override
+  String get syncAdminLoadMore => 'Cargar más';
+
+  @override
   String get gridAll => 'Todo';
 
   @override
@@ -1059,5 +1386,334 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String saleChooseVariantTitle(String product) {
     return '$product: elige la presentación';
+  }
+
+  @override
+  String get saleHold => 'Guardar';
+
+  @override
+  String get saleHoldTitle => 'Guardar ticket';
+
+  @override
+  String get saleHoldName => 'Nombre (opcional)';
+
+  @override
+  String get saleHoldNameHint => 'Por ejemplo: Señora del rebozo';
+
+  @override
+  String saleHeldOpen(int count) {
+    return 'En espera ($count)';
+  }
+
+  @override
+  String get saleHeldTitle => 'Tickets en espera';
+
+  @override
+  String get saleHeldEmpty => 'No hay tickets en espera';
+
+  @override
+  String get saleHeldUnnamed => 'Ticket sin nombre';
+
+  @override
+  String saleHeldSubtitle(String time, int count, String total) {
+    return '$time · $count productos · $total';
+  }
+
+  @override
+  String get saleHeldResume => 'Retomar';
+
+  @override
+  String get saleHeldDiscard => 'Descartar';
+
+  @override
+  String get saleHeldBusy =>
+      'Cobra o guarda el ticket actual antes de retomar otro';
+
+  @override
+  String get saleMenu => 'Más opciones';
+
+  @override
+  String get saleMenuRefund => 'Devolución';
+
+  @override
+  String get saleMenuVoid => 'Cancelar venta';
+
+  @override
+  String get refundFolio => 'Folio del ticket';
+
+  @override
+  String get refundFolioHint => 'Por ejemplo: SUC1-02-000153';
+
+  @override
+  String get refundSearch => 'Buscar';
+
+  @override
+  String get refundNotFound =>
+      'No se encontró esa venta. Sin conexión solo se encuentran las ventas de esta caja.';
+
+  @override
+  String refundSaleTitle(String folio) {
+    return 'Venta $folio';
+  }
+
+  @override
+  String refundLineUnits(int left, int quantity) {
+    return '$left de $quantity por devolver';
+  }
+
+  @override
+  String get refundRestock => 'Vuelve al inventario';
+
+  @override
+  String get refundReason => 'Motivo';
+
+  @override
+  String get refundReasonCustomerReturn => 'El cliente lo devolvió';
+
+  @override
+  String get refundReasonWrongItem => 'Producto equivocado';
+
+  @override
+  String get refundReasonQuality => 'Calidad';
+
+  @override
+  String get refundReasonCashierError => 'Error de cobro';
+
+  @override
+  String get refundReasonOther => 'Otro';
+
+  @override
+  String get refundNote => 'Nota';
+
+  @override
+  String get refundNoteRequired => 'Escribe una nota para el motivo Otro';
+
+  @override
+  String get refundReasonRequired => 'Elige un motivo';
+
+  @override
+  String get refundNothing => 'Elige al menos una pieza';
+
+  @override
+  String refundGiveBack(String amount) {
+    return 'Entregar $amount al cliente';
+  }
+
+  @override
+  String get refundConfirm => 'Devolver';
+
+  @override
+  String get voidConfirm => 'Cancelar venta';
+
+  @override
+  String get refundApprovalNeeded =>
+      'Sin la autorización de un gerente no se puede hacer';
+
+  @override
+  String refundTooMany(int lineNo, int left) {
+    return 'En la línea $lineNo solo quedan $left piezas';
+  }
+
+  @override
+  String get voidOtherTill =>
+      'Solo se puede cancelar en la caja que hizo la venta';
+
+  @override
+  String get voidOtherDay => 'Solo se puede cancelar el mismo día de la venta';
+
+  @override
+  String get voidAlreadyReturned =>
+      'Esta venta ya no tiene piezas por devolver';
+
+  @override
+  String get refundAlreadyReturned => 'Esta venta ya se devolvió completa';
+
+  @override
+  String get refundDoneTitle => 'Devolución registrada';
+
+  @override
+  String get voidDoneTitle => 'Venta cancelada';
+
+  @override
+  String get salesTitle => 'Ventas';
+
+  @override
+  String get salesFolioSearch => 'Buscar folio';
+
+  @override
+  String get salesEmpty => 'No hay ventas con estos filtros';
+
+  @override
+  String get salesLoadMore => 'Cargar más';
+
+  @override
+  String salesShownSummary(int count, String total, String refunded) {
+    return '$count ventas mostradas · cobrado $total · devuelto $refunded';
+  }
+
+  @override
+  String get salesForbidden => 'No tienes acceso a las ventas de esa sucursal';
+
+  @override
+  String get salesColFolio => 'Folio';
+
+  @override
+  String get salesColDate => 'Fecha';
+
+  @override
+  String get salesColCashier => 'Atendió';
+
+  @override
+  String get salesColStatus => 'Estado';
+
+  @override
+  String get salesColItems => 'Renglones';
+
+  @override
+  String get salesColTotal => 'Total';
+
+  @override
+  String get salesColRefunded => 'Devuelto';
+
+  @override
+  String get salesStatusCompleted => 'Completada';
+
+  @override
+  String get salesStatusPartiallyRefunded => 'Devolución parcial';
+
+  @override
+  String get salesStatusRefunded => 'Devuelta';
+
+  @override
+  String get salesStatusVoided => 'Cancelada';
+
+  @override
+  String salesDetailTitle(String folio) {
+    return 'Venta $folio';
+  }
+
+  @override
+  String salesDetailMeta(
+    String date,
+    String branch,
+    String device,
+    String cashier,
+  ) {
+    return '$date · $branch · $device · atendió $cashier';
+  }
+
+  @override
+  String get salesDetailLines => 'Productos';
+
+  @override
+  String salesLineName(String product, String variant) {
+    return '$product · $variant';
+  }
+
+  @override
+  String salesLineQty(int quantity, String price) {
+    return '$quantity × $price';
+  }
+
+  @override
+  String salesLineDiscount(String amount) {
+    return 'Descuento $amount';
+  }
+
+  @override
+  String salesLineRefunded(int quantity) {
+    return 'Devueltas: $quantity';
+  }
+
+  @override
+  String get salesDetailDiscounts => 'Descuentos';
+
+  @override
+  String get salesDiscountOrder => 'A toda la venta';
+
+  @override
+  String salesDiscountLine(int lineNo) {
+    return 'Al renglón $lineNo';
+  }
+
+  @override
+  String salesDiscountRow(
+    String scope,
+    String value,
+    String amount,
+    String reason,
+  ) {
+    return '$scope: $value = $amount · $reason';
+  }
+
+  @override
+  String salesDiscountApproved(String name) {
+    return 'Autorizó: $name';
+  }
+
+  @override
+  String get salesDetailTaxes => 'Impuestos por tasa';
+
+  @override
+  String get salesDetailPayment => 'Pago';
+
+  @override
+  String salesPaymentCash(String amount, String tendered, String change) {
+    return 'Efectivo $amount · recibido $tendered · cambio $change';
+  }
+
+  @override
+  String get salesDetailVoided => 'Quitados del ticket antes de cobrar';
+
+  @override
+  String salesVoidedRow(int quantity, String price, String time, String staff) {
+    return '$quantity × $price · $time · $staff';
+  }
+
+  @override
+  String get salesDetailRefunds => 'Devoluciones y cancelaciones';
+
+  @override
+  String get salesRefundKindRefund => 'Devolución';
+
+  @override
+  String get salesRefundKindVoid => 'Cancelación';
+
+  @override
+  String salesRefundRow(
+    String kind,
+    String date,
+    String amount,
+    String reason,
+  ) {
+    return '$kind · $date · $amount · $reason';
+  }
+
+  @override
+  String salesRefundLineRow(int lineNo, int quantity, String amount) {
+    return 'Renglón $lineNo: $quantity pza · $amount';
+  }
+
+  @override
+  String get salesNone => 'Ninguno';
+
+  @override
+  String get salesGross => 'Subtotal';
+
+  @override
+  String get salesDiscountTotal => 'Descuentos';
+
+  @override
+  String get salesTotal => 'Total';
+
+  @override
+  String get salesRefundedTotal => 'Devuelto';
+
+  @override
+  String get deviceFolioPrefix => 'Prefijo de folio';
+
+  @override
+  String salesDateRange(String from, String to) {
+    return '$from – $to';
   }
 }

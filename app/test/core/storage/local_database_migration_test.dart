@@ -69,7 +69,7 @@ void main() {
           .first
           .values
           .first;
-      expect(userVerAfter, 6);
+      expect(userVerAfter, 7);
 
       await appDb.close();
     });
@@ -123,7 +123,7 @@ void main() {
           .first
           .values
           .first;
-      expect(userVer, 6);
+      expect(userVer, 7);
 
       await appDb.close();
     });
@@ -186,6 +186,8 @@ void main() {
         'local_sales',
         'local_sale_lines',
         'local_sale_discounts',
+        'local_held_tickets',
+        'local_refunds',
       ]) {
         expect(
           sqliteDb.select(
@@ -196,7 +198,7 @@ void main() {
           reason: table,
         );
       }
-      expect(sqliteDb.select('PRAGMA user_version;').first.values.first, 6);
+      expect(sqliteDb.select('PRAGMA user_version;').first.values.first, 7);
       await appDb.close();
     });
   });

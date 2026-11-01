@@ -21,7 +21,7 @@ FakeReply _err(
 );
 
 class FakeCatalog {
-  FakeCatalog({required this.branchIds}) {
+  FakeCatalog({required this.branchIds, this.deviceId = 'fake-device'}) {
     for (final (kind, name, bp) in [
       ('IVA', 'IVA 0%', 0),
       ('IVA', 'IVA 16%', 1600),
@@ -40,6 +40,9 @@ class FakeCatalog {
   }
 
   final List<String> branchIds;
+
+  /// The till that pushes records, for quarantine entries.
+  final String deviceId;
 
   /// Device branch used by the sync routes (the fake has one till).
   String get deviceBranchId => branchIds.first;
@@ -385,6 +388,18 @@ class FakeCatalog {
         photoIds.add(id);
         return _ok({'id': id, 'width': 800, 'height': 800, 'bytes': 1024}, 201);
 
+      case ('GET', ['sales']):
+        return _ok(_listSales(query));
+      case ('GET', ['sales', 'lookup']):
+        final folio = query['folio']?.toString();
+        final sale = sales.where((x) => x['folio'] == folio).firstOrNull;
+        if (sale == null) return _err(404, 'NOT_FOUND', 'Sale not found');
+        return _ok(saleView(sale));
+      case ('GET', ['sales', final saleId]):
+        final sale = sales.where((x) => x['id'] == saleId).firstOrNull;
+        if (sale == null) return _err(404, 'NOT_FOUND', 'Sale not found');
+        return _ok(saleView(sale));
+
       case ('GET', ['sync', 'catalog']):
         return _ok(_pull(query));
       case ('POST', ['sync', 'push']):
@@ -462,6 +477,86 @@ class FakeCatalog {
     };
   }
 
+  /// Sales newest first, filtered like the server: `from` inclusive, `to`
+  /// exclusive, exact folio and branch; `cursor` is the offset as text.
+  Map<String, dynamic> _listSales(Map<String, dynamic> query) {
+    final from = DateTime.tryParse(query['from']?.toString() ?? '');
+    final to = DateTime.tryParse(query['to']?.toString() ?? '');
+    final branch = query['branchId']?.toString();
+    final folio = query['folio']?.toString();
+    final limit = int.tryParse(query['limit']?.toString() ?? '') ?? 50;
+    final offset = int.tryParse(query['cursor']?.toString() ?? '') ?? 0;
+    final matches =
+        [
+          for (final s in sales.map(saleView))
+            if ((branch == null || s['branchId'] == branch) &&
+                (folio == null || s['folio'] == folio) &&
+                (from == null ||
+                    !DateTime.parse(s['occurredAt'] as String)
+                        .isBefore(from)) &&
+                (to == null ||
+                    DateTime.parse(s['occurredAt'] as String).isBefore(to)))
+              s,
+        ]..sort(
+          (a, b) =>
+              (b['occurredAt'] as String).compareTo(a['occurredAt'] as String),
+        );
+    final page = matches.skip(offset).take(limit).toList();
+    final next = offset + page.length;
+    return {
+      'items': [
+        for (final s in page)
+          {...s}
+            ..remove('folioNumber')
+            ..remove('shiftId')
+            ..remove('receivedAt')
+            ..remove('lines')
+            ..remove('discounts')
+            ..remove('taxes')
+            ..remove('payments')
+            ..remove('voidedLines')
+            ..remove('refunds'),
+      ],
+      'nextCursor': next < matches.length ? next.toString() : null,
+    };
+  }
+
+  /// A stored `sale.completed` payload as the contract's `Sale`.
+  Map<String, dynamic> saleView(Map<String, dynamic> p) {
+    final lines = [
+      for (final l in (p['lines'] as List).cast<Map>())
+        {
+          ...Map<String, dynamic>.from(l)..remove('discount'),
+          'refundedQuantity': l['refundedQuantity'] ?? 0,
+          'refundedCents': l['refundedCents'] ?? 0,
+        },
+    ];
+    return {
+      'id': p['id'],
+      'folio': p['folio'],
+      'folioNumber': p['folioNumber'],
+      'branchId': p['branchId'] ?? deviceBranchId,
+      'deviceId': p['deviceId'] ?? 'fake-other-till',
+      'cashierStaffId': p['cashierStaffId'],
+      'cashierName': p['cashierName'] ?? 'Ana (Cajera)',
+      'occurredAt': p['occurredAt'],
+      'receivedAt': p['occurredAt'],
+      'status': p['status'] ?? 'COMPLETED',
+      'lineCount': lines.length,
+      'grossCents': p['grossCents'],
+      'discountCents': p['discountCents'],
+      'totalCents': p['totalCents'],
+      'refundedCents': p['refundedCents'] ?? 0,
+      'shiftId': null,
+      'lines': lines,
+      'discounts': p['discounts'] ?? <Object>[],
+      'taxes': p['taxes'] ?? <Object>[],
+      'payments': p['payments'],
+      'voidedLines': p['voidedLines'] ?? <Object>[],
+      'refunds': p['refunds'] ?? <Object>[],
+    };
+  }
+
   /// Records with an unknown type, or a payload holding a PIN, are
   /// quarantined like the server would; everything else applies once.
   Map<String, dynamic> _push(Map<String, dynamic> body) {
@@ -498,7 +593,7 @@ class FakeCatalog {
       }
       final entry = <String, dynamic>{
         'recordId': id,
-        'deviceId': 'fake-device',
+        'deviceId': deviceId,
         'branchId': deviceBranchId,
         'type': r['type'],
         'occurredAt': r['occurredAt'],
