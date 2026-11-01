@@ -37,3 +37,12 @@ int? parseCents(String input) {
   final decimals = (match.group(4) ?? '').padRight(2, '0');
   return pesos * 100 + int.parse(decimals);
 }
+
+/// `10%` from basis points; `12.5%` when it has decimals.
+String formatPercentBp(int bp) {
+  final whole = bp ~/ 100;
+  final rest = bp % 100;
+  if (rest == 0) return '$whole%';
+  final dec = rest.toString().padLeft(2, '0').replaceFirst(RegExp(r'0$'), '');
+  return '$whole.$dec%';
+}

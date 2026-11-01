@@ -7,7 +7,6 @@ import '../../../core/theme/app_dimensions.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/sale_repository.dart';
 import '../domain/sale_totals.dart';
-import 'discount_dialog.dart';
 
 String _two(int n) => n.toString().padLeft(2, '0');
 

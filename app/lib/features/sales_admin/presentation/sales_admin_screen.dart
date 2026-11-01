@@ -12,7 +12,6 @@ import 'package:bakery_pos/core/money/money.dart';
 import 'package:bakery_pos/core/theme/app_dimensions.dart';
 import 'package:bakery_pos/features/backoffice/common/admin_ui.dart';
 import 'package:bakery_pos/features/branches/data/branches_service.dart';
-import 'package:bakery_pos/features/sale/presentation/discount_dialog.dart';
 import 'package:bakery_pos/features/staff/data/staff_admin_service.dart';
 import 'package:bakery_pos/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
