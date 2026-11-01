@@ -19,12 +19,14 @@ Future<bool> refreshTillCatalog(WidgetRef ref) async {
   return ok;
 }
 
-/// The till home for cashiers and managers: the read-only product grid from
-/// the approved wireframe. Tapping a tile does nothing until M3 adds the cart.
-/// It shows the local copy; pulls happen from the top bar's sync button and
-/// the sync worker, so the grid works the same online and offline.
+/// The product grid from the approved wireframe; the sale screen puts it
+/// beside the ticket and passes [onProductTap]. It shows the local copy;
+/// pulls happen from the top bar's sync button and the sync worker, so the
+/// grid works the same online and offline.
 class ProductGridScreen extends ConsumerStatefulWidget {
-  const ProductGridScreen({super.key});
+  const ProductGridScreen({super.key, this.onProductTap});
+
+  final void Function(GridProduct product)? onProductTap;
 
   @override
   ConsumerState<ProductGridScreen> createState() => _ProductGridScreenState();
@@ -119,6 +121,9 @@ class _ProductGridScreenState extends ConsumerState<ProductGridScreen> {
                           product: shown[i],
                           color: colors[shown[i].categoryId],
                           showPhoto: style == ProductButtonStyle.photoAndName,
+                          onTap: widget.onProductTap == null
+                              ? null
+                              : () => widget.onProductTap!(shown[i]),
                         ),
                       ),
               ),
@@ -156,11 +161,13 @@ class ProductTile extends StatelessWidget {
     required this.product,
     required this.color,
     required this.showPhoto,
+    this.onTap,
   });
 
   final GridProduct product;
   final String? color;
   final bool showPhoto;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -171,8 +178,7 @@ class ProductTile extends StatelessWidget {
       key: Key('grid-tile-${product.id}'),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        // M3 adds the cart; for now a tap does nothing.
-        onTap: () {},
+        onTap: onTap ?? () {},
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

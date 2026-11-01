@@ -4497,6 +4497,2531 @@ class OutboxEntriesCompanion extends UpdateCompanion<OutboxEntry> {
   }
 }
 
+class $LocalSalesTable extends LocalSales
+    with TableInfo<$LocalSalesTable, LocalSale> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalSalesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _folioMeta = const VerificationMeta('folio');
+  @override
+  late final GeneratedColumn<String> folio = GeneratedColumn<String>(
+    'folio',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _folioNumberMeta = const VerificationMeta(
+    'folioNumber',
+  );
+  @override
+  late final GeneratedColumn<int> folioNumber = GeneratedColumn<int>(
+    'folio_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _cashierStaffIdMeta = const VerificationMeta(
+    'cashierStaffId',
+  );
+  @override
+  late final GeneratedColumn<String> cashierStaffId = GeneratedColumn<String>(
+    'cashier_staff_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cashierNameMeta = const VerificationMeta(
+    'cashierName',
+  );
+  @override
+  late final GeneratedColumn<String> cashierName = GeneratedColumn<String>(
+    'cashier_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _occurredAtMeta = const VerificationMeta(
+    'occurredAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> occurredAt = GeneratedColumn<DateTime>(
+    'occurred_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _grossCentsMeta = const VerificationMeta(
+    'grossCents',
+  );
+  @override
+  late final GeneratedColumn<int> grossCents = GeneratedColumn<int>(
+    'gross_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _discountCentsMeta = const VerificationMeta(
+    'discountCents',
+  );
+  @override
+  late final GeneratedColumn<int> discountCents = GeneratedColumn<int>(
+    'discount_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _totalCentsMeta = const VerificationMeta(
+    'totalCents',
+  );
+  @override
+  late final GeneratedColumn<int> totalCents = GeneratedColumn<int>(
+    'total_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _tenderedCentsMeta = const VerificationMeta(
+    'tenderedCents',
+  );
+  @override
+  late final GeneratedColumn<int> tenderedCents = GeneratedColumn<int>(
+    'tendered_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _changeCentsMeta = const VerificationMeta(
+    'changeCents',
+  );
+  @override
+  late final GeneratedColumn<int> changeCents = GeneratedColumn<int>(
+    'change_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('COMPLETED'),
+  );
+  static const VerificationMeta _refundedCentsMeta = const VerificationMeta(
+    'refundedCents',
+  );
+  @override
+  late final GeneratedColumn<int> refundedCents = GeneratedColumn<int>(
+    'refunded_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _voidedLinesJsonMeta = const VerificationMeta(
+    'voidedLinesJson',
+  );
+  @override
+  late final GeneratedColumn<String> voidedLinesJson = GeneratedColumn<String>(
+    'voided_lines_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    folio,
+    folioNumber,
+    cashierStaffId,
+    cashierName,
+    occurredAt,
+    grossCents,
+    discountCents,
+    totalCents,
+    tenderedCents,
+    changeCents,
+    status,
+    refundedCents,
+    voidedLinesJson,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_sales';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalSale> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('folio')) {
+      context.handle(
+        _folioMeta,
+        folio.isAcceptableOrUnknown(data['folio']!, _folioMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_folioMeta);
+    }
+    if (data.containsKey('folio_number')) {
+      context.handle(
+        _folioNumberMeta,
+        folioNumber.isAcceptableOrUnknown(
+          data['folio_number']!,
+          _folioNumberMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_folioNumberMeta);
+    }
+    if (data.containsKey('cashier_staff_id')) {
+      context.handle(
+        _cashierStaffIdMeta,
+        cashierStaffId.isAcceptableOrUnknown(
+          data['cashier_staff_id']!,
+          _cashierStaffIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_cashierStaffIdMeta);
+    }
+    if (data.containsKey('cashier_name')) {
+      context.handle(
+        _cashierNameMeta,
+        cashierName.isAcceptableOrUnknown(
+          data['cashier_name']!,
+          _cashierNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_cashierNameMeta);
+    }
+    if (data.containsKey('occurred_at')) {
+      context.handle(
+        _occurredAtMeta,
+        occurredAt.isAcceptableOrUnknown(data['occurred_at']!, _occurredAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_occurredAtMeta);
+    }
+    if (data.containsKey('gross_cents')) {
+      context.handle(
+        _grossCentsMeta,
+        grossCents.isAcceptableOrUnknown(data['gross_cents']!, _grossCentsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_grossCentsMeta);
+    }
+    if (data.containsKey('discount_cents')) {
+      context.handle(
+        _discountCentsMeta,
+        discountCents.isAcceptableOrUnknown(
+          data['discount_cents']!,
+          _discountCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_discountCentsMeta);
+    }
+    if (data.containsKey('total_cents')) {
+      context.handle(
+        _totalCentsMeta,
+        totalCents.isAcceptableOrUnknown(data['total_cents']!, _totalCentsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_totalCentsMeta);
+    }
+    if (data.containsKey('tendered_cents')) {
+      context.handle(
+        _tenderedCentsMeta,
+        tenderedCents.isAcceptableOrUnknown(
+          data['tendered_cents']!,
+          _tenderedCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_tenderedCentsMeta);
+    }
+    if (data.containsKey('change_cents')) {
+      context.handle(
+        _changeCentsMeta,
+        changeCents.isAcceptableOrUnknown(
+          data['change_cents']!,
+          _changeCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_changeCentsMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('refunded_cents')) {
+      context.handle(
+        _refundedCentsMeta,
+        refundedCents.isAcceptableOrUnknown(
+          data['refunded_cents']!,
+          _refundedCentsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('voided_lines_json')) {
+      context.handle(
+        _voidedLinesJsonMeta,
+        voidedLinesJson.isAcceptableOrUnknown(
+          data['voided_lines_json']!,
+          _voidedLinesJsonMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalSale map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalSale(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      folio: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}folio'],
+      )!,
+      folioNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}folio_number'],
+      )!,
+      cashierStaffId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cashier_staff_id'],
+      )!,
+      cashierName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cashier_name'],
+      )!,
+      occurredAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}occurred_at'],
+      )!,
+      grossCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}gross_cents'],
+      )!,
+      discountCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}discount_cents'],
+      )!,
+      totalCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_cents'],
+      )!,
+      tenderedCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tendered_cents'],
+      )!,
+      changeCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}change_cents'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      refundedCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}refunded_cents'],
+      )!,
+      voidedLinesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}voided_lines_json'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalSalesTable createAlias(String alias) {
+    return $LocalSalesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalSale extends DataClass implements Insertable<LocalSale> {
+  final String id;
+  final String folio;
+  final int folioNumber;
+  final String cashierStaffId;
+  final String cashierName;
+  final DateTime occurredAt;
+  final int grossCents;
+  final int discountCents;
+  final int totalCents;
+
+  /// The one cash payment: what the customer gave and the change.
+  final int tenderedCents;
+  final int changeCents;
+
+  /// `COMPLETED`, `PARTIALLY_REFUNDED`, `REFUNDED` or `VOIDED`.
+  final String status;
+  final int refundedCents;
+
+  /// Lines removed before payment, as the outbox payload's `voidedLines`.
+  final String voidedLinesJson;
+  const LocalSale({
+    required this.id,
+    required this.folio,
+    required this.folioNumber,
+    required this.cashierStaffId,
+    required this.cashierName,
+    required this.occurredAt,
+    required this.grossCents,
+    required this.discountCents,
+    required this.totalCents,
+    required this.tenderedCents,
+    required this.changeCents,
+    required this.status,
+    required this.refundedCents,
+    required this.voidedLinesJson,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['folio'] = Variable<String>(folio);
+    map['folio_number'] = Variable<int>(folioNumber);
+    map['cashier_staff_id'] = Variable<String>(cashierStaffId);
+    map['cashier_name'] = Variable<String>(cashierName);
+    map['occurred_at'] = Variable<DateTime>(occurredAt);
+    map['gross_cents'] = Variable<int>(grossCents);
+    map['discount_cents'] = Variable<int>(discountCents);
+    map['total_cents'] = Variable<int>(totalCents);
+    map['tendered_cents'] = Variable<int>(tenderedCents);
+    map['change_cents'] = Variable<int>(changeCents);
+    map['status'] = Variable<String>(status);
+    map['refunded_cents'] = Variable<int>(refundedCents);
+    map['voided_lines_json'] = Variable<String>(voidedLinesJson);
+    return map;
+  }
+
+  LocalSalesCompanion toCompanion(bool nullToAbsent) {
+    return LocalSalesCompanion(
+      id: Value(id),
+      folio: Value(folio),
+      folioNumber: Value(folioNumber),
+      cashierStaffId: Value(cashierStaffId),
+      cashierName: Value(cashierName),
+      occurredAt: Value(occurredAt),
+      grossCents: Value(grossCents),
+      discountCents: Value(discountCents),
+      totalCents: Value(totalCents),
+      tenderedCents: Value(tenderedCents),
+      changeCents: Value(changeCents),
+      status: Value(status),
+      refundedCents: Value(refundedCents),
+      voidedLinesJson: Value(voidedLinesJson),
+    );
+  }
+
+  factory LocalSale.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalSale(
+      id: serializer.fromJson<String>(json['id']),
+      folio: serializer.fromJson<String>(json['folio']),
+      folioNumber: serializer.fromJson<int>(json['folioNumber']),
+      cashierStaffId: serializer.fromJson<String>(json['cashierStaffId']),
+      cashierName: serializer.fromJson<String>(json['cashierName']),
+      occurredAt: serializer.fromJson<DateTime>(json['occurredAt']),
+      grossCents: serializer.fromJson<int>(json['grossCents']),
+      discountCents: serializer.fromJson<int>(json['discountCents']),
+      totalCents: serializer.fromJson<int>(json['totalCents']),
+      tenderedCents: serializer.fromJson<int>(json['tenderedCents']),
+      changeCents: serializer.fromJson<int>(json['changeCents']),
+      status: serializer.fromJson<String>(json['status']),
+      refundedCents: serializer.fromJson<int>(json['refundedCents']),
+      voidedLinesJson: serializer.fromJson<String>(json['voidedLinesJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'folio': serializer.toJson<String>(folio),
+      'folioNumber': serializer.toJson<int>(folioNumber),
+      'cashierStaffId': serializer.toJson<String>(cashierStaffId),
+      'cashierName': serializer.toJson<String>(cashierName),
+      'occurredAt': serializer.toJson<DateTime>(occurredAt),
+      'grossCents': serializer.toJson<int>(grossCents),
+      'discountCents': serializer.toJson<int>(discountCents),
+      'totalCents': serializer.toJson<int>(totalCents),
+      'tenderedCents': serializer.toJson<int>(tenderedCents),
+      'changeCents': serializer.toJson<int>(changeCents),
+      'status': serializer.toJson<String>(status),
+      'refundedCents': serializer.toJson<int>(refundedCents),
+      'voidedLinesJson': serializer.toJson<String>(voidedLinesJson),
+    };
+  }
+
+  LocalSale copyWith({
+    String? id,
+    String? folio,
+    int? folioNumber,
+    String? cashierStaffId,
+    String? cashierName,
+    DateTime? occurredAt,
+    int? grossCents,
+    int? discountCents,
+    int? totalCents,
+    int? tenderedCents,
+    int? changeCents,
+    String? status,
+    int? refundedCents,
+    String? voidedLinesJson,
+  }) => LocalSale(
+    id: id ?? this.id,
+    folio: folio ?? this.folio,
+    folioNumber: folioNumber ?? this.folioNumber,
+    cashierStaffId: cashierStaffId ?? this.cashierStaffId,
+    cashierName: cashierName ?? this.cashierName,
+    occurredAt: occurredAt ?? this.occurredAt,
+    grossCents: grossCents ?? this.grossCents,
+    discountCents: discountCents ?? this.discountCents,
+    totalCents: totalCents ?? this.totalCents,
+    tenderedCents: tenderedCents ?? this.tenderedCents,
+    changeCents: changeCents ?? this.changeCents,
+    status: status ?? this.status,
+    refundedCents: refundedCents ?? this.refundedCents,
+    voidedLinesJson: voidedLinesJson ?? this.voidedLinesJson,
+  );
+  LocalSale copyWithCompanion(LocalSalesCompanion data) {
+    return LocalSale(
+      id: data.id.present ? data.id.value : this.id,
+      folio: data.folio.present ? data.folio.value : this.folio,
+      folioNumber: data.folioNumber.present
+          ? data.folioNumber.value
+          : this.folioNumber,
+      cashierStaffId: data.cashierStaffId.present
+          ? data.cashierStaffId.value
+          : this.cashierStaffId,
+      cashierName: data.cashierName.present
+          ? data.cashierName.value
+          : this.cashierName,
+      occurredAt: data.occurredAt.present
+          ? data.occurredAt.value
+          : this.occurredAt,
+      grossCents: data.grossCents.present
+          ? data.grossCents.value
+          : this.grossCents,
+      discountCents: data.discountCents.present
+          ? data.discountCents.value
+          : this.discountCents,
+      totalCents: data.totalCents.present
+          ? data.totalCents.value
+          : this.totalCents,
+      tenderedCents: data.tenderedCents.present
+          ? data.tenderedCents.value
+          : this.tenderedCents,
+      changeCents: data.changeCents.present
+          ? data.changeCents.value
+          : this.changeCents,
+      status: data.status.present ? data.status.value : this.status,
+      refundedCents: data.refundedCents.present
+          ? data.refundedCents.value
+          : this.refundedCents,
+      voidedLinesJson: data.voidedLinesJson.present
+          ? data.voidedLinesJson.value
+          : this.voidedLinesJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalSale(')
+          ..write('id: $id, ')
+          ..write('folio: $folio, ')
+          ..write('folioNumber: $folioNumber, ')
+          ..write('cashierStaffId: $cashierStaffId, ')
+          ..write('cashierName: $cashierName, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('grossCents: $grossCents, ')
+          ..write('discountCents: $discountCents, ')
+          ..write('totalCents: $totalCents, ')
+          ..write('tenderedCents: $tenderedCents, ')
+          ..write('changeCents: $changeCents, ')
+          ..write('status: $status, ')
+          ..write('refundedCents: $refundedCents, ')
+          ..write('voidedLinesJson: $voidedLinesJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    folio,
+    folioNumber,
+    cashierStaffId,
+    cashierName,
+    occurredAt,
+    grossCents,
+    discountCents,
+    totalCents,
+    tenderedCents,
+    changeCents,
+    status,
+    refundedCents,
+    voidedLinesJson,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalSale &&
+          other.id == this.id &&
+          other.folio == this.folio &&
+          other.folioNumber == this.folioNumber &&
+          other.cashierStaffId == this.cashierStaffId &&
+          other.cashierName == this.cashierName &&
+          other.occurredAt == this.occurredAt &&
+          other.grossCents == this.grossCents &&
+          other.discountCents == this.discountCents &&
+          other.totalCents == this.totalCents &&
+          other.tenderedCents == this.tenderedCents &&
+          other.changeCents == this.changeCents &&
+          other.status == this.status &&
+          other.refundedCents == this.refundedCents &&
+          other.voidedLinesJson == this.voidedLinesJson);
+}
+
+class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
+  final Value<String> id;
+  final Value<String> folio;
+  final Value<int> folioNumber;
+  final Value<String> cashierStaffId;
+  final Value<String> cashierName;
+  final Value<DateTime> occurredAt;
+  final Value<int> grossCents;
+  final Value<int> discountCents;
+  final Value<int> totalCents;
+  final Value<int> tenderedCents;
+  final Value<int> changeCents;
+  final Value<String> status;
+  final Value<int> refundedCents;
+  final Value<String> voidedLinesJson;
+  final Value<int> rowid;
+  const LocalSalesCompanion({
+    this.id = const Value.absent(),
+    this.folio = const Value.absent(),
+    this.folioNumber = const Value.absent(),
+    this.cashierStaffId = const Value.absent(),
+    this.cashierName = const Value.absent(),
+    this.occurredAt = const Value.absent(),
+    this.grossCents = const Value.absent(),
+    this.discountCents = const Value.absent(),
+    this.totalCents = const Value.absent(),
+    this.tenderedCents = const Value.absent(),
+    this.changeCents = const Value.absent(),
+    this.status = const Value.absent(),
+    this.refundedCents = const Value.absent(),
+    this.voidedLinesJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalSalesCompanion.insert({
+    required String id,
+    required String folio,
+    required int folioNumber,
+    required String cashierStaffId,
+    required String cashierName,
+    required DateTime occurredAt,
+    required int grossCents,
+    required int discountCents,
+    required int totalCents,
+    required int tenderedCents,
+    required int changeCents,
+    this.status = const Value.absent(),
+    this.refundedCents = const Value.absent(),
+    this.voidedLinesJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       folio = Value(folio),
+       folioNumber = Value(folioNumber),
+       cashierStaffId = Value(cashierStaffId),
+       cashierName = Value(cashierName),
+       occurredAt = Value(occurredAt),
+       grossCents = Value(grossCents),
+       discountCents = Value(discountCents),
+       totalCents = Value(totalCents),
+       tenderedCents = Value(tenderedCents),
+       changeCents = Value(changeCents);
+  static Insertable<LocalSale> custom({
+    Expression<String>? id,
+    Expression<String>? folio,
+    Expression<int>? folioNumber,
+    Expression<String>? cashierStaffId,
+    Expression<String>? cashierName,
+    Expression<DateTime>? occurredAt,
+    Expression<int>? grossCents,
+    Expression<int>? discountCents,
+    Expression<int>? totalCents,
+    Expression<int>? tenderedCents,
+    Expression<int>? changeCents,
+    Expression<String>? status,
+    Expression<int>? refundedCents,
+    Expression<String>? voidedLinesJson,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (folio != null) 'folio': folio,
+      if (folioNumber != null) 'folio_number': folioNumber,
+      if (cashierStaffId != null) 'cashier_staff_id': cashierStaffId,
+      if (cashierName != null) 'cashier_name': cashierName,
+      if (occurredAt != null) 'occurred_at': occurredAt,
+      if (grossCents != null) 'gross_cents': grossCents,
+      if (discountCents != null) 'discount_cents': discountCents,
+      if (totalCents != null) 'total_cents': totalCents,
+      if (tenderedCents != null) 'tendered_cents': tenderedCents,
+      if (changeCents != null) 'change_cents': changeCents,
+      if (status != null) 'status': status,
+      if (refundedCents != null) 'refunded_cents': refundedCents,
+      if (voidedLinesJson != null) 'voided_lines_json': voidedLinesJson,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalSalesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? folio,
+    Value<int>? folioNumber,
+    Value<String>? cashierStaffId,
+    Value<String>? cashierName,
+    Value<DateTime>? occurredAt,
+    Value<int>? grossCents,
+    Value<int>? discountCents,
+    Value<int>? totalCents,
+    Value<int>? tenderedCents,
+    Value<int>? changeCents,
+    Value<String>? status,
+    Value<int>? refundedCents,
+    Value<String>? voidedLinesJson,
+    Value<int>? rowid,
+  }) {
+    return LocalSalesCompanion(
+      id: id ?? this.id,
+      folio: folio ?? this.folio,
+      folioNumber: folioNumber ?? this.folioNumber,
+      cashierStaffId: cashierStaffId ?? this.cashierStaffId,
+      cashierName: cashierName ?? this.cashierName,
+      occurredAt: occurredAt ?? this.occurredAt,
+      grossCents: grossCents ?? this.grossCents,
+      discountCents: discountCents ?? this.discountCents,
+      totalCents: totalCents ?? this.totalCents,
+      tenderedCents: tenderedCents ?? this.tenderedCents,
+      changeCents: changeCents ?? this.changeCents,
+      status: status ?? this.status,
+      refundedCents: refundedCents ?? this.refundedCents,
+      voidedLinesJson: voidedLinesJson ?? this.voidedLinesJson,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (folio.present) {
+      map['folio'] = Variable<String>(folio.value);
+    }
+    if (folioNumber.present) {
+      map['folio_number'] = Variable<int>(folioNumber.value);
+    }
+    if (cashierStaffId.present) {
+      map['cashier_staff_id'] = Variable<String>(cashierStaffId.value);
+    }
+    if (cashierName.present) {
+      map['cashier_name'] = Variable<String>(cashierName.value);
+    }
+    if (occurredAt.present) {
+      map['occurred_at'] = Variable<DateTime>(occurredAt.value);
+    }
+    if (grossCents.present) {
+      map['gross_cents'] = Variable<int>(grossCents.value);
+    }
+    if (discountCents.present) {
+      map['discount_cents'] = Variable<int>(discountCents.value);
+    }
+    if (totalCents.present) {
+      map['total_cents'] = Variable<int>(totalCents.value);
+    }
+    if (tenderedCents.present) {
+      map['tendered_cents'] = Variable<int>(tenderedCents.value);
+    }
+    if (changeCents.present) {
+      map['change_cents'] = Variable<int>(changeCents.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (refundedCents.present) {
+      map['refunded_cents'] = Variable<int>(refundedCents.value);
+    }
+    if (voidedLinesJson.present) {
+      map['voided_lines_json'] = Variable<String>(voidedLinesJson.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalSalesCompanion(')
+          ..write('id: $id, ')
+          ..write('folio: $folio, ')
+          ..write('folioNumber: $folioNumber, ')
+          ..write('cashierStaffId: $cashierStaffId, ')
+          ..write('cashierName: $cashierName, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('grossCents: $grossCents, ')
+          ..write('discountCents: $discountCents, ')
+          ..write('totalCents: $totalCents, ')
+          ..write('tenderedCents: $tenderedCents, ')
+          ..write('changeCents: $changeCents, ')
+          ..write('status: $status, ')
+          ..write('refundedCents: $refundedCents, ')
+          ..write('voidedLinesJson: $voidedLinesJson, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalSaleLinesTable extends LocalSaleLines
+    with TableInfo<$LocalSaleLinesTable, LocalSaleLine> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalSaleLinesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _saleIdMeta = const VerificationMeta('saleId');
+  @override
+  late final GeneratedColumn<String> saleId = GeneratedColumn<String>(
+    'sale_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lineNoMeta = const VerificationMeta('lineNo');
+  @override
+  late final GeneratedColumn<int> lineNo = GeneratedColumn<int>(
+    'line_no',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _variantIdMeta = const VerificationMeta(
+    'variantId',
+  );
+  @override
+  late final GeneratedColumn<String> variantId = GeneratedColumn<String>(
+    'variant_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _productNameMeta = const VerificationMeta(
+    'productName',
+  );
+  @override
+  late final GeneratedColumn<String> productName = GeneratedColumn<String>(
+    'product_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _variantNameMeta = const VerificationMeta(
+    'variantName',
+  );
+  @override
+  late final GeneratedColumn<String> variantName = GeneratedColumn<String>(
+    'variant_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _quantityMeta = const VerificationMeta(
+    'quantity',
+  );
+  @override
+  late final GeneratedColumn<int> quantity = GeneratedColumn<int>(
+    'quantity',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _unitPriceCentsMeta = const VerificationMeta(
+    'unitPriceCents',
+  );
+  @override
+  late final GeneratedColumn<int> unitPriceCents = GeneratedColumn<int>(
+    'unit_price_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _grossCentsMeta = const VerificationMeta(
+    'grossCents',
+  );
+  @override
+  late final GeneratedColumn<int> grossCents = GeneratedColumn<int>(
+    'gross_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lineDiscountCentsMeta = const VerificationMeta(
+    'lineDiscountCents',
+  );
+  @override
+  late final GeneratedColumn<int> lineDiscountCents = GeneratedColumn<int>(
+    'line_discount_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _orderDiscountCentsMeta =
+      const VerificationMeta('orderDiscountCents');
+  @override
+  late final GeneratedColumn<int> orderDiscountCents = GeneratedColumn<int>(
+    'order_discount_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _netCentsMeta = const VerificationMeta(
+    'netCents',
+  );
+  @override
+  late final GeneratedColumn<int> netCents = GeneratedColumn<int>(
+    'net_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ivaRateIdMeta = const VerificationMeta(
+    'ivaRateId',
+  );
+  @override
+  late final GeneratedColumn<String> ivaRateId = GeneratedColumn<String>(
+    'iva_rate_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ivaBpMeta = const VerificationMeta('ivaBp');
+  @override
+  late final GeneratedColumn<int> ivaBp = GeneratedColumn<int>(
+    'iva_bp',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _iepsRateIdMeta = const VerificationMeta(
+    'iepsRateId',
+  );
+  @override
+  late final GeneratedColumn<String> iepsRateId = GeneratedColumn<String>(
+    'ieps_rate_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _iepsBpMeta = const VerificationMeta('iepsBp');
+  @override
+  late final GeneratedColumn<int> iepsBp = GeneratedColumn<int>(
+    'ieps_bp',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _baseCentsMeta = const VerificationMeta(
+    'baseCents',
+  );
+  @override
+  late final GeneratedColumn<int> baseCents = GeneratedColumn<int>(
+    'base_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _iepsCentsMeta = const VerificationMeta(
+    'iepsCents',
+  );
+  @override
+  late final GeneratedColumn<int> iepsCents = GeneratedColumn<int>(
+    'ieps_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ivaCentsMeta = const VerificationMeta(
+    'ivaCents',
+  );
+  @override
+  late final GeneratedColumn<int> ivaCents = GeneratedColumn<int>(
+    'iva_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _refundedQuantityMeta = const VerificationMeta(
+    'refundedQuantity',
+  );
+  @override
+  late final GeneratedColumn<int> refundedQuantity = GeneratedColumn<int>(
+    'refunded_quantity',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _refundedCentsMeta = const VerificationMeta(
+    'refundedCents',
+  );
+  @override
+  late final GeneratedColumn<int> refundedCents = GeneratedColumn<int>(
+    'refunded_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    saleId,
+    lineNo,
+    variantId,
+    productName,
+    variantName,
+    quantity,
+    unitPriceCents,
+    grossCents,
+    lineDiscountCents,
+    orderDiscountCents,
+    netCents,
+    ivaRateId,
+    ivaBp,
+    iepsRateId,
+    iepsBp,
+    baseCents,
+    iepsCents,
+    ivaCents,
+    refundedQuantity,
+    refundedCents,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_sale_lines';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalSaleLine> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('sale_id')) {
+      context.handle(
+        _saleIdMeta,
+        saleId.isAcceptableOrUnknown(data['sale_id']!, _saleIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_saleIdMeta);
+    }
+    if (data.containsKey('line_no')) {
+      context.handle(
+        _lineNoMeta,
+        lineNo.isAcceptableOrUnknown(data['line_no']!, _lineNoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lineNoMeta);
+    }
+    if (data.containsKey('variant_id')) {
+      context.handle(
+        _variantIdMeta,
+        variantId.isAcceptableOrUnknown(data['variant_id']!, _variantIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_variantIdMeta);
+    }
+    if (data.containsKey('product_name')) {
+      context.handle(
+        _productNameMeta,
+        productName.isAcceptableOrUnknown(
+          data['product_name']!,
+          _productNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_productNameMeta);
+    }
+    if (data.containsKey('variant_name')) {
+      context.handle(
+        _variantNameMeta,
+        variantName.isAcceptableOrUnknown(
+          data['variant_name']!,
+          _variantNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_variantNameMeta);
+    }
+    if (data.containsKey('quantity')) {
+      context.handle(
+        _quantityMeta,
+        quantity.isAcceptableOrUnknown(data['quantity']!, _quantityMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_quantityMeta);
+    }
+    if (data.containsKey('unit_price_cents')) {
+      context.handle(
+        _unitPriceCentsMeta,
+        unitPriceCents.isAcceptableOrUnknown(
+          data['unit_price_cents']!,
+          _unitPriceCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_unitPriceCentsMeta);
+    }
+    if (data.containsKey('gross_cents')) {
+      context.handle(
+        _grossCentsMeta,
+        grossCents.isAcceptableOrUnknown(data['gross_cents']!, _grossCentsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_grossCentsMeta);
+    }
+    if (data.containsKey('line_discount_cents')) {
+      context.handle(
+        _lineDiscountCentsMeta,
+        lineDiscountCents.isAcceptableOrUnknown(
+          data['line_discount_cents']!,
+          _lineDiscountCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_lineDiscountCentsMeta);
+    }
+    if (data.containsKey('order_discount_cents')) {
+      context.handle(
+        _orderDiscountCentsMeta,
+        orderDiscountCents.isAcceptableOrUnknown(
+          data['order_discount_cents']!,
+          _orderDiscountCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_orderDiscountCentsMeta);
+    }
+    if (data.containsKey('net_cents')) {
+      context.handle(
+        _netCentsMeta,
+        netCents.isAcceptableOrUnknown(data['net_cents']!, _netCentsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_netCentsMeta);
+    }
+    if (data.containsKey('iva_rate_id')) {
+      context.handle(
+        _ivaRateIdMeta,
+        ivaRateId.isAcceptableOrUnknown(data['iva_rate_id']!, _ivaRateIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ivaRateIdMeta);
+    }
+    if (data.containsKey('iva_bp')) {
+      context.handle(
+        _ivaBpMeta,
+        ivaBp.isAcceptableOrUnknown(data['iva_bp']!, _ivaBpMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ivaBpMeta);
+    }
+    if (data.containsKey('ieps_rate_id')) {
+      context.handle(
+        _iepsRateIdMeta,
+        iepsRateId.isAcceptableOrUnknown(
+          data['ieps_rate_id']!,
+          _iepsRateIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('ieps_bp')) {
+      context.handle(
+        _iepsBpMeta,
+        iepsBp.isAcceptableOrUnknown(data['ieps_bp']!, _iepsBpMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_iepsBpMeta);
+    }
+    if (data.containsKey('base_cents')) {
+      context.handle(
+        _baseCentsMeta,
+        baseCents.isAcceptableOrUnknown(data['base_cents']!, _baseCentsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_baseCentsMeta);
+    }
+    if (data.containsKey('ieps_cents')) {
+      context.handle(
+        _iepsCentsMeta,
+        iepsCents.isAcceptableOrUnknown(data['ieps_cents']!, _iepsCentsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_iepsCentsMeta);
+    }
+    if (data.containsKey('iva_cents')) {
+      context.handle(
+        _ivaCentsMeta,
+        ivaCents.isAcceptableOrUnknown(data['iva_cents']!, _ivaCentsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ivaCentsMeta);
+    }
+    if (data.containsKey('refunded_quantity')) {
+      context.handle(
+        _refundedQuantityMeta,
+        refundedQuantity.isAcceptableOrUnknown(
+          data['refunded_quantity']!,
+          _refundedQuantityMeta,
+        ),
+      );
+    }
+    if (data.containsKey('refunded_cents')) {
+      context.handle(
+        _refundedCentsMeta,
+        refundedCents.isAcceptableOrUnknown(
+          data['refunded_cents']!,
+          _refundedCentsMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {saleId, lineNo};
+  @override
+  LocalSaleLine map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalSaleLine(
+      saleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sale_id'],
+      )!,
+      lineNo: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}line_no'],
+      )!,
+      variantId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}variant_id'],
+      )!,
+      productName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}product_name'],
+      )!,
+      variantName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}variant_name'],
+      )!,
+      quantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}quantity'],
+      )!,
+      unitPriceCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}unit_price_cents'],
+      )!,
+      grossCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}gross_cents'],
+      )!,
+      lineDiscountCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}line_discount_cents'],
+      )!,
+      orderDiscountCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}order_discount_cents'],
+      )!,
+      netCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}net_cents'],
+      )!,
+      ivaRateId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}iva_rate_id'],
+      )!,
+      ivaBp: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}iva_bp'],
+      )!,
+      iepsRateId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ieps_rate_id'],
+      ),
+      iepsBp: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ieps_bp'],
+      )!,
+      baseCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}base_cents'],
+      )!,
+      iepsCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ieps_cents'],
+      )!,
+      ivaCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}iva_cents'],
+      )!,
+      refundedQuantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}refunded_quantity'],
+      )!,
+      refundedCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}refunded_cents'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalSaleLinesTable createAlias(String alias) {
+    return $LocalSaleLinesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalSaleLine extends DataClass implements Insertable<LocalSaleLine> {
+  final String saleId;
+  final int lineNo;
+  final String variantId;
+  final String productName;
+  final String variantName;
+  final int quantity;
+  final int unitPriceCents;
+  final int grossCents;
+  final int lineDiscountCents;
+  final int orderDiscountCents;
+  final int netCents;
+  final String ivaRateId;
+  final int ivaBp;
+  final String? iepsRateId;
+  final int iepsBp;
+  final int baseCents;
+  final int iepsCents;
+  final int ivaCents;
+  final int refundedQuantity;
+  final int refundedCents;
+  const LocalSaleLine({
+    required this.saleId,
+    required this.lineNo,
+    required this.variantId,
+    required this.productName,
+    required this.variantName,
+    required this.quantity,
+    required this.unitPriceCents,
+    required this.grossCents,
+    required this.lineDiscountCents,
+    required this.orderDiscountCents,
+    required this.netCents,
+    required this.ivaRateId,
+    required this.ivaBp,
+    this.iepsRateId,
+    required this.iepsBp,
+    required this.baseCents,
+    required this.iepsCents,
+    required this.ivaCents,
+    required this.refundedQuantity,
+    required this.refundedCents,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['sale_id'] = Variable<String>(saleId);
+    map['line_no'] = Variable<int>(lineNo);
+    map['variant_id'] = Variable<String>(variantId);
+    map['product_name'] = Variable<String>(productName);
+    map['variant_name'] = Variable<String>(variantName);
+    map['quantity'] = Variable<int>(quantity);
+    map['unit_price_cents'] = Variable<int>(unitPriceCents);
+    map['gross_cents'] = Variable<int>(grossCents);
+    map['line_discount_cents'] = Variable<int>(lineDiscountCents);
+    map['order_discount_cents'] = Variable<int>(orderDiscountCents);
+    map['net_cents'] = Variable<int>(netCents);
+    map['iva_rate_id'] = Variable<String>(ivaRateId);
+    map['iva_bp'] = Variable<int>(ivaBp);
+    if (!nullToAbsent || iepsRateId != null) {
+      map['ieps_rate_id'] = Variable<String>(iepsRateId);
+    }
+    map['ieps_bp'] = Variable<int>(iepsBp);
+    map['base_cents'] = Variable<int>(baseCents);
+    map['ieps_cents'] = Variable<int>(iepsCents);
+    map['iva_cents'] = Variable<int>(ivaCents);
+    map['refunded_quantity'] = Variable<int>(refundedQuantity);
+    map['refunded_cents'] = Variable<int>(refundedCents);
+    return map;
+  }
+
+  LocalSaleLinesCompanion toCompanion(bool nullToAbsent) {
+    return LocalSaleLinesCompanion(
+      saleId: Value(saleId),
+      lineNo: Value(lineNo),
+      variantId: Value(variantId),
+      productName: Value(productName),
+      variantName: Value(variantName),
+      quantity: Value(quantity),
+      unitPriceCents: Value(unitPriceCents),
+      grossCents: Value(grossCents),
+      lineDiscountCents: Value(lineDiscountCents),
+      orderDiscountCents: Value(orderDiscountCents),
+      netCents: Value(netCents),
+      ivaRateId: Value(ivaRateId),
+      ivaBp: Value(ivaBp),
+      iepsRateId: iepsRateId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(iepsRateId),
+      iepsBp: Value(iepsBp),
+      baseCents: Value(baseCents),
+      iepsCents: Value(iepsCents),
+      ivaCents: Value(ivaCents),
+      refundedQuantity: Value(refundedQuantity),
+      refundedCents: Value(refundedCents),
+    );
+  }
+
+  factory LocalSaleLine.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalSaleLine(
+      saleId: serializer.fromJson<String>(json['saleId']),
+      lineNo: serializer.fromJson<int>(json['lineNo']),
+      variantId: serializer.fromJson<String>(json['variantId']),
+      productName: serializer.fromJson<String>(json['productName']),
+      variantName: serializer.fromJson<String>(json['variantName']),
+      quantity: serializer.fromJson<int>(json['quantity']),
+      unitPriceCents: serializer.fromJson<int>(json['unitPriceCents']),
+      grossCents: serializer.fromJson<int>(json['grossCents']),
+      lineDiscountCents: serializer.fromJson<int>(json['lineDiscountCents']),
+      orderDiscountCents: serializer.fromJson<int>(json['orderDiscountCents']),
+      netCents: serializer.fromJson<int>(json['netCents']),
+      ivaRateId: serializer.fromJson<String>(json['ivaRateId']),
+      ivaBp: serializer.fromJson<int>(json['ivaBp']),
+      iepsRateId: serializer.fromJson<String?>(json['iepsRateId']),
+      iepsBp: serializer.fromJson<int>(json['iepsBp']),
+      baseCents: serializer.fromJson<int>(json['baseCents']),
+      iepsCents: serializer.fromJson<int>(json['iepsCents']),
+      ivaCents: serializer.fromJson<int>(json['ivaCents']),
+      refundedQuantity: serializer.fromJson<int>(json['refundedQuantity']),
+      refundedCents: serializer.fromJson<int>(json['refundedCents']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'saleId': serializer.toJson<String>(saleId),
+      'lineNo': serializer.toJson<int>(lineNo),
+      'variantId': serializer.toJson<String>(variantId),
+      'productName': serializer.toJson<String>(productName),
+      'variantName': serializer.toJson<String>(variantName),
+      'quantity': serializer.toJson<int>(quantity),
+      'unitPriceCents': serializer.toJson<int>(unitPriceCents),
+      'grossCents': serializer.toJson<int>(grossCents),
+      'lineDiscountCents': serializer.toJson<int>(lineDiscountCents),
+      'orderDiscountCents': serializer.toJson<int>(orderDiscountCents),
+      'netCents': serializer.toJson<int>(netCents),
+      'ivaRateId': serializer.toJson<String>(ivaRateId),
+      'ivaBp': serializer.toJson<int>(ivaBp),
+      'iepsRateId': serializer.toJson<String?>(iepsRateId),
+      'iepsBp': serializer.toJson<int>(iepsBp),
+      'baseCents': serializer.toJson<int>(baseCents),
+      'iepsCents': serializer.toJson<int>(iepsCents),
+      'ivaCents': serializer.toJson<int>(ivaCents),
+      'refundedQuantity': serializer.toJson<int>(refundedQuantity),
+      'refundedCents': serializer.toJson<int>(refundedCents),
+    };
+  }
+
+  LocalSaleLine copyWith({
+    String? saleId,
+    int? lineNo,
+    String? variantId,
+    String? productName,
+    String? variantName,
+    int? quantity,
+    int? unitPriceCents,
+    int? grossCents,
+    int? lineDiscountCents,
+    int? orderDiscountCents,
+    int? netCents,
+    String? ivaRateId,
+    int? ivaBp,
+    Value<String?> iepsRateId = const Value.absent(),
+    int? iepsBp,
+    int? baseCents,
+    int? iepsCents,
+    int? ivaCents,
+    int? refundedQuantity,
+    int? refundedCents,
+  }) => LocalSaleLine(
+    saleId: saleId ?? this.saleId,
+    lineNo: lineNo ?? this.lineNo,
+    variantId: variantId ?? this.variantId,
+    productName: productName ?? this.productName,
+    variantName: variantName ?? this.variantName,
+    quantity: quantity ?? this.quantity,
+    unitPriceCents: unitPriceCents ?? this.unitPriceCents,
+    grossCents: grossCents ?? this.grossCents,
+    lineDiscountCents: lineDiscountCents ?? this.lineDiscountCents,
+    orderDiscountCents: orderDiscountCents ?? this.orderDiscountCents,
+    netCents: netCents ?? this.netCents,
+    ivaRateId: ivaRateId ?? this.ivaRateId,
+    ivaBp: ivaBp ?? this.ivaBp,
+    iepsRateId: iepsRateId.present ? iepsRateId.value : this.iepsRateId,
+    iepsBp: iepsBp ?? this.iepsBp,
+    baseCents: baseCents ?? this.baseCents,
+    iepsCents: iepsCents ?? this.iepsCents,
+    ivaCents: ivaCents ?? this.ivaCents,
+    refundedQuantity: refundedQuantity ?? this.refundedQuantity,
+    refundedCents: refundedCents ?? this.refundedCents,
+  );
+  LocalSaleLine copyWithCompanion(LocalSaleLinesCompanion data) {
+    return LocalSaleLine(
+      saleId: data.saleId.present ? data.saleId.value : this.saleId,
+      lineNo: data.lineNo.present ? data.lineNo.value : this.lineNo,
+      variantId: data.variantId.present ? data.variantId.value : this.variantId,
+      productName: data.productName.present
+          ? data.productName.value
+          : this.productName,
+      variantName: data.variantName.present
+          ? data.variantName.value
+          : this.variantName,
+      quantity: data.quantity.present ? data.quantity.value : this.quantity,
+      unitPriceCents: data.unitPriceCents.present
+          ? data.unitPriceCents.value
+          : this.unitPriceCents,
+      grossCents: data.grossCents.present
+          ? data.grossCents.value
+          : this.grossCents,
+      lineDiscountCents: data.lineDiscountCents.present
+          ? data.lineDiscountCents.value
+          : this.lineDiscountCents,
+      orderDiscountCents: data.orderDiscountCents.present
+          ? data.orderDiscountCents.value
+          : this.orderDiscountCents,
+      netCents: data.netCents.present ? data.netCents.value : this.netCents,
+      ivaRateId: data.ivaRateId.present ? data.ivaRateId.value : this.ivaRateId,
+      ivaBp: data.ivaBp.present ? data.ivaBp.value : this.ivaBp,
+      iepsRateId: data.iepsRateId.present
+          ? data.iepsRateId.value
+          : this.iepsRateId,
+      iepsBp: data.iepsBp.present ? data.iepsBp.value : this.iepsBp,
+      baseCents: data.baseCents.present ? data.baseCents.value : this.baseCents,
+      iepsCents: data.iepsCents.present ? data.iepsCents.value : this.iepsCents,
+      ivaCents: data.ivaCents.present ? data.ivaCents.value : this.ivaCents,
+      refundedQuantity: data.refundedQuantity.present
+          ? data.refundedQuantity.value
+          : this.refundedQuantity,
+      refundedCents: data.refundedCents.present
+          ? data.refundedCents.value
+          : this.refundedCents,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalSaleLine(')
+          ..write('saleId: $saleId, ')
+          ..write('lineNo: $lineNo, ')
+          ..write('variantId: $variantId, ')
+          ..write('productName: $productName, ')
+          ..write('variantName: $variantName, ')
+          ..write('quantity: $quantity, ')
+          ..write('unitPriceCents: $unitPriceCents, ')
+          ..write('grossCents: $grossCents, ')
+          ..write('lineDiscountCents: $lineDiscountCents, ')
+          ..write('orderDiscountCents: $orderDiscountCents, ')
+          ..write('netCents: $netCents, ')
+          ..write('ivaRateId: $ivaRateId, ')
+          ..write('ivaBp: $ivaBp, ')
+          ..write('iepsRateId: $iepsRateId, ')
+          ..write('iepsBp: $iepsBp, ')
+          ..write('baseCents: $baseCents, ')
+          ..write('iepsCents: $iepsCents, ')
+          ..write('ivaCents: $ivaCents, ')
+          ..write('refundedQuantity: $refundedQuantity, ')
+          ..write('refundedCents: $refundedCents')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    saleId,
+    lineNo,
+    variantId,
+    productName,
+    variantName,
+    quantity,
+    unitPriceCents,
+    grossCents,
+    lineDiscountCents,
+    orderDiscountCents,
+    netCents,
+    ivaRateId,
+    ivaBp,
+    iepsRateId,
+    iepsBp,
+    baseCents,
+    iepsCents,
+    ivaCents,
+    refundedQuantity,
+    refundedCents,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalSaleLine &&
+          other.saleId == this.saleId &&
+          other.lineNo == this.lineNo &&
+          other.variantId == this.variantId &&
+          other.productName == this.productName &&
+          other.variantName == this.variantName &&
+          other.quantity == this.quantity &&
+          other.unitPriceCents == this.unitPriceCents &&
+          other.grossCents == this.grossCents &&
+          other.lineDiscountCents == this.lineDiscountCents &&
+          other.orderDiscountCents == this.orderDiscountCents &&
+          other.netCents == this.netCents &&
+          other.ivaRateId == this.ivaRateId &&
+          other.ivaBp == this.ivaBp &&
+          other.iepsRateId == this.iepsRateId &&
+          other.iepsBp == this.iepsBp &&
+          other.baseCents == this.baseCents &&
+          other.iepsCents == this.iepsCents &&
+          other.ivaCents == this.ivaCents &&
+          other.refundedQuantity == this.refundedQuantity &&
+          other.refundedCents == this.refundedCents);
+}
+
+class LocalSaleLinesCompanion extends UpdateCompanion<LocalSaleLine> {
+  final Value<String> saleId;
+  final Value<int> lineNo;
+  final Value<String> variantId;
+  final Value<String> productName;
+  final Value<String> variantName;
+  final Value<int> quantity;
+  final Value<int> unitPriceCents;
+  final Value<int> grossCents;
+  final Value<int> lineDiscountCents;
+  final Value<int> orderDiscountCents;
+  final Value<int> netCents;
+  final Value<String> ivaRateId;
+  final Value<int> ivaBp;
+  final Value<String?> iepsRateId;
+  final Value<int> iepsBp;
+  final Value<int> baseCents;
+  final Value<int> iepsCents;
+  final Value<int> ivaCents;
+  final Value<int> refundedQuantity;
+  final Value<int> refundedCents;
+  final Value<int> rowid;
+  const LocalSaleLinesCompanion({
+    this.saleId = const Value.absent(),
+    this.lineNo = const Value.absent(),
+    this.variantId = const Value.absent(),
+    this.productName = const Value.absent(),
+    this.variantName = const Value.absent(),
+    this.quantity = const Value.absent(),
+    this.unitPriceCents = const Value.absent(),
+    this.grossCents = const Value.absent(),
+    this.lineDiscountCents = const Value.absent(),
+    this.orderDiscountCents = const Value.absent(),
+    this.netCents = const Value.absent(),
+    this.ivaRateId = const Value.absent(),
+    this.ivaBp = const Value.absent(),
+    this.iepsRateId = const Value.absent(),
+    this.iepsBp = const Value.absent(),
+    this.baseCents = const Value.absent(),
+    this.iepsCents = const Value.absent(),
+    this.ivaCents = const Value.absent(),
+    this.refundedQuantity = const Value.absent(),
+    this.refundedCents = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalSaleLinesCompanion.insert({
+    required String saleId,
+    required int lineNo,
+    required String variantId,
+    required String productName,
+    required String variantName,
+    required int quantity,
+    required int unitPriceCents,
+    required int grossCents,
+    required int lineDiscountCents,
+    required int orderDiscountCents,
+    required int netCents,
+    required String ivaRateId,
+    required int ivaBp,
+    this.iepsRateId = const Value.absent(),
+    required int iepsBp,
+    required int baseCents,
+    required int iepsCents,
+    required int ivaCents,
+    this.refundedQuantity = const Value.absent(),
+    this.refundedCents = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : saleId = Value(saleId),
+       lineNo = Value(lineNo),
+       variantId = Value(variantId),
+       productName = Value(productName),
+       variantName = Value(variantName),
+       quantity = Value(quantity),
+       unitPriceCents = Value(unitPriceCents),
+       grossCents = Value(grossCents),
+       lineDiscountCents = Value(lineDiscountCents),
+       orderDiscountCents = Value(orderDiscountCents),
+       netCents = Value(netCents),
+       ivaRateId = Value(ivaRateId),
+       ivaBp = Value(ivaBp),
+       iepsBp = Value(iepsBp),
+       baseCents = Value(baseCents),
+       iepsCents = Value(iepsCents),
+       ivaCents = Value(ivaCents);
+  static Insertable<LocalSaleLine> custom({
+    Expression<String>? saleId,
+    Expression<int>? lineNo,
+    Expression<String>? variantId,
+    Expression<String>? productName,
+    Expression<String>? variantName,
+    Expression<int>? quantity,
+    Expression<int>? unitPriceCents,
+    Expression<int>? grossCents,
+    Expression<int>? lineDiscountCents,
+    Expression<int>? orderDiscountCents,
+    Expression<int>? netCents,
+    Expression<String>? ivaRateId,
+    Expression<int>? ivaBp,
+    Expression<String>? iepsRateId,
+    Expression<int>? iepsBp,
+    Expression<int>? baseCents,
+    Expression<int>? iepsCents,
+    Expression<int>? ivaCents,
+    Expression<int>? refundedQuantity,
+    Expression<int>? refundedCents,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (saleId != null) 'sale_id': saleId,
+      if (lineNo != null) 'line_no': lineNo,
+      if (variantId != null) 'variant_id': variantId,
+      if (productName != null) 'product_name': productName,
+      if (variantName != null) 'variant_name': variantName,
+      if (quantity != null) 'quantity': quantity,
+      if (unitPriceCents != null) 'unit_price_cents': unitPriceCents,
+      if (grossCents != null) 'gross_cents': grossCents,
+      if (lineDiscountCents != null) 'line_discount_cents': lineDiscountCents,
+      if (orderDiscountCents != null)
+        'order_discount_cents': orderDiscountCents,
+      if (netCents != null) 'net_cents': netCents,
+      if (ivaRateId != null) 'iva_rate_id': ivaRateId,
+      if (ivaBp != null) 'iva_bp': ivaBp,
+      if (iepsRateId != null) 'ieps_rate_id': iepsRateId,
+      if (iepsBp != null) 'ieps_bp': iepsBp,
+      if (baseCents != null) 'base_cents': baseCents,
+      if (iepsCents != null) 'ieps_cents': iepsCents,
+      if (ivaCents != null) 'iva_cents': ivaCents,
+      if (refundedQuantity != null) 'refunded_quantity': refundedQuantity,
+      if (refundedCents != null) 'refunded_cents': refundedCents,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalSaleLinesCompanion copyWith({
+    Value<String>? saleId,
+    Value<int>? lineNo,
+    Value<String>? variantId,
+    Value<String>? productName,
+    Value<String>? variantName,
+    Value<int>? quantity,
+    Value<int>? unitPriceCents,
+    Value<int>? grossCents,
+    Value<int>? lineDiscountCents,
+    Value<int>? orderDiscountCents,
+    Value<int>? netCents,
+    Value<String>? ivaRateId,
+    Value<int>? ivaBp,
+    Value<String?>? iepsRateId,
+    Value<int>? iepsBp,
+    Value<int>? baseCents,
+    Value<int>? iepsCents,
+    Value<int>? ivaCents,
+    Value<int>? refundedQuantity,
+    Value<int>? refundedCents,
+    Value<int>? rowid,
+  }) {
+    return LocalSaleLinesCompanion(
+      saleId: saleId ?? this.saleId,
+      lineNo: lineNo ?? this.lineNo,
+      variantId: variantId ?? this.variantId,
+      productName: productName ?? this.productName,
+      variantName: variantName ?? this.variantName,
+      quantity: quantity ?? this.quantity,
+      unitPriceCents: unitPriceCents ?? this.unitPriceCents,
+      grossCents: grossCents ?? this.grossCents,
+      lineDiscountCents: lineDiscountCents ?? this.lineDiscountCents,
+      orderDiscountCents: orderDiscountCents ?? this.orderDiscountCents,
+      netCents: netCents ?? this.netCents,
+      ivaRateId: ivaRateId ?? this.ivaRateId,
+      ivaBp: ivaBp ?? this.ivaBp,
+      iepsRateId: iepsRateId ?? this.iepsRateId,
+      iepsBp: iepsBp ?? this.iepsBp,
+      baseCents: baseCents ?? this.baseCents,
+      iepsCents: iepsCents ?? this.iepsCents,
+      ivaCents: ivaCents ?? this.ivaCents,
+      refundedQuantity: refundedQuantity ?? this.refundedQuantity,
+      refundedCents: refundedCents ?? this.refundedCents,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (saleId.present) {
+      map['sale_id'] = Variable<String>(saleId.value);
+    }
+    if (lineNo.present) {
+      map['line_no'] = Variable<int>(lineNo.value);
+    }
+    if (variantId.present) {
+      map['variant_id'] = Variable<String>(variantId.value);
+    }
+    if (productName.present) {
+      map['product_name'] = Variable<String>(productName.value);
+    }
+    if (variantName.present) {
+      map['variant_name'] = Variable<String>(variantName.value);
+    }
+    if (quantity.present) {
+      map['quantity'] = Variable<int>(quantity.value);
+    }
+    if (unitPriceCents.present) {
+      map['unit_price_cents'] = Variable<int>(unitPriceCents.value);
+    }
+    if (grossCents.present) {
+      map['gross_cents'] = Variable<int>(grossCents.value);
+    }
+    if (lineDiscountCents.present) {
+      map['line_discount_cents'] = Variable<int>(lineDiscountCents.value);
+    }
+    if (orderDiscountCents.present) {
+      map['order_discount_cents'] = Variable<int>(orderDiscountCents.value);
+    }
+    if (netCents.present) {
+      map['net_cents'] = Variable<int>(netCents.value);
+    }
+    if (ivaRateId.present) {
+      map['iva_rate_id'] = Variable<String>(ivaRateId.value);
+    }
+    if (ivaBp.present) {
+      map['iva_bp'] = Variable<int>(ivaBp.value);
+    }
+    if (iepsRateId.present) {
+      map['ieps_rate_id'] = Variable<String>(iepsRateId.value);
+    }
+    if (iepsBp.present) {
+      map['ieps_bp'] = Variable<int>(iepsBp.value);
+    }
+    if (baseCents.present) {
+      map['base_cents'] = Variable<int>(baseCents.value);
+    }
+    if (iepsCents.present) {
+      map['ieps_cents'] = Variable<int>(iepsCents.value);
+    }
+    if (ivaCents.present) {
+      map['iva_cents'] = Variable<int>(ivaCents.value);
+    }
+    if (refundedQuantity.present) {
+      map['refunded_quantity'] = Variable<int>(refundedQuantity.value);
+    }
+    if (refundedCents.present) {
+      map['refunded_cents'] = Variable<int>(refundedCents.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalSaleLinesCompanion(')
+          ..write('saleId: $saleId, ')
+          ..write('lineNo: $lineNo, ')
+          ..write('variantId: $variantId, ')
+          ..write('productName: $productName, ')
+          ..write('variantName: $variantName, ')
+          ..write('quantity: $quantity, ')
+          ..write('unitPriceCents: $unitPriceCents, ')
+          ..write('grossCents: $grossCents, ')
+          ..write('lineDiscountCents: $lineDiscountCents, ')
+          ..write('orderDiscountCents: $orderDiscountCents, ')
+          ..write('netCents: $netCents, ')
+          ..write('ivaRateId: $ivaRateId, ')
+          ..write('ivaBp: $ivaBp, ')
+          ..write('iepsRateId: $iepsRateId, ')
+          ..write('iepsBp: $iepsBp, ')
+          ..write('baseCents: $baseCents, ')
+          ..write('iepsCents: $iepsCents, ')
+          ..write('ivaCents: $ivaCents, ')
+          ..write('refundedQuantity: $refundedQuantity, ')
+          ..write('refundedCents: $refundedCents, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalSaleDiscountsTable extends LocalSaleDiscounts
+    with TableInfo<$LocalSaleDiscountsTable, LocalSaleDiscount> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalSaleDiscountsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _saleIdMeta = const VerificationMeta('saleId');
+  @override
+  late final GeneratedColumn<String> saleId = GeneratedColumn<String>(
+    'sale_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lineNoMeta = const VerificationMeta('lineNo');
+  @override
+  late final GeneratedColumn<int> lineNo = GeneratedColumn<int>(
+    'line_no',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<int> value = GeneratedColumn<int>(
+    'value',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _centsMeta = const VerificationMeta('cents');
+  @override
+  late final GeneratedColumn<int> cents = GeneratedColumn<int>(
+    'cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _reasonMeta = const VerificationMeta('reason');
+  @override
+  late final GeneratedColumn<String> reason = GeneratedColumn<String>(
+    'reason',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _approverStaffIdMeta = const VerificationMeta(
+    'approverStaffId',
+  );
+  @override
+  late final GeneratedColumn<String> approverStaffId = GeneratedColumn<String>(
+    'approver_staff_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    saleId,
+    lineNo,
+    kind,
+    value,
+    cents,
+    reason,
+    note,
+    approverStaffId,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_sale_discounts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalSaleDiscount> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('sale_id')) {
+      context.handle(
+        _saleIdMeta,
+        saleId.isAcceptableOrUnknown(data['sale_id']!, _saleIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_saleIdMeta);
+    }
+    if (data.containsKey('line_no')) {
+      context.handle(
+        _lineNoMeta,
+        lineNo.isAcceptableOrUnknown(data['line_no']!, _lineNoMeta),
+      );
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_valueMeta);
+    }
+    if (data.containsKey('cents')) {
+      context.handle(
+        _centsMeta,
+        cents.isAcceptableOrUnknown(data['cents']!, _centsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_centsMeta);
+    }
+    if (data.containsKey('reason')) {
+      context.handle(
+        _reasonMeta,
+        reason.isAcceptableOrUnknown(data['reason']!, _reasonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_reasonMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('approver_staff_id')) {
+      context.handle(
+        _approverStaffIdMeta,
+        approverStaffId.isAcceptableOrUnknown(
+          data['approver_staff_id']!,
+          _approverStaffIdMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalSaleDiscount map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalSaleDiscount(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      saleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sale_id'],
+      )!,
+      lineNo: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}line_no'],
+      ),
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}value'],
+      )!,
+      cents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cents'],
+      )!,
+      reason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reason'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      approverStaffId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}approver_staff_id'],
+      ),
+    );
+  }
+
+  @override
+  $LocalSaleDiscountsTable createAlias(String alias) {
+    return $LocalSaleDiscountsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalSaleDiscount extends DataClass
+    implements Insertable<LocalSaleDiscount> {
+  final String id;
+  final String saleId;
+
+  /// Null for the ticket discount.
+  final int? lineNo;
+  final String kind;
+  final int value;
+  final int cents;
+  final String reason;
+  final String? note;
+  final String? approverStaffId;
+  const LocalSaleDiscount({
+    required this.id,
+    required this.saleId,
+    this.lineNo,
+    required this.kind,
+    required this.value,
+    required this.cents,
+    required this.reason,
+    this.note,
+    this.approverStaffId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['sale_id'] = Variable<String>(saleId);
+    if (!nullToAbsent || lineNo != null) {
+      map['line_no'] = Variable<int>(lineNo);
+    }
+    map['kind'] = Variable<String>(kind);
+    map['value'] = Variable<int>(value);
+    map['cents'] = Variable<int>(cents);
+    map['reason'] = Variable<String>(reason);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    if (!nullToAbsent || approverStaffId != null) {
+      map['approver_staff_id'] = Variable<String>(approverStaffId);
+    }
+    return map;
+  }
+
+  LocalSaleDiscountsCompanion toCompanion(bool nullToAbsent) {
+    return LocalSaleDiscountsCompanion(
+      id: Value(id),
+      saleId: Value(saleId),
+      lineNo: lineNo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lineNo),
+      kind: Value(kind),
+      value: Value(value),
+      cents: Value(cents),
+      reason: Value(reason),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      approverStaffId: approverStaffId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(approverStaffId),
+    );
+  }
+
+  factory LocalSaleDiscount.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalSaleDiscount(
+      id: serializer.fromJson<String>(json['id']),
+      saleId: serializer.fromJson<String>(json['saleId']),
+      lineNo: serializer.fromJson<int?>(json['lineNo']),
+      kind: serializer.fromJson<String>(json['kind']),
+      value: serializer.fromJson<int>(json['value']),
+      cents: serializer.fromJson<int>(json['cents']),
+      reason: serializer.fromJson<String>(json['reason']),
+      note: serializer.fromJson<String?>(json['note']),
+      approverStaffId: serializer.fromJson<String?>(json['approverStaffId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'saleId': serializer.toJson<String>(saleId),
+      'lineNo': serializer.toJson<int?>(lineNo),
+      'kind': serializer.toJson<String>(kind),
+      'value': serializer.toJson<int>(value),
+      'cents': serializer.toJson<int>(cents),
+      'reason': serializer.toJson<String>(reason),
+      'note': serializer.toJson<String?>(note),
+      'approverStaffId': serializer.toJson<String?>(approverStaffId),
+    };
+  }
+
+  LocalSaleDiscount copyWith({
+    String? id,
+    String? saleId,
+    Value<int?> lineNo = const Value.absent(),
+    String? kind,
+    int? value,
+    int? cents,
+    String? reason,
+    Value<String?> note = const Value.absent(),
+    Value<String?> approverStaffId = const Value.absent(),
+  }) => LocalSaleDiscount(
+    id: id ?? this.id,
+    saleId: saleId ?? this.saleId,
+    lineNo: lineNo.present ? lineNo.value : this.lineNo,
+    kind: kind ?? this.kind,
+    value: value ?? this.value,
+    cents: cents ?? this.cents,
+    reason: reason ?? this.reason,
+    note: note.present ? note.value : this.note,
+    approverStaffId: approverStaffId.present
+        ? approverStaffId.value
+        : this.approverStaffId,
+  );
+  LocalSaleDiscount copyWithCompanion(LocalSaleDiscountsCompanion data) {
+    return LocalSaleDiscount(
+      id: data.id.present ? data.id.value : this.id,
+      saleId: data.saleId.present ? data.saleId.value : this.saleId,
+      lineNo: data.lineNo.present ? data.lineNo.value : this.lineNo,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      value: data.value.present ? data.value.value : this.value,
+      cents: data.cents.present ? data.cents.value : this.cents,
+      reason: data.reason.present ? data.reason.value : this.reason,
+      note: data.note.present ? data.note.value : this.note,
+      approverStaffId: data.approverStaffId.present
+          ? data.approverStaffId.value
+          : this.approverStaffId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalSaleDiscount(')
+          ..write('id: $id, ')
+          ..write('saleId: $saleId, ')
+          ..write('lineNo: $lineNo, ')
+          ..write('kind: $kind, ')
+          ..write('value: $value, ')
+          ..write('cents: $cents, ')
+          ..write('reason: $reason, ')
+          ..write('note: $note, ')
+          ..write('approverStaffId: $approverStaffId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    saleId,
+    lineNo,
+    kind,
+    value,
+    cents,
+    reason,
+    note,
+    approverStaffId,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalSaleDiscount &&
+          other.id == this.id &&
+          other.saleId == this.saleId &&
+          other.lineNo == this.lineNo &&
+          other.kind == this.kind &&
+          other.value == this.value &&
+          other.cents == this.cents &&
+          other.reason == this.reason &&
+          other.note == this.note &&
+          other.approverStaffId == this.approverStaffId);
+}
+
+class LocalSaleDiscountsCompanion extends UpdateCompanion<LocalSaleDiscount> {
+  final Value<String> id;
+  final Value<String> saleId;
+  final Value<int?> lineNo;
+  final Value<String> kind;
+  final Value<int> value;
+  final Value<int> cents;
+  final Value<String> reason;
+  final Value<String?> note;
+  final Value<String?> approverStaffId;
+  final Value<int> rowid;
+  const LocalSaleDiscountsCompanion({
+    this.id = const Value.absent(),
+    this.saleId = const Value.absent(),
+    this.lineNo = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.value = const Value.absent(),
+    this.cents = const Value.absent(),
+    this.reason = const Value.absent(),
+    this.note = const Value.absent(),
+    this.approverStaffId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalSaleDiscountsCompanion.insert({
+    required String id,
+    required String saleId,
+    this.lineNo = const Value.absent(),
+    required String kind,
+    required int value,
+    required int cents,
+    required String reason,
+    this.note = const Value.absent(),
+    this.approverStaffId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       saleId = Value(saleId),
+       kind = Value(kind),
+       value = Value(value),
+       cents = Value(cents),
+       reason = Value(reason);
+  static Insertable<LocalSaleDiscount> custom({
+    Expression<String>? id,
+    Expression<String>? saleId,
+    Expression<int>? lineNo,
+    Expression<String>? kind,
+    Expression<int>? value,
+    Expression<int>? cents,
+    Expression<String>? reason,
+    Expression<String>? note,
+    Expression<String>? approverStaffId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (saleId != null) 'sale_id': saleId,
+      if (lineNo != null) 'line_no': lineNo,
+      if (kind != null) 'kind': kind,
+      if (value != null) 'value': value,
+      if (cents != null) 'cents': cents,
+      if (reason != null) 'reason': reason,
+      if (note != null) 'note': note,
+      if (approverStaffId != null) 'approver_staff_id': approverStaffId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalSaleDiscountsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? saleId,
+    Value<int?>? lineNo,
+    Value<String>? kind,
+    Value<int>? value,
+    Value<int>? cents,
+    Value<String>? reason,
+    Value<String?>? note,
+    Value<String?>? approverStaffId,
+    Value<int>? rowid,
+  }) {
+    return LocalSaleDiscountsCompanion(
+      id: id ?? this.id,
+      saleId: saleId ?? this.saleId,
+      lineNo: lineNo ?? this.lineNo,
+      kind: kind ?? this.kind,
+      value: value ?? this.value,
+      cents: cents ?? this.cents,
+      reason: reason ?? this.reason,
+      note: note ?? this.note,
+      approverStaffId: approverStaffId ?? this.approverStaffId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (saleId.present) {
+      map['sale_id'] = Variable<String>(saleId.value);
+    }
+    if (lineNo.present) {
+      map['line_no'] = Variable<int>(lineNo.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<int>(value.value);
+    }
+    if (cents.present) {
+      map['cents'] = Variable<int>(cents.value);
+    }
+    if (reason.present) {
+      map['reason'] = Variable<String>(reason.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (approverStaffId.present) {
+      map['approver_staff_id'] = Variable<String>(approverStaffId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalSaleDiscountsCompanion(')
+          ..write('id: $id, ')
+          ..write('saleId: $saleId, ')
+          ..write('lineNo: $lineNo, ')
+          ..write('kind: $kind, ')
+          ..write('value: $value, ')
+          ..write('cents: $cents, ')
+          ..write('reason: $reason, ')
+          ..write('note: $note, ')
+          ..write('approverStaffId: $approverStaffId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4527,6 +7052,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $OutboxEntriesTable outboxEntries = $OutboxEntriesTable(this);
+  late final $LocalSalesTable localSales = $LocalSalesTable(this);
+  late final $LocalSaleLinesTable localSaleLines = $LocalSaleLinesTable(this);
+  late final $LocalSaleDiscountsTable localSaleDiscounts =
+      $LocalSaleDiscountsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4544,6 +7073,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     catalogBranchPrices,
     syncStateEntries,
     outboxEntries,
+    localSales,
+    localSaleLines,
+    localSaleDiscounts,
   ];
 }
 
@@ -7225,6 +9757,1219 @@ typedef $$OutboxEntriesTableProcessedTableManager =
       OutboxEntry,
       PrefetchHooks Function()
     >;
+typedef $$LocalSalesTableCreateCompanionBuilder = LocalSalesCompanion Function({
+  required String id,
+  required String folio,
+  required int folioNumber,
+  required String cashierStaffId,
+  required String cashierName,
+  required DateTime occurredAt,
+  required int grossCents,
+  required int discountCents,
+  required int totalCents,
+  required int tenderedCents,
+  required int changeCents,
+  Value<String> status,
+  Value<int> refundedCents,
+  Value<String> voidedLinesJson,
+  Value<int> rowid,
+});
+typedef $$LocalSalesTableUpdateCompanionBuilder = LocalSalesCompanion Function({
+  Value<String> id,
+  Value<String> folio,
+  Value<int> folioNumber,
+  Value<String> cashierStaffId,
+  Value<String> cashierName,
+  Value<DateTime> occurredAt,
+  Value<int> grossCents,
+  Value<int> discountCents,
+  Value<int> totalCents,
+  Value<int> tenderedCents,
+  Value<int> changeCents,
+  Value<String> status,
+  Value<int> refundedCents,
+  Value<String> voidedLinesJson,
+  Value<int> rowid,
+});
+
+class $$LocalSalesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalSalesTable> {
+  $$LocalSalesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get folio => $composableBuilder(
+    column: $table.folio,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get folioNumber => $composableBuilder(
+    column: $table.folioNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cashierStaffId => $composableBuilder(
+    column: $table.cashierStaffId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cashierName => $composableBuilder(
+    column: $table.cashierName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get occurredAt => $composableBuilder(
+    column: $table.occurredAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get grossCents => $composableBuilder(
+    column: $table.grossCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get discountCents => $composableBuilder(
+    column: $table.discountCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalCents => $composableBuilder(
+    column: $table.totalCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get tenderedCents => $composableBuilder(
+    column: $table.tenderedCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changeCents => $composableBuilder(
+    column: $table.changeCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get refundedCents => $composableBuilder(
+    column: $table.refundedCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get voidedLinesJson => $composableBuilder(
+    column: $table.voidedLinesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalSalesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalSalesTable> {
+  $$LocalSalesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get folio => $composableBuilder(
+    column: $table.folio,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get folioNumber => $composableBuilder(
+    column: $table.folioNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cashierStaffId => $composableBuilder(
+    column: $table.cashierStaffId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cashierName => $composableBuilder(
+    column: $table.cashierName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get occurredAt => $composableBuilder(
+    column: $table.occurredAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get grossCents => $composableBuilder(
+    column: $table.grossCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get discountCents => $composableBuilder(
+    column: $table.discountCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalCents => $composableBuilder(
+    column: $table.totalCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get tenderedCents => $composableBuilder(
+    column: $table.tenderedCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get changeCents => $composableBuilder(
+    column: $table.changeCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get refundedCents => $composableBuilder(
+    column: $table.refundedCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get voidedLinesJson => $composableBuilder(
+    column: $table.voidedLinesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalSalesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalSalesTable> {
+  $$LocalSalesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get folio =>
+      $composableBuilder(column: $table.folio, builder: (column) => column);
+
+  GeneratedColumn<int> get folioNumber => $composableBuilder(
+    column: $table.folioNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get cashierStaffId => $composableBuilder(
+    column: $table.cashierStaffId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get cashierName => $composableBuilder(
+    column: $table.cashierName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get occurredAt => $composableBuilder(
+    column: $table.occurredAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get grossCents => $composableBuilder(
+    column: $table.grossCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get discountCents => $composableBuilder(
+    column: $table.discountCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get totalCents => $composableBuilder(
+    column: $table.totalCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get tenderedCents => $composableBuilder(
+    column: $table.tenderedCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get changeCents => $composableBuilder(
+    column: $table.changeCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get refundedCents => $composableBuilder(
+    column: $table.refundedCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get voidedLinesJson => $composableBuilder(
+    column: $table.voidedLinesJson,
+    builder: (column) => column,
+  );
+}
+
+class $$LocalSalesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalSalesTable,
+          LocalSale,
+          $$LocalSalesTableFilterComposer,
+          $$LocalSalesTableOrderingComposer,
+          $$LocalSalesTableAnnotationComposer,
+          $$LocalSalesTableCreateCompanionBuilder,
+          $$LocalSalesTableUpdateCompanionBuilder,
+          (
+            LocalSale,
+            BaseReferences<_$AppDatabase, $LocalSalesTable, LocalSale>,
+          ),
+          LocalSale,
+          PrefetchHooks Function()
+        > {
+  $$LocalSalesTableTableManager(_$AppDatabase db, $LocalSalesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalSalesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalSalesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalSalesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> folio = const Value.absent(),
+                Value<int> folioNumber = const Value.absent(),
+                Value<String> cashierStaffId = const Value.absent(),
+                Value<String> cashierName = const Value.absent(),
+                Value<DateTime> occurredAt = const Value.absent(),
+                Value<int> grossCents = const Value.absent(),
+                Value<int> discountCents = const Value.absent(),
+                Value<int> totalCents = const Value.absent(),
+                Value<int> tenderedCents = const Value.absent(),
+                Value<int> changeCents = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<int> refundedCents = const Value.absent(),
+                Value<String> voidedLinesJson = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalSalesCompanion(
+                id: id,
+                folio: folio,
+                folioNumber: folioNumber,
+                cashierStaffId: cashierStaffId,
+                cashierName: cashierName,
+                occurredAt: occurredAt,
+                grossCents: grossCents,
+                discountCents: discountCents,
+                totalCents: totalCents,
+                tenderedCents: tenderedCents,
+                changeCents: changeCents,
+                status: status,
+                refundedCents: refundedCents,
+                voidedLinesJson: voidedLinesJson,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String folio,
+                required int folioNumber,
+                required String cashierStaffId,
+                required String cashierName,
+                required DateTime occurredAt,
+                required int grossCents,
+                required int discountCents,
+                required int totalCents,
+                required int tenderedCents,
+                required int changeCents,
+                Value<String> status = const Value.absent(),
+                Value<int> refundedCents = const Value.absent(),
+                Value<String> voidedLinesJson = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalSalesCompanion.insert(
+                id: id,
+                folio: folio,
+                folioNumber: folioNumber,
+                cashierStaffId: cashierStaffId,
+                cashierName: cashierName,
+                occurredAt: occurredAt,
+                grossCents: grossCents,
+                discountCents: discountCents,
+                totalCents: totalCents,
+                tenderedCents: tenderedCents,
+                changeCents: changeCents,
+                status: status,
+                refundedCents: refundedCents,
+                voidedLinesJson: voidedLinesJson,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalSalesTable, LocalSale>(table),
+                  BaseReferences<_$AppDatabase, $LocalSalesTable, LocalSale>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalSalesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalSalesTable,
+      LocalSale,
+      $$LocalSalesTableFilterComposer,
+      $$LocalSalesTableOrderingComposer,
+      $$LocalSalesTableAnnotationComposer,
+      $$LocalSalesTableCreateCompanionBuilder,
+      $$LocalSalesTableUpdateCompanionBuilder,
+      (LocalSale, BaseReferences<_$AppDatabase, $LocalSalesTable, LocalSale>),
+      LocalSale,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalSaleLinesTableCreateCompanionBuilder =
+    LocalSaleLinesCompanion Function({
+      required String saleId,
+      required int lineNo,
+      required String variantId,
+      required String productName,
+      required String variantName,
+      required int quantity,
+      required int unitPriceCents,
+      required int grossCents,
+      required int lineDiscountCents,
+      required int orderDiscountCents,
+      required int netCents,
+      required String ivaRateId,
+      required int ivaBp,
+      Value<String?> iepsRateId,
+      required int iepsBp,
+      required int baseCents,
+      required int iepsCents,
+      required int ivaCents,
+      Value<int> refundedQuantity,
+      Value<int> refundedCents,
+      Value<int> rowid,
+    });
+typedef $$LocalSaleLinesTableUpdateCompanionBuilder =
+    LocalSaleLinesCompanion Function({
+      Value<String> saleId,
+      Value<int> lineNo,
+      Value<String> variantId,
+      Value<String> productName,
+      Value<String> variantName,
+      Value<int> quantity,
+      Value<int> unitPriceCents,
+      Value<int> grossCents,
+      Value<int> lineDiscountCents,
+      Value<int> orderDiscountCents,
+      Value<int> netCents,
+      Value<String> ivaRateId,
+      Value<int> ivaBp,
+      Value<String?> iepsRateId,
+      Value<int> iepsBp,
+      Value<int> baseCents,
+      Value<int> iepsCents,
+      Value<int> ivaCents,
+      Value<int> refundedQuantity,
+      Value<int> refundedCents,
+      Value<int> rowid,
+    });
+
+class $$LocalSaleLinesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalSaleLinesTable> {
+  $$LocalSaleLinesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get saleId => $composableBuilder(
+    column: $table.saleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lineNo => $composableBuilder(
+    column: $table.lineNo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get variantId => $composableBuilder(
+    column: $table.variantId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get productName => $composableBuilder(
+    column: $table.productName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get variantName => $composableBuilder(
+    column: $table.variantName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get unitPriceCents => $composableBuilder(
+    column: $table.unitPriceCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get grossCents => $composableBuilder(
+    column: $table.grossCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lineDiscountCents => $composableBuilder(
+    column: $table.lineDiscountCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get orderDiscountCents => $composableBuilder(
+    column: $table.orderDiscountCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get netCents => $composableBuilder(
+    column: $table.netCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ivaRateId => $composableBuilder(
+    column: $table.ivaRateId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ivaBp => $composableBuilder(
+    column: $table.ivaBp,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get iepsRateId => $composableBuilder(
+    column: $table.iepsRateId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get iepsBp => $composableBuilder(
+    column: $table.iepsBp,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get baseCents => $composableBuilder(
+    column: $table.baseCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get iepsCents => $composableBuilder(
+    column: $table.iepsCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ivaCents => $composableBuilder(
+    column: $table.ivaCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get refundedQuantity => $composableBuilder(
+    column: $table.refundedQuantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get refundedCents => $composableBuilder(
+    column: $table.refundedCents,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalSaleLinesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalSaleLinesTable> {
+  $$LocalSaleLinesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get saleId => $composableBuilder(
+    column: $table.saleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lineNo => $composableBuilder(
+    column: $table.lineNo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get variantId => $composableBuilder(
+    column: $table.variantId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get productName => $composableBuilder(
+    column: $table.productName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get variantName => $composableBuilder(
+    column: $table.variantName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get unitPriceCents => $composableBuilder(
+    column: $table.unitPriceCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get grossCents => $composableBuilder(
+    column: $table.grossCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lineDiscountCents => $composableBuilder(
+    column: $table.lineDiscountCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get orderDiscountCents => $composableBuilder(
+    column: $table.orderDiscountCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get netCents => $composableBuilder(
+    column: $table.netCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ivaRateId => $composableBuilder(
+    column: $table.ivaRateId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ivaBp => $composableBuilder(
+    column: $table.ivaBp,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get iepsRateId => $composableBuilder(
+    column: $table.iepsRateId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get iepsBp => $composableBuilder(
+    column: $table.iepsBp,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get baseCents => $composableBuilder(
+    column: $table.baseCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get iepsCents => $composableBuilder(
+    column: $table.iepsCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ivaCents => $composableBuilder(
+    column: $table.ivaCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get refundedQuantity => $composableBuilder(
+    column: $table.refundedQuantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get refundedCents => $composableBuilder(
+    column: $table.refundedCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalSaleLinesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalSaleLinesTable> {
+  $$LocalSaleLinesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get saleId =>
+      $composableBuilder(column: $table.saleId, builder: (column) => column);
+
+  GeneratedColumn<int> get lineNo =>
+      $composableBuilder(column: $table.lineNo, builder: (column) => column);
+
+  GeneratedColumn<String> get variantId =>
+      $composableBuilder(column: $table.variantId, builder: (column) => column);
+
+  GeneratedColumn<String> get productName => $composableBuilder(
+    column: $table.productName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get variantName => $composableBuilder(
+    column: $table.variantName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get quantity =>
+      $composableBuilder(column: $table.quantity, builder: (column) => column);
+
+  GeneratedColumn<int> get unitPriceCents => $composableBuilder(
+    column: $table.unitPriceCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get grossCents => $composableBuilder(
+    column: $table.grossCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get lineDiscountCents => $composableBuilder(
+    column: $table.lineDiscountCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get orderDiscountCents => $composableBuilder(
+    column: $table.orderDiscountCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get netCents =>
+      $composableBuilder(column: $table.netCents, builder: (column) => column);
+
+  GeneratedColumn<String> get ivaRateId =>
+      $composableBuilder(column: $table.ivaRateId, builder: (column) => column);
+
+  GeneratedColumn<int> get ivaBp =>
+      $composableBuilder(column: $table.ivaBp, builder: (column) => column);
+
+  GeneratedColumn<String> get iepsRateId => $composableBuilder(
+    column: $table.iepsRateId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get iepsBp =>
+      $composableBuilder(column: $table.iepsBp, builder: (column) => column);
+
+  GeneratedColumn<int> get baseCents =>
+      $composableBuilder(column: $table.baseCents, builder: (column) => column);
+
+  GeneratedColumn<int> get iepsCents =>
+      $composableBuilder(column: $table.iepsCents, builder: (column) => column);
+
+  GeneratedColumn<int> get ivaCents =>
+      $composableBuilder(column: $table.ivaCents, builder: (column) => column);
+
+  GeneratedColumn<int> get refundedQuantity => $composableBuilder(
+    column: $table.refundedQuantity,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get refundedCents => $composableBuilder(
+    column: $table.refundedCents,
+    builder: (column) => column,
+  );
+}
+
+class $$LocalSaleLinesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalSaleLinesTable,
+          LocalSaleLine,
+          $$LocalSaleLinesTableFilterComposer,
+          $$LocalSaleLinesTableOrderingComposer,
+          $$LocalSaleLinesTableAnnotationComposer,
+          $$LocalSaleLinesTableCreateCompanionBuilder,
+          $$LocalSaleLinesTableUpdateCompanionBuilder,
+          (
+            LocalSaleLine,
+            BaseReferences<_$AppDatabase, $LocalSaleLinesTable, LocalSaleLine>,
+          ),
+          LocalSaleLine,
+          PrefetchHooks Function()
+        > {
+  $$LocalSaleLinesTableTableManager(
+    _$AppDatabase db,
+    $LocalSaleLinesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalSaleLinesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalSaleLinesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalSaleLinesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> saleId = const Value.absent(),
+                Value<int> lineNo = const Value.absent(),
+                Value<String> variantId = const Value.absent(),
+                Value<String> productName = const Value.absent(),
+                Value<String> variantName = const Value.absent(),
+                Value<int> quantity = const Value.absent(),
+                Value<int> unitPriceCents = const Value.absent(),
+                Value<int> grossCents = const Value.absent(),
+                Value<int> lineDiscountCents = const Value.absent(),
+                Value<int> orderDiscountCents = const Value.absent(),
+                Value<int> netCents = const Value.absent(),
+                Value<String> ivaRateId = const Value.absent(),
+                Value<int> ivaBp = const Value.absent(),
+                Value<String?> iepsRateId = const Value.absent(),
+                Value<int> iepsBp = const Value.absent(),
+                Value<int> baseCents = const Value.absent(),
+                Value<int> iepsCents = const Value.absent(),
+                Value<int> ivaCents = const Value.absent(),
+                Value<int> refundedQuantity = const Value.absent(),
+                Value<int> refundedCents = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalSaleLinesCompanion(
+                saleId: saleId,
+                lineNo: lineNo,
+                variantId: variantId,
+                productName: productName,
+                variantName: variantName,
+                quantity: quantity,
+                unitPriceCents: unitPriceCents,
+                grossCents: grossCents,
+                lineDiscountCents: lineDiscountCents,
+                orderDiscountCents: orderDiscountCents,
+                netCents: netCents,
+                ivaRateId: ivaRateId,
+                ivaBp: ivaBp,
+                iepsRateId: iepsRateId,
+                iepsBp: iepsBp,
+                baseCents: baseCents,
+                iepsCents: iepsCents,
+                ivaCents: ivaCents,
+                refundedQuantity: refundedQuantity,
+                refundedCents: refundedCents,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String saleId,
+                required int lineNo,
+                required String variantId,
+                required String productName,
+                required String variantName,
+                required int quantity,
+                required int unitPriceCents,
+                required int grossCents,
+                required int lineDiscountCents,
+                required int orderDiscountCents,
+                required int netCents,
+                required String ivaRateId,
+                required int ivaBp,
+                Value<String?> iepsRateId = const Value.absent(),
+                required int iepsBp,
+                required int baseCents,
+                required int iepsCents,
+                required int ivaCents,
+                Value<int> refundedQuantity = const Value.absent(),
+                Value<int> refundedCents = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalSaleLinesCompanion.insert(
+                saleId: saleId,
+                lineNo: lineNo,
+                variantId: variantId,
+                productName: productName,
+                variantName: variantName,
+                quantity: quantity,
+                unitPriceCents: unitPriceCents,
+                grossCents: grossCents,
+                lineDiscountCents: lineDiscountCents,
+                orderDiscountCents: orderDiscountCents,
+                netCents: netCents,
+                ivaRateId: ivaRateId,
+                ivaBp: ivaBp,
+                iepsRateId: iepsRateId,
+                iepsBp: iepsBp,
+                baseCents: baseCents,
+                iepsCents: iepsCents,
+                ivaCents: ivaCents,
+                refundedQuantity: refundedQuantity,
+                refundedCents: refundedCents,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalSaleLinesTable, LocalSaleLine>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalSaleLinesTable,
+                    LocalSaleLine
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalSaleLinesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalSaleLinesTable,
+      LocalSaleLine,
+      $$LocalSaleLinesTableFilterComposer,
+      $$LocalSaleLinesTableOrderingComposer,
+      $$LocalSaleLinesTableAnnotationComposer,
+      $$LocalSaleLinesTableCreateCompanionBuilder,
+      $$LocalSaleLinesTableUpdateCompanionBuilder,
+      (
+        LocalSaleLine,
+        BaseReferences<_$AppDatabase, $LocalSaleLinesTable, LocalSaleLine>,
+      ),
+      LocalSaleLine,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalSaleDiscountsTableCreateCompanionBuilder =
+    LocalSaleDiscountsCompanion Function({
+      required String id,
+      required String saleId,
+      Value<int?> lineNo,
+      required String kind,
+      required int value,
+      required int cents,
+      required String reason,
+      Value<String?> note,
+      Value<String?> approverStaffId,
+      Value<int> rowid,
+    });
+typedef $$LocalSaleDiscountsTableUpdateCompanionBuilder =
+    LocalSaleDiscountsCompanion Function({
+      Value<String> id,
+      Value<String> saleId,
+      Value<int?> lineNo,
+      Value<String> kind,
+      Value<int> value,
+      Value<int> cents,
+      Value<String> reason,
+      Value<String?> note,
+      Value<String?> approverStaffId,
+      Value<int> rowid,
+    });
+
+class $$LocalSaleDiscountsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalSaleDiscountsTable> {
+  $$LocalSaleDiscountsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get saleId => $composableBuilder(
+    column: $table.saleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lineNo => $composableBuilder(
+    column: $table.lineNo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cents => $composableBuilder(
+    column: $table.cents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reason => $composableBuilder(
+    column: $table.reason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get approverStaffId => $composableBuilder(
+    column: $table.approverStaffId,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalSaleDiscountsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalSaleDiscountsTable> {
+  $$LocalSaleDiscountsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get saleId => $composableBuilder(
+    column: $table.saleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lineNo => $composableBuilder(
+    column: $table.lineNo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cents => $composableBuilder(
+    column: $table.cents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reason => $composableBuilder(
+    column: $table.reason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get approverStaffId => $composableBuilder(
+    column: $table.approverStaffId,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalSaleDiscountsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalSaleDiscountsTable> {
+  $$LocalSaleDiscountsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get saleId =>
+      $composableBuilder(column: $table.saleId, builder: (column) => column);
+
+  GeneratedColumn<int> get lineNo =>
+      $composableBuilder(column: $table.lineNo, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<int> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+
+  GeneratedColumn<int> get cents =>
+      $composableBuilder(column: $table.cents, builder: (column) => column);
+
+  GeneratedColumn<String> get reason =>
+      $composableBuilder(column: $table.reason, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get approverStaffId => $composableBuilder(
+    column: $table.approverStaffId,
+    builder: (column) => column,
+  );
+}
+
+class $$LocalSaleDiscountsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalSaleDiscountsTable,
+          LocalSaleDiscount,
+          $$LocalSaleDiscountsTableFilterComposer,
+          $$LocalSaleDiscountsTableOrderingComposer,
+          $$LocalSaleDiscountsTableAnnotationComposer,
+          $$LocalSaleDiscountsTableCreateCompanionBuilder,
+          $$LocalSaleDiscountsTableUpdateCompanionBuilder,
+          (
+            LocalSaleDiscount,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalSaleDiscountsTable,
+              LocalSaleDiscount
+            >,
+          ),
+          LocalSaleDiscount,
+          PrefetchHooks Function()
+        > {
+  $$LocalSaleDiscountsTableTableManager(
+    _$AppDatabase db,
+    $LocalSaleDiscountsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalSaleDiscountsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalSaleDiscountsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalSaleDiscountsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> saleId = const Value.absent(),
+                Value<int?> lineNo = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<int> value = const Value.absent(),
+                Value<int> cents = const Value.absent(),
+                Value<String> reason = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<String?> approverStaffId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalSaleDiscountsCompanion(
+                id: id,
+                saleId: saleId,
+                lineNo: lineNo,
+                kind: kind,
+                value: value,
+                cents: cents,
+                reason: reason,
+                note: note,
+                approverStaffId: approverStaffId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String saleId,
+                Value<int?> lineNo = const Value.absent(),
+                required String kind,
+                required int value,
+                required int cents,
+                required String reason,
+                Value<String?> note = const Value.absent(),
+                Value<String?> approverStaffId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalSaleDiscountsCompanion.insert(
+                id: id,
+                saleId: saleId,
+                lineNo: lineNo,
+                kind: kind,
+                value: value,
+                cents: cents,
+                reason: reason,
+                note: note,
+                approverStaffId: approverStaffId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalSaleDiscountsTable, LocalSaleDiscount>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalSaleDiscountsTable,
+                    LocalSaleDiscount
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalSaleDiscountsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalSaleDiscountsTable,
+      LocalSaleDiscount,
+      $$LocalSaleDiscountsTableFilterComposer,
+      $$LocalSaleDiscountsTableOrderingComposer,
+      $$LocalSaleDiscountsTableAnnotationComposer,
+      $$LocalSaleDiscountsTableCreateCompanionBuilder,
+      $$LocalSaleDiscountsTableUpdateCompanionBuilder,
+      (
+        LocalSaleDiscount,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalSaleDiscountsTable,
+          LocalSaleDiscount
+        >,
+      ),
+      LocalSaleDiscount,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -7256,4 +11001,10 @@ class $AppDatabaseManager {
       $$SyncStateEntriesTableTableManager(_db, _db.syncStateEntries);
   $$OutboxEntriesTableTableManager get outboxEntries =>
       $$OutboxEntriesTableTableManager(_db, _db.outboxEntries);
+  $$LocalSalesTableTableManager get localSales =>
+      $$LocalSalesTableTableManager(_db, _db.localSales);
+  $$LocalSaleLinesTableTableManager get localSaleLines =>
+      $$LocalSaleLinesTableTableManager(_db, _db.localSaleLines);
+  $$LocalSaleDiscountsTableTableManager get localSaleDiscounts =>
+      $$LocalSaleDiscountsTableTableManager(_db, _db.localSaleDiscounts);
 }

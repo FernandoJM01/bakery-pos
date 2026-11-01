@@ -11,9 +11,11 @@ import 'package:sqlite3/sqlite3.dart' show Database;
 import 'package:uuid/uuid.dart';
 
 import 'catalog_tables.dart';
+import 'sale_tables.dart';
 import 'secure_storage.dart';
 
 export 'catalog_tables.dart';
+export 'sale_tables.dart';
 
 part 'local_database.g.dart';
 
@@ -81,6 +83,9 @@ class OfflineApprovalEntries extends Table {
     CatalogBranchPrices,
     SyncStateEntries,
     OutboxEntries,
+    LocalSales,
+    LocalSaleLines,
+    LocalSaleDiscounts,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -89,7 +94,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -115,6 +120,11 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 5) {
         await m.createTable(outboxEntries);
+      }
+      if (from < 6) {
+        await m.createTable(localSales);
+        await m.createTable(localSaleLines);
+        await m.createTable(localSaleDiscounts);
       }
     },
   );
@@ -193,6 +203,23 @@ class AppDatabase extends _$AppDatabase {
       },
     );
   });
+
+  /// A ticket with lines left without paying (M3 brief 4.1): queued as
+  /// `sale.ticket_discarded` with its line count and amount. It takes no
+  /// folio number.
+  Future<void> recordTicketDiscarded({
+    required String staffId,
+    required int lineCount,
+    required int amountCents,
+    required DateTime at,
+  }) => _queueOfflineEvent(
+    action: 'sale.ticket_discarded',
+    staffId: staffId,
+    at: at,
+    extra: {
+      'ticket': {'lineCount': lineCount, 'amountCents': amountCents},
+    },
+  );
 
   /// Queues an `audit.offline_event` (M2 brief 4.3). The payload follows
   /// the contract's `OfflineAuditPayload` and never carries a PIN.
@@ -374,6 +401,9 @@ class AppDatabase extends _$AppDatabase {
       catalogBranchPrices,
       syncStateEntries,
       outboxEntries,
+      localSales,
+      localSaleLines,
+      localSaleDiscounts,
     ]) {
       await delete(table).go();
     }

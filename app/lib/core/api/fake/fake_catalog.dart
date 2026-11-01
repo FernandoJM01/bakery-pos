@@ -57,6 +57,15 @@ class FakeCatalog {
   final inbox = <String, Object>{};
   final quarantine = <Map<String, dynamic>>[];
 
+  /// `sale.completed` payloads the fake server applied, with their id.
+  final sales = <Map<String, dynamic>>[];
+
+  static const _knownTypes = {
+    'audit.offline_event',
+    'sale.completed',
+    'sale.refunded',
+  };
+
   int _seq = 0;
   int _ids = 0;
 
@@ -474,13 +483,16 @@ class FakeCatalog {
         continue;
       }
       final payload = Map<String, dynamic>.from(r['payload'] as Map? ?? {});
-      final code = r['type'] != 'audit.offline_event'
+      final code = !_knownTypes.contains(r['type'])
           ? 'SYNC_UNKNOWN_TYPE'
           : payload.containsKey('pin')
           ? 'SYNC_INVALID_PAYLOAD'
           : null;
       if (code == null) {
         inbox[id] = 'APPLIED';
+        if (r['type'] == 'sale.completed') {
+          sales.add({'id': id, 'occurredAt': r['occurredAt'], ...payload});
+        }
         results.add({'id': id, 'status': 'APPLIED'});
         continue;
       }

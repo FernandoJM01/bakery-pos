@@ -357,5 +357,160 @@
   "syncQuarantinedHelp": "El servidor no pudo aplicar estos registros. El dueño los revisa en el panel, en Sincronización.",
   "syncNow": "Sincronizar ahora",
   "syncDone": "Sincronizado",
-  "syncFailed": "No se pudo conectar con el servidor; se reintentará solo"
+  "syncFailed": "No se pudo conectar con el servidor; se reintentará solo",
+  "saleTicketTitle": "Ticket",
+  "saleTicketEmpty": "Toca un producto para agregarlo",
+  "saleClear": "Vaciar ticket",
+  "saleClearTitle": "¿Vaciar el ticket?",
+  "saleClearBody": "Se quitarán {count} productos sin cobrar. Queda registrado.",
+  "@saleClearBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "saleClearConfirm": "Vaciar",
+  "saleLineQuantityPrice": "{quantity} × {price}",
+  "@saleLineQuantityPrice": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "saleSubtotal": "Subtotal",
+  "saleDiscounts": "Descuentos",
+  "saleTotal": "Total",
+  "saleDiscountButton": "Descuento",
+  "salePay": "Cobrar",
+  "saleLineTitle": "{product} · {variant}",
+  "@saleLineTitle": {
+    "placeholders": {
+      "product": {
+        "type": "String"
+      },
+      "variant": {
+        "type": "String"
+      }
+    }
+  },
+  "saleLineRemove": "Quitar",
+  "saleLineDiscount": "Descuento a esta línea",
+  "saleLineDone": "Listo",
+  "saleNoFolio": "Esta caja aún no tiene folio. Sincronízala con el servidor una vez para poder cobrar.",
+  "saleDiscountLineTitle": "Descuento: {name}",
+  "@saleDiscountLineTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "saleDiscountTicketTitle": "Descuento al ticket",
+  "saleDiscountPercent": "%",
+  "saleDiscountAmount": "$",
+  "saleDiscountValuePercent": "Porcentaje",
+  "saleDiscountValueAmount": "Monto en pesos",
+  "saleDiscountPreview": "Descuenta {amount}",
+  "@saleDiscountPreview": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "saleDiscountReason": "Motivo",
+  "saleReasonFrequent": "Cliente frecuente",
+  "saleReasonDamaged": "Producto dañado",
+  "saleReasonPromotion": "Promoción",
+  "saleReasonOther": "Otro",
+  "saleDiscountNote": "Nota",
+  "saleDiscountNoteRequired": "Escribe una nota para el motivo Otro",
+  "saleDiscountInvalid": "Escribe un descuento válido que no pase del importe",
+  "saleDiscountOverLimit": "Más de {limit} necesita la autorización de un gerente",
+  "@saleDiscountOverLimit": {
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "saleDiscountApprovalNeeded": "Sin la autorización de un gerente no se puede aplicar este descuento",
+  "saleDiscountApply": "Aplicar",
+  "saleDiscountRemove": "Quitar descuento",
+  "saleDiscountTicketLabel": "Descuento al ticket",
+  "salePaymentTitle": "Cobrar en efectivo",
+  "salePaymentTotal": "Total a cobrar",
+  "salePaymentReceived": "Recibido",
+  "salePaymentExact": "Exacto",
+  "salePaymentChange": "Cambio",
+  "salePaymentMissing": "Faltan {amount}",
+  "@salePaymentMissing": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salePaymentFinish": "Finalizar",
+  "salePaymentFailed": "No se pudo guardar la venta. Inténtalo de nuevo.",
+  "receiptTitle": "Venta registrada",
+  "receiptFolio": "Folio {folio}",
+  "@receiptFolio": {
+    "placeholders": {
+      "folio": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptCashier": "Atendió: {name}",
+  "@receiptCashier": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptTaxIncluded": "IVA incluido",
+  "receiptTaxLine": "{kind} {rate}: base {base}, impuesto {tax}",
+  "@receiptTaxLine": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      },
+      "base": {
+        "type": "String"
+      },
+      "tax": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptReceived": "Recibido",
+  "receiptChange": "Cambio",
+  "receiptNewSale": "Nueva venta",
+  "saleDiscountReasonRequired": "Elige un motivo",
+  "receiptLineDiscountPercent": "Descuento {percent}",
+  "@receiptLineDiscountPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "saleChooseVariantTitle": "{product}: elige la presentación",
+  "@saleChooseVariantTitle": {
+    "placeholders": {
+      "product": {
+        "type": "String"
+      }
+    }
+  }
 }

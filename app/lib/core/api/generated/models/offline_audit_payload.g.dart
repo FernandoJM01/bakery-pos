@@ -13,6 +13,9 @@ OfflineAuditPayload _$OfflineAuditPayloadFromJson(Map<String, dynamic> json) =>
       approverStaffId: json['approverStaffId'] as String?,
       approvalAction: json['approvalAction'] as String?,
       reference: json['reference'] as String?,
+      ticket: json['ticket'] == null
+          ? null
+          : Ticket.fromJson(json['ticket'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$OfflineAuditPayloadToJson(
@@ -23,6 +26,7 @@ Map<String, dynamic> _$OfflineAuditPayloadToJson(
   'approverStaffId': ?instance.approverStaffId,
   'approvalAction': ?instance.approvalAction,
   'reference': ?instance.reference,
+  'ticket': ?instance.ticket,
 };
 
 const _$OfflineAuditPayloadActionEnumMap = {
@@ -30,5 +34,6 @@ const _$OfflineAuditPayloadActionEnumMap = {
   OfflineAuditPayloadAction.undefined1: 'auth.login_failure',
   OfflineAuditPayloadAction.undefined2: 'auth.locked',
   OfflineAuditPayloadAction.undefined3: 'auth.approval_granted',
+  OfflineAuditPayloadAction.undefined4: 'sale.ticket_discarded',
   OfflineAuditPayloadAction.$unknown: r'$unknown',
 };
