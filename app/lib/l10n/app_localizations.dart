@@ -3125,6 +3125,366 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{from} – {to}'**
   String salesDateRange(String from, String to);
+
+  /// No description provided for @cashLoadFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo leer el estado de la caja'**
+  String get cashLoadFailed;
+
+  /// No description provided for @cashOpenHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta el fondo de caja para abrir el turno'**
+  String get cashOpenHint;
+
+  /// No description provided for @cashOpen.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir turno'**
+  String get cashOpen;
+
+  /// No description provided for @cashFloatDiffers.
+  ///
+  /// In es, this message translates to:
+  /// **'El fondo no coincide con el último cierre ({amount})'**
+  String cashFloatDiffers(String amount);
+
+  /// No description provided for @cashShiftOpen.
+  ///
+  /// In es, this message translates to:
+  /// **'Turno abierto el {date} por {name}'**
+  String cashShiftOpen(String date, String name);
+
+  /// No description provided for @cashFloatLine.
+  ///
+  /// In es, this message translates to:
+  /// **'Fondo: {amount}'**
+  String cashFloatLine(String amount);
+
+  /// No description provided for @cashIn.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrada'**
+  String get cashIn;
+
+  /// No description provided for @cashOut.
+  ///
+  /// In es, this message translates to:
+  /// **'Salida'**
+  String get cashOut;
+
+  /// No description provided for @cashOpenDrawer.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir cajón'**
+  String get cashOpenDrawer;
+
+  /// No description provided for @cashClose.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar turno'**
+  String get cashClose;
+
+  /// No description provided for @cashBlindHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta el efectivo del cajón. El sistema muestra lo esperado después de confirmar.'**
+  String get cashBlindHint;
+
+  /// No description provided for @cashConfirmCount.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar conteo'**
+  String get cashConfirmCount;
+
+  /// No description provided for @cashConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Confirmar el conteo?'**
+  String get cashConfirmTitle;
+
+  /// No description provided for @cashConfirmBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Contaste {amount}. Después de confirmar, el conteo no se puede cambiar.'**
+  String cashConfirmBody(String amount);
+
+  /// No description provided for @cashExpected.
+  ///
+  /// In es, this message translates to:
+  /// **'Esperado'**
+  String get cashExpected;
+
+  /// No description provided for @cashCounted.
+  ///
+  /// In es, this message translates to:
+  /// **'Contado'**
+  String get cashCounted;
+
+  /// No description provided for @cashDifference.
+  ///
+  /// In es, this message translates to:
+  /// **'Diferencia'**
+  String get cashDifference;
+
+  /// No description provided for @cashFloat.
+  ///
+  /// In es, this message translates to:
+  /// **'Fondo de caja'**
+  String get cashFloat;
+
+  /// No description provided for @cashFlagged.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta diferencia queda marcada para el dueño y necesita una nota'**
+  String get cashFlagged;
+
+  /// No description provided for @cashSeeZ.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver corte Z'**
+  String get cashSeeZ;
+
+  /// No description provided for @cashNoteForDifference.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota sobre la diferencia'**
+  String get cashNoteForDifference;
+
+  /// No description provided for @cashFinishClose.
+  ///
+  /// In es, this message translates to:
+  /// **'Terminar cierre'**
+  String get cashFinishClose;
+
+  /// No description provided for @cashPastShifts.
+  ///
+  /// In es, this message translates to:
+  /// **'Cortes anteriores'**
+  String get cashPastShifts;
+
+  /// No description provided for @cashPastShift.
+  ///
+  /// In es, this message translates to:
+  /// **'Corte Z {number}'**
+  String cashPastShift(int number);
+
+  /// No description provided for @cashCountTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Total: {amount}'**
+  String cashCountTotal(String amount);
+
+  /// No description provided for @cashAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto'**
+  String get cashAmount;
+
+  /// No description provided for @cashAmountInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe un monto válido'**
+  String get cashAmountInvalid;
+
+  /// No description provided for @cashReasonRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige un motivo'**
+  String get cashReasonRequired;
+
+  /// No description provided for @cashNoteRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe una nota'**
+  String get cashNoteRequired;
+
+  /// No description provided for @cashNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get cashNote;
+
+  /// No description provided for @cashApprovalNeeded.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin la autorización de un gerente no se puede registrar'**
+  String get cashApprovalNeeded;
+
+  /// No description provided for @cashReasonChangeFund.
+  ///
+  /// In es, this message translates to:
+  /// **'Fondo de cambio'**
+  String get cashReasonChangeFund;
+
+  /// No description provided for @cashReasonSupplier.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago a proveedor'**
+  String get cashReasonSupplier;
+
+  /// No description provided for @cashReasonBankDrop.
+  ///
+  /// In es, this message translates to:
+  /// **'Depósito al banco'**
+  String get cashReasonBankDrop;
+
+  /// No description provided for @cashReasonOther.
+  ///
+  /// In es, this message translates to:
+  /// **'Otro'**
+  String get cashReasonOther;
+
+  /// No description provided for @zTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Corte Z {label}'**
+  String zTitle(String label);
+
+  /// No description provided for @zOpened.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrió: {date}, {name}'**
+  String zOpened(String date, String name);
+
+  /// No description provided for @zClosed.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerró: {date}, {name}'**
+  String zClosed(String date, String name);
+
+  /// No description provided for @zSaleCount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ventas'**
+  String get zSaleCount;
+
+  /// No description provided for @zGross.
+  ///
+  /// In es, this message translates to:
+  /// **'Bruto'**
+  String get zGross;
+
+  /// No description provided for @zDiscounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuentos'**
+  String get zDiscounts;
+
+  /// No description provided for @zNet.
+  ///
+  /// In es, this message translates to:
+  /// **'Neto'**
+  String get zNet;
+
+  /// No description provided for @zTaxes.
+  ///
+  /// In es, this message translates to:
+  /// **'Impuestos, netos de devoluciones'**
+  String get zTaxes;
+
+  /// No description provided for @zRefunds.
+  ///
+  /// In es, this message translates to:
+  /// **'Devoluciones ({count})'**
+  String zRefunds(int count);
+
+  /// No description provided for @zVoids.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelaciones ({count})'**
+  String zVoids(int count);
+
+  /// No description provided for @zPrepaid.
+  ///
+  /// In es, this message translates to:
+  /// **'Anticipos cobrados'**
+  String get zPrepaid;
+
+  /// No description provided for @zCashIn.
+  ///
+  /// In es, this message translates to:
+  /// **'Entradas de efectivo'**
+  String get zCashIn;
+
+  /// No description provided for @zCashOut.
+  ///
+  /// In es, this message translates to:
+  /// **'Salidas de efectivo'**
+  String get zCashOut;
+
+  /// No description provided for @zNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota: {note}'**
+  String zNote(String note);
+
+  /// No description provided for @printAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Imprimir'**
+  String get printAction;
+
+  /// No description provided for @printReprint.
+  ///
+  /// In es, this message translates to:
+  /// **'Reimprimir'**
+  String get printReprint;
+
+  /// No description provided for @printFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo imprimir. Revisa la impresora.'**
+  String get printFailed;
+
+  /// No description provided for @printerTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Impresora'**
+  String get printerTitle;
+
+  /// No description provided for @printerHost.
+  ///
+  /// In es, this message translates to:
+  /// **'Dirección IP'**
+  String get printerHost;
+
+  /// No description provided for @printerPort.
+  ///
+  /// In es, this message translates to:
+  /// **'Puerto'**
+  String get printerPort;
+
+  /// No description provided for @printerTest.
+  ///
+  /// In es, this message translates to:
+  /// **'Imprimir prueba'**
+  String get printerTest;
+
+  /// No description provided for @printerTestOk.
+  ///
+  /// In es, this message translates to:
+  /// **'Prueba enviada'**
+  String get printerTestOk;
+
+  /// No description provided for @printerTestPage.
+  ///
+  /// In es, this message translates to:
+  /// **'Prueba de impresora'**
+  String get printerTestPage;
+
+  /// No description provided for @saleNoShift.
+  ///
+  /// In es, this message translates to:
+  /// **'Abre un turno para vender'**
+  String get saleNoShift;
+
+  /// No description provided for @saleOpenShift.
+  ///
+  /// In es, this message translates to:
+  /// **'Ir a Caja'**
+  String get saleOpenShift;
 }
 
 class _AppLocalizationsDelegate

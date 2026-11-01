@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/money/money.dart';
+import '../../../core/router/app_router.dart';
+import '../../../core/storage/local_database.dart';
+import '../../../core/storage/secure_storage.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimensions.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/data/till_auth_service.dart';
 import '../../auth/domain/approval_models.dart';
+import '../../cash/data/shift_repository.dart';
+import '../../printing/data/printer_service.dart';
+import '../../printing/domain/documents.dart';
 import '../../till_catalog/data/till_catalog_repository.dart';
 import '../../till_catalog/presentation/product_grid_screen.dart';
 import '../data/held_ticket_repository.dart';
@@ -133,6 +140,11 @@ class TicketPanel extends ConsumerWidget {
     final repo = ref.read(saleRepositoryProvider);
     final session = ref.read(tillSessionProvider);
     if (session == null || ref.read(ticketProvider).isEmpty) return;
+    if (await ref.read(tillDatabaseProvider).openShiftId() == null) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.saleNoShift)));
+      return;
+    }
+    if (!context.mounted) return;
     var ticket = ref.read(ticketProvider).withoutApprovalsBy(session.staff.id);
     final prefix = await repo.folioPrefix();
     if (!context.mounted) return;
@@ -177,17 +189,41 @@ class TicketPanel extends ConsumerWidget {
     );
     if (receipt == null || !context.mounted) return;
     ref.read(ticketProvider.notifier).clear();
+    final branch = ref.read(enrolledBranchNameProvider).value;
+    final doc = receiptDocument(l10n, receipt, branch);
+    final printer = ref.read(printerServiceProvider);
+    // A cash sale opens the drawer with its ticket. Printing never holds up
+    // the sale: the receipt stays on screen with a button to try again.
+    final hasPrinter = await printer.config() != null;
+    if (!context.mounted) return;
     await showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => ReceiptDialog(receipt: receipt),
+      builder: (_) => ReceiptDialog(
+        receipt: receipt,
+        firstPrint: hasPrinter ? printer.print(doc, openDrawer: true) : null,
+        onPrint: hasPrinter ? () => printer.print(doc) : null,
+      ),
     );
   }
 
-  Future<void> _refund(BuildContext context, RefundKind kind) async {
+  Future<void> _refund(
+    BuildContext context,
+    WidgetRef ref,
+    RefundKind kind,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    if (await ref.read(tillDatabaseProvider).openShiftId() == null) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.saleNoShift)));
+      return;
+    }
+    if (!context.mounted) return;
     final result = await showRefundFlow(context, kind);
     if (result != null && context.mounted) {
-      await showRefundDone(context, kind, result);
+      // The money comes out of the drawer.
+      await ref.read(printerServiceProvider).kickDrawer();
+      if (context.mounted) await showRefundDone(context, kind, result);
     }
   }
 
@@ -212,12 +248,28 @@ class TicketPanel extends ConsumerWidget {
     final ticket = ref.watch(ticketProvider);
     final totals = ticket.totals;
     final heldCount = ref.watch(heldTicketsProvider).value?.length ?? 0;
+    final shift = ref.watch(currentShiftProvider);
+    final noShift =
+        shift.hasValue &&
+        (shift.value == null || shift.value!.status != 'OPEN');
 
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.paddingMedium),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (noShift)
+            MaterialBanner(
+              key: const Key('no-shift-banner'),
+              content: Text(l10n.saleNoShift),
+              actions: [
+                TextButton(
+                  key: const Key('no-shift-open'),
+                  onPressed: () => context.go(AppRoutes.tillCash),
+                  child: Text(l10n.saleOpenShift),
+                ),
+              ],
+            ),
           Row(
             children: [
               Expanded(
@@ -260,7 +312,7 @@ class TicketPanel extends ConsumerWidget {
               PopupMenuButton<RefundKind>(
                 key: const Key('sale-menu'),
                 tooltip: l10n.saleMenu,
-                onSelected: (kind) => _refund(context, kind),
+                onSelected: (kind) => _refund(context, ref, kind),
                 itemBuilder: (_) => [
                   PopupMenuItem(
                     key: const Key('menu-refund'),
@@ -340,7 +392,9 @@ class TicketPanel extends ConsumerWidget {
                   height: AppDimensions.largeTouchTarget,
                   child: FilledButton(
                     key: const Key('ticket-pay'),
-                    onPressed: ticket.isEmpty ? null : () => _pay(context, ref),
+                    onPressed: ticket.isEmpty || noShift
+                        ? null
+                        : () => _pay(context, ref),
                     child: Text(
                       l10n.salePay,
                       style: theme.textTheme.titleLarge?.copyWith(

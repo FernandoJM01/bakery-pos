@@ -1716,4 +1716,211 @@ class AppLocalizationsEs extends AppLocalizations {
   String salesDateRange(String from, String to) {
     return '$from – $to';
   }
+
+  @override
+  String get cashLoadFailed => 'No se pudo leer el estado de la caja';
+
+  @override
+  String get cashOpenHint => 'Cuenta el fondo de caja para abrir el turno';
+
+  @override
+  String get cashOpen => 'Abrir turno';
+
+  @override
+  String cashFloatDiffers(String amount) {
+    return 'El fondo no coincide con el último cierre ($amount)';
+  }
+
+  @override
+  String cashShiftOpen(String date, String name) {
+    return 'Turno abierto el $date por $name';
+  }
+
+  @override
+  String cashFloatLine(String amount) {
+    return 'Fondo: $amount';
+  }
+
+  @override
+  String get cashIn => 'Entrada';
+
+  @override
+  String get cashOut => 'Salida';
+
+  @override
+  String get cashOpenDrawer => 'Abrir cajón';
+
+  @override
+  String get cashClose => 'Cerrar turno';
+
+  @override
+  String get cashBlindHint =>
+      'Cuenta el efectivo del cajón. El sistema muestra lo esperado después de confirmar.';
+
+  @override
+  String get cashConfirmCount => 'Confirmar conteo';
+
+  @override
+  String get cashConfirmTitle => '¿Confirmar el conteo?';
+
+  @override
+  String cashConfirmBody(String amount) {
+    return 'Contaste $amount. Después de confirmar, el conteo no se puede cambiar.';
+  }
+
+  @override
+  String get cashExpected => 'Esperado';
+
+  @override
+  String get cashCounted => 'Contado';
+
+  @override
+  String get cashDifference => 'Diferencia';
+
+  @override
+  String get cashFloat => 'Fondo de caja';
+
+  @override
+  String get cashFlagged =>
+      'Esta diferencia queda marcada para el dueño y necesita una nota';
+
+  @override
+  String get cashSeeZ => 'Ver corte Z';
+
+  @override
+  String get cashNoteForDifference => 'Nota sobre la diferencia';
+
+  @override
+  String get cashFinishClose => 'Terminar cierre';
+
+  @override
+  String get cashPastShifts => 'Cortes anteriores';
+
+  @override
+  String cashPastShift(int number) {
+    return 'Corte Z $number';
+  }
+
+  @override
+  String cashCountTotal(String amount) {
+    return 'Total: $amount';
+  }
+
+  @override
+  String get cashAmount => 'Monto';
+
+  @override
+  String get cashAmountInvalid => 'Escribe un monto válido';
+
+  @override
+  String get cashReasonRequired => 'Elige un motivo';
+
+  @override
+  String get cashNoteRequired => 'Escribe una nota';
+
+  @override
+  String get cashNote => 'Nota';
+
+  @override
+  String get cashApprovalNeeded =>
+      'Sin la autorización de un gerente no se puede registrar';
+
+  @override
+  String get cashReasonChangeFund => 'Fondo de cambio';
+
+  @override
+  String get cashReasonSupplier => 'Pago a proveedor';
+
+  @override
+  String get cashReasonBankDrop => 'Depósito al banco';
+
+  @override
+  String get cashReasonOther => 'Otro';
+
+  @override
+  String zTitle(String label) {
+    return 'Corte Z $label';
+  }
+
+  @override
+  String zOpened(String date, String name) {
+    return 'Abrió: $date, $name';
+  }
+
+  @override
+  String zClosed(String date, String name) {
+    return 'Cerró: $date, $name';
+  }
+
+  @override
+  String get zSaleCount => 'Ventas';
+
+  @override
+  String get zGross => 'Bruto';
+
+  @override
+  String get zDiscounts => 'Descuentos';
+
+  @override
+  String get zNet => 'Neto';
+
+  @override
+  String get zTaxes => 'Impuestos, netos de devoluciones';
+
+  @override
+  String zRefunds(int count) {
+    return 'Devoluciones ($count)';
+  }
+
+  @override
+  String zVoids(int count) {
+    return 'Cancelaciones ($count)';
+  }
+
+  @override
+  String get zPrepaid => 'Anticipos cobrados';
+
+  @override
+  String get zCashIn => 'Entradas de efectivo';
+
+  @override
+  String get zCashOut => 'Salidas de efectivo';
+
+  @override
+  String zNote(String note) {
+    return 'Nota: $note';
+  }
+
+  @override
+  String get printAction => 'Imprimir';
+
+  @override
+  String get printReprint => 'Reimprimir';
+
+  @override
+  String get printFailed => 'No se pudo imprimir. Revisa la impresora.';
+
+  @override
+  String get printerTitle => 'Impresora';
+
+  @override
+  String get printerHost => 'Dirección IP';
+
+  @override
+  String get printerPort => 'Puerto';
+
+  @override
+  String get printerTest => 'Imprimir prueba';
+
+  @override
+  String get printerTestOk => 'Prueba enviada';
+
+  @override
+  String get printerTestPage => 'Prueba de impresora';
+
+  @override
+  String get saleNoShift => 'Abre un turno para vender';
+
+  @override
+  String get saleOpenShift => 'Ir a Caja';
 }

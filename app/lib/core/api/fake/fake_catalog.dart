@@ -67,6 +67,9 @@ class FakeCatalog {
     'audit.offline_event',
     'sale.completed',
     'sale.refunded',
+    'shift.opened',
+    'cash.movement',
+    'shift.closed',
   };
 
   int _seq = 0;

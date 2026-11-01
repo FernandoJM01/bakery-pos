@@ -41,12 +41,10 @@ class ShiftRepository {
   Selectable<LocalShift> _current() =>
       _db.select(_db.localShifts)..where((s) => s.status.isNotValue('CLOSED'));
 
-  Stream<LocalShift?> watchCurrent() => _current().watchSingleOrNull();
-
   Future<LocalShift?> current() => _current().getSingleOrNull();
 
   /// Closed shifts, newest first.
-  Stream<List<LocalShift>> watchClosed({int limit = 30}) =>
+  Future<List<LocalShift>> closed({int limit = 30}) =>
       (_db.select(_db.localShifts)
             ..where((s) => s.status.equals('CLOSED'))
             ..orderBy([
@@ -54,7 +52,7 @@ class ShiftRepository {
                   OrderingTerm(expression: s.openedAt, mode: OrderingMode.desc),
             ])
             ..limit(limit))
-          .watch();
+          .get();
 
   Iterable<Insertable<LocalCashCount>> _countRows(
     String shiftId,
@@ -387,7 +385,13 @@ final shiftRepositoryProvider = Provider<ShiftRepository>(
   (ref) => ShiftRepository(ref.watch(tillDatabaseProvider)),
 );
 
-/// The shift the drawer is on, live; null when a new one must be opened.
-final currentShiftProvider = StreamProvider<LocalShift?>(
-  (ref) => ref.watch(shiftRepositoryProvider).watchCurrent(),
+/// The shift the drawer is on; null when a new one must be opened. Whoever
+/// opens or closes a shift invalidates this.
+final currentShiftProvider = FutureProvider<LocalShift?>(
+  (ref) => ref.watch(shiftRepositoryProvider).current(),
+);
+
+/// This till's closed shifts, newest first.
+final closedShiftsProvider = FutureProvider<List<LocalShift>>(
+  (ref) => ref.watch(shiftRepositoryProvider).closed(),
 );
