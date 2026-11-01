@@ -22,6 +22,10 @@ class FakeApiInterceptor extends Interceptor {
   bool rejectRefresh = false;
   bool expireAccessToken = false;
 
+  /// Simulates a server that cannot be reached: every call fails with a
+  /// connection error, as when the till has no network.
+  bool offline = false;
+
   /// Catalog and sync routes (M2), sharing this fake's branches.
   late final FakeCatalog catalog = FakeCatalog(
     branchIds: [branchId1, branchId2],
@@ -145,6 +149,15 @@ class FakeApiInterceptor extends Interceptor {
 
     final path = options.path;
     final method = options.method.toUpperCase();
+
+    if (offline) {
+      return handler.reject(
+        DioException.connectionError(
+          requestOptions: options,
+          reason: 'fake server is offline',
+        ),
+      );
+    }
 
     void ok(Object? data, {int status = 200}) => handler.resolve(
       Response(requestOptions: options, statusCode: status, data: data),
@@ -291,6 +304,8 @@ class FakeApiInterceptor extends Interceptor {
               'name': 'Caja 1',
               'type': 'TILL',
               'status': 'ACTIVE',
+              'tillNumber': 1,
+              'folioPrefix': 'SUC1-01',
               'createdAt': DateTime.now().toUtc().toIso8601String(),
             },
             'deviceToken': 'fake-device-token-secret-32-bytes',
@@ -316,6 +331,8 @@ class FakeApiInterceptor extends Interceptor {
           statusCode: 200,
           data: {
             'branchId': branchId1,
+            'folioPrefix': 'SUC1-01',
+            'saleSettings': {'discountLimitBp': 1000},
             'generatedAt': DateTime.now().toUtc().toIso8601String(),
             'staff': [
               {

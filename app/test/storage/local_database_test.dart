@@ -29,8 +29,8 @@ void main() {
   });
 
   group('LocalDatabase', () {
-    test('schemaVersion is 3', () {
-      expect(db.schemaVersion, 3);
+    test('schemaVersion is 7', () {
+      expect(db.schemaVersion, 7);
     });
 
     test(

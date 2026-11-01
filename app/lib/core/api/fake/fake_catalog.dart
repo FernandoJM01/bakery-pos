@@ -60,6 +60,15 @@ class FakeCatalog {
   final inbox = <String, Object>{};
   final quarantine = <Map<String, dynamic>>[];
 
+  /// `sale.completed` payloads the fake server applied, with their id.
+  final sales = <Map<String, dynamic>>[];
+
+  static const _knownTypes = {
+    'audit.offline_event',
+    'sale.completed',
+    'sale.refunded',
+  };
+
   int _seq = 0;
   int _ids = 0;
 
@@ -379,6 +388,12 @@ class FakeCatalog {
         photoIds.add(id);
         return _ok({'id': id, 'width': 800, 'height': 800, 'bytes': 1024}, 201);
 
+      case ('GET', ['sales', 'lookup']):
+        final folio = query['folio']?.toString();
+        final sale = sales.where((x) => x['folio'] == folio).firstOrNull;
+        if (sale == null) return _err(404, 'NOT_FOUND', 'Sale not found');
+        return _ok(saleView(sale));
+
       case ('GET', ['sync', 'catalog']):
         return _ok(_pull(query));
       case ('POST', ['sync', 'push']):
@@ -456,6 +471,42 @@ class FakeCatalog {
     };
   }
 
+  /// A stored `sale.completed` payload as the contract's `Sale`.
+  Map<String, dynamic> saleView(Map<String, dynamic> p) {
+    final lines = [
+      for (final l in (p['lines'] as List).cast<Map>())
+        {
+          ...Map<String, dynamic>.from(l)..remove('discount'),
+          'refundedQuantity': l['refundedQuantity'] ?? 0,
+          'refundedCents': l['refundedCents'] ?? 0,
+        },
+    ];
+    return {
+      'id': p['id'],
+      'folio': p['folio'],
+      'folioNumber': p['folioNumber'],
+      'branchId': deviceBranchId,
+      'deviceId': p['deviceId'] ?? 'fake-other-till',
+      'cashierStaffId': p['cashierStaffId'],
+      'cashierName': 'Ana (Cajera)',
+      'occurredAt': p['occurredAt'],
+      'receivedAt': p['occurredAt'],
+      'status': p['status'] ?? 'COMPLETED',
+      'lineCount': lines.length,
+      'grossCents': p['grossCents'],
+      'discountCents': p['discountCents'],
+      'totalCents': p['totalCents'],
+      'refundedCents': p['refundedCents'] ?? 0,
+      'shiftId': null,
+      'lines': lines,
+      'discounts': <Object>[],
+      'taxes': <Object>[],
+      'payments': p['payments'],
+      'voidedLines': p['voidedLines'] ?? <Object>[],
+      'refunds': <Object>[],
+    };
+  }
+
   /// Records with an unknown type, or a payload holding a PIN, are
   /// quarantined like the server would; everything else applies once.
   Map<String, dynamic> _push(Map<String, dynamic> body) {
@@ -477,13 +528,16 @@ class FakeCatalog {
         continue;
       }
       final payload = Map<String, dynamic>.from(r['payload'] as Map? ?? {});
-      final code = r['type'] != 'audit.offline_event'
+      final code = !_knownTypes.contains(r['type'])
           ? 'SYNC_UNKNOWN_TYPE'
           : payload.containsKey('pin')
           ? 'SYNC_INVALID_PAYLOAD'
           : null;
       if (code == null) {
         inbox[id] = 'APPLIED';
+        if (r['type'] == 'sale.completed') {
+          sales.add({'id': id, 'occurredAt': r['occurredAt'], ...payload});
+        }
         results.add({'id': id, 'status': 'APPLIED'});
         continue;
       }

@@ -20,12 +20,18 @@ StaffBundle _$StaffBundleFromJson(Map<String, dynamic> json) => StaffBundle(
           .toList(),
     ),
   ),
+  folioPrefix: json['folioPrefix'] as String?,
+  saleSettings: json['saleSettings'] == null
+      ? null
+      : SaleSettings.fromJson(json['saleSettings'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$StaffBundleToJson(StaffBundle instance) =>
     <String, dynamic>{
       'branchId': instance.branchId,
       'generatedAt': instance.generatedAt.toIso8601String(),
+      'folioPrefix': ?instance.folioPrefix,
+      'saleSettings': ?instance.saleSettings,
       'staff': instance.staff,
       'roles': instance.roles.map(
         (k, e) =>
