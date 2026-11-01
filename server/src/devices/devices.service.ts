@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Branch, Device, DeviceStatus, Role } from '@prisma/client';
+import { Branch, Device, DeviceStatus, Prisma, Role } from '@prisma/client';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service';
 import { ClockService } from '../common/clock.service';
@@ -17,6 +17,7 @@ import {
   hashTokenWithPepper,
 } from '../common/crypto';
 import { ROLE_PERMISSIONS } from '../common/permissions';
+import { SALE_SETTINGS } from '../sales/sale-settings';
 import { PrismaService } from '../prisma/prisma.service';
 import { ActivateDeviceDto } from './dto/activate-device.dto';
 import { CreateDeviceDto } from './dto/create-device.dto';
@@ -32,8 +33,18 @@ export function serializeDevice(device: Device) {
     appVersion: device.appVersion ?? null,
     createdAt: device.createdAt.toISOString(),
     revokedAt: device.revokedAt ? device.revokedAt.toISOString() : null,
+    tillNumber: device.tillNumber ?? null,
+    folioPrefix: device.folioPrefix ?? null,
   };
 }
+
+/** `<branch code>-<till number, 2 digits>`, for example `SUC1-02` (M3 brief 2). */
+export function folioPrefixFor(branchCode: string, tillNumber: number): string {
+  return `${branchCode}-${String(tillNumber).padStart(2, '0')}`;
+}
+
+/** The largest till number a branch can have; folios keep 2 digits. */
+export const MAX_TILL_NUMBER = 99;
 
 export function serializeBranch(branch: Branch) {
   return {
@@ -84,18 +95,16 @@ export class DevicesService {
     const enrollmentCodeHash = hashTokenWithPepper(enrollmentCode, this.pepper);
     const expiresAt = new Date(this.clock.now().getTime() + 30 * 60 * 1000);
 
-    const device = await this.prisma.device.create({
-      data: {
-        id: uuidv7(),
-        branchId: dto.branchId,
-        name: dto.name,
-        type: dto.type,
-        status: DeviceStatus.PENDING,
-        enrollmentCodeHash,
-        enrollmentExpiresAt: expiresAt,
-        createdBy: actorStaffId,
-        createdAt: this.clock.now(),
-      },
+    const device = await this.createNumbered({
+      id: uuidv7(),
+      branchId: dto.branchId,
+      name: dto.name,
+      type: dto.type,
+      status: DeviceStatus.PENDING,
+      enrollmentCodeHash,
+      enrollmentExpiresAt: expiresAt,
+      createdBy: actorStaffId,
+      createdAt: this.clock.now(),
     });
 
     await this.audit.log({
@@ -113,6 +122,33 @@ export class DevicesService {
       enrollmentCode,
       expiresAt: expiresAt.toISOString(),
     };
+  }
+
+  /**
+   * Creates the device. A sales till gets the next till number of its
+   * branch and its folio prefix from the database (migration
+   * 20261102000000_sales). Two tills created at once collide on the unique
+   * (branch, till number) and retry.
+   */
+  private async createNumbered(
+    data: Prisma.DeviceUncheckedCreateInput,
+  ): Promise<Device> {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await this.prisma.device.create({ data });
+      } catch (e) {
+        if (e instanceof Error && e.message.includes('TILL_LIMIT')) {
+          throw new ConflictException({
+            code: 'CONFLICT',
+            message: `A branch can have at most ${MAX_TILL_NUMBER} sales tills`,
+          });
+        }
+        const clash =
+          e instanceof Prisma.PrismaClientKnownRequestError &&
+          e.code === 'P2002';
+        if (!clash || attempt >= 4) throw e;
+      }
+    }
   }
 
   async regenerateEnrollmentCode(deviceId: string) {
@@ -309,6 +345,8 @@ export class DevicesService {
     return {
       branchId: device.branchId,
       generatedAt: this.clock.now().toISOString(),
+      folioPrefix: device.folioPrefix ?? null,
+      saleSettings: { ...SALE_SETTINGS },
       staff: staff.map((s) => ({
         id: s.id,
         displayName: s.displayName,

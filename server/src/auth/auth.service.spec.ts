@@ -354,6 +354,8 @@ describe('AuthService', () => {
       createdBy: null,
       createdAt: new Date(),
       revokedAt: null,
+      tillNumber: 1,
+      folioPrefix: 'SUC1-01',
     };
 
     it('rejects if branch is inactive or not found (AUTH_NOT_ALLOWED)', async () => {
