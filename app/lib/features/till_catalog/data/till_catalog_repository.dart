@@ -17,6 +17,10 @@ class GridProduct {
     required this.name,
     required this.photoId,
     required this.variants,
+    this.ivaRateId = '',
+    this.ivaBp = 0,
+    this.iepsRateId,
+    this.iepsBp = 0,
   });
 
   final String id;
@@ -24,6 +28,13 @@ class GridProduct {
   final String name;
   final String? photoId;
   final List<GridVariant> variants;
+
+  /// The product's tax rates as the till's copy has them; a sale line keeps
+  /// the id and the rate (M3 brief 4.5).
+  final String ivaRateId;
+  final int ivaBp;
+  final String? iepsRateId;
+  final int iepsBp;
 
   int get lowestPriceCents =>
       variants.map((v) => v.priceCents).reduce((a, b) => a < b ? a : b);
@@ -215,6 +226,10 @@ class TillCatalogRepository {
       for (final bp in await _db.select(_db.catalogBranchPrices).get())
         bp.variantId: bp.priceCents,
     };
+    final rates = {
+      for (final r in await _db.select(_db.catalogTaxRates).get())
+        r.id: r.rateBp,
+    };
     final activeCats = {for (final c in cats) c.id};
     final byProduct = <String, List<GridVariant>>{};
     for (final v in variants) {
@@ -244,6 +259,10 @@ class TillCatalogRepository {
               name: p.name,
               photoId: p.photoId,
               variants: byProduct[p.id]!,
+              ivaRateId: p.ivaRateId,
+              ivaBp: rates[p.ivaRateId] ?? 0,
+              iepsRateId: p.iepsRateId,
+              iepsBp: p.iepsRateId == null ? 0 : rates[p.iepsRateId] ?? 0,
             ),
       ],
     );

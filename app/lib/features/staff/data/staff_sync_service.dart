@@ -6,6 +6,7 @@ import '../../../core/api/generated/rest_client.dart';
 import '../../../core/storage/local_database.dart';
 import '../../auth/data/till_auth_service.dart';
 import '../../auth/domain/till_auth_state.dart';
+import '../../sale/data/sale_repository.dart';
 
 final staffSyncServiceProvider = Provider<StaffSyncService>((ref) {
   final restClient = ref.watch(restClientProvider);
@@ -62,6 +63,15 @@ class StaffSyncService {
       staff: staffCompanions,
       permissions: permissionCompanions,
     );
+    // M3: this till's folio prefix and the cashier discount limit.
+    final prefix = bundle.folioPrefix;
+    if (prefix != null && prefix.isNotEmpty) {
+      await database.setSessionValue(folioPrefixKey, prefix);
+    }
+    final limit = bundle.saleSettings?.discountLimitBp;
+    if (limit != null) {
+      await database.setSessionValue(discountLimitKey, '$limit');
+    }
 
     return staffCompanions.length;
   }

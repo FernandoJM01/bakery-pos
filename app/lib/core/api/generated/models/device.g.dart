@@ -20,6 +20,8 @@ Device _$DeviceFromJson(Map<String, dynamic> json) => Device(
   revokedAt: json['revokedAt'] == null
       ? null
       : DateTime.parse(json['revokedAt'] as String),
+  tillNumber: (json['tillNumber'] as num?)?.toInt(),
+  folioPrefix: json['folioPrefix'] as String?,
 );
 
 Map<String, dynamic> _$DeviceToJson(Device instance) => <String, dynamic>{
@@ -32,6 +34,8 @@ Map<String, dynamic> _$DeviceToJson(Device instance) => <String, dynamic>{
   'appVersion': ?instance.appVersion,
   'createdAt': instance.createdAt.toIso8601String(),
   'revokedAt': ?instance.revokedAt?.toIso8601String(),
+  'tillNumber': ?instance.tillNumber,
+  'folioPrefix': ?instance.folioPrefix,
 };
 
 const _$DeviceTypeEnumMap = {

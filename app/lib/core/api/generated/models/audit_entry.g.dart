@@ -60,5 +60,9 @@ const _$AuditActionEnumMap = {
   AuditAction.undefined23: 'catalog.tax_rate_created',
   AuditAction.undefined24: 'catalog.tax_rate_updated',
   AuditAction.undefined25: 'sync.quarantine_resolved',
+  AuditAction.undefined26: 'sale.discount_over_limit',
+  AuditAction.undefined27: 'sale.refunded',
+  AuditAction.undefined28: 'sale.voided',
+  AuditAction.undefined29: 'sale.ticket_discarded',
   AuditAction.$unknown: r'$unknown',
 };

@@ -303,6 +303,8 @@ class FakeApiInterceptor extends Interceptor {
               'name': 'Caja 1',
               'type': 'TILL',
               'status': 'ACTIVE',
+              'tillNumber': 1,
+              'folioPrefix': 'SUC1-01',
               'createdAt': DateTime.now().toUtc().toIso8601String(),
             },
             'deviceToken': 'fake-device-token-secret-32-bytes',
@@ -328,6 +330,8 @@ class FakeApiInterceptor extends Interceptor {
           statusCode: 200,
           data: {
             'branchId': branchId1,
+            'folioPrefix': 'SUC1-01',
+            'saleSettings': {'discountLimitBp': 1000},
             'generatedAt': DateTime.now().toUtc().toIso8601String(),
             'staff': [
               {

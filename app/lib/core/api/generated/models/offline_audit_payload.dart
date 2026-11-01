@@ -5,6 +5,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
 import 'offline_audit_payload_action.dart';
+import 'ticket.dart';
 
 part 'offline_audit_payload.g.dart';
 
@@ -17,6 +18,7 @@ class OfflineAuditPayload {
     this.approverStaffId,
     this.approvalAction,
     this.reference,
+    this.ticket,
   });
 
   factory OfflineAuditPayload.fromJson(Map<String, Object?> json) =>
@@ -33,6 +35,9 @@ class OfflineAuditPayload {
   /// The permission key (`PermissionKey`) that was approved; required for `auth.approval_granted`
   final String? approvalAction;
   final String? reference;
+
+  /// Required for `sale.ticket_discarded` - what was on the ticket that was never paid.
+  final Ticket? ticket;
 
   Map<String, Object?> toJson() => _$OfflineAuditPayloadToJson(this);
 }
