@@ -27,6 +27,7 @@ class AppRoutes {
   static const String backofficeStaff = '/backoffice/staff';
   static const String backofficeDevices = '/backoffice/devices';
   static const String backofficeAudit = '/backoffice/audit';
+  static const String backofficeCatalog = '/backoffice/catalog';
 }
 
 const tillSectionRoutes = [
@@ -359,6 +360,17 @@ GoRouter createAppRouter(
                 ) ??
                 BackofficeSectionPlaceholder.forRoute(
                   AppRoutes.backofficeDevices,
+                ),
+          ),
+          GoRoute(
+            path: AppRoutes.backofficeCatalog,
+            builder: (context, state) =>
+                backofficeSectionBuilder?.call(
+                  context,
+                  AppRoutes.backofficeCatalog,
+                ) ??
+                BackofficeSectionPlaceholder.forRoute(
+                  AppRoutes.backofficeCatalog,
                 ),
           ),
           GoRoute(

@@ -8,6 +8,7 @@ import 'features/backoffice/auth/presentation/backoffice_login_screen.dart';
 import 'features/backoffice/shell/presentation/backoffice_shell.dart';
 import 'features/audit/presentation/audit_screen.dart';
 import 'features/branches/presentation/branches_screen.dart';
+import 'features/catalog/presentation/catalog_screen.dart';
 import 'features/devices/presentation/devices_screen.dart';
 import 'features/staff/presentation/staff_screen.dart';
 
@@ -36,6 +37,9 @@ class BackofficeAppRoot extends ConsumerWidget {
         }
         if (route == AppRoutes.backofficeDevices) {
           return const DevicesScreen();
+        }
+        if (route == AppRoutes.backofficeCatalog) {
+          return const CatalogScreen();
         }
         if (route == AppRoutes.backofficeAudit) {
           return const AuditScreen();

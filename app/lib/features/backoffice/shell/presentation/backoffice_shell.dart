@@ -30,6 +30,16 @@ class BackofficeShell extends ConsumerWidget {
         ),
       );
     }
+    if (permissions.contains('catalog.manage')) {
+      navItems.add(
+        _NavItem(
+          route: AppRoutes.backofficeCatalog,
+          label: l10n.navCatalog,
+          icon: Icons.bakery_dining_outlined,
+          selectedIcon: Icons.bakery_dining,
+        ),
+      );
+    }
     if (permissions.contains('staff.manage')) {
       navItems.add(
         _NavItem(

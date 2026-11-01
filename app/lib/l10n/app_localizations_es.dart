@@ -792,4 +792,251 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsSaved => 'Ajustes guardados';
+
+  @override
+  String get catalogTitle => 'Catálogo';
+
+  @override
+  String get catalogTabProducts => 'Productos';
+
+  @override
+  String get catalogTabCategories => 'Categorías';
+
+  @override
+  String get catalogTabTaxes => 'Impuestos';
+
+  @override
+  String get catalogSearchHint => 'Buscar por nombre, SKU o código de barras';
+
+  @override
+  String get catalogAllCategories => 'Todas las categorías';
+
+  @override
+  String get catalogShowInactive => 'Mostrar inactivos';
+
+  @override
+  String get catalogNewProduct => 'Nuevo producto';
+
+  @override
+  String get catalogEditProduct => 'Editar producto';
+
+  @override
+  String get catalogNoProducts => 'No hay productos con estos filtros';
+
+  @override
+  String get catalogErrorLoading => 'No se pudo cargar el catálogo';
+
+  @override
+  String get catalogInactive => 'Inactivo';
+
+  @override
+  String catalogVariantCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count variantes',
+      one: '1 variante',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get catalogNewCategory => 'Nueva categoría';
+
+  @override
+  String get catalogEditCategory => 'Editar categoría';
+
+  @override
+  String get catalogNoCategories => 'Aún no hay categorías';
+
+  @override
+  String get catalogCategoryName => 'Nombre de la categoría';
+
+  @override
+  String get catalogCategoryColor => 'Color';
+
+  @override
+  String get catalogCategoryNoColor => 'Sin color';
+
+  @override
+  String get catalogMoveUp => 'Subir';
+
+  @override
+  String get catalogMoveDown => 'Bajar';
+
+  @override
+  String get catalogActive => 'Activo';
+
+  @override
+  String get catalogNewTaxRate => 'Nuevo impuesto';
+
+  @override
+  String get catalogEditTaxRate => 'Editar impuesto';
+
+  @override
+  String get catalogTaxKind => 'Tipo';
+
+  @override
+  String get catalogTaxName => 'Nombre';
+
+  @override
+  String get catalogTaxRatePercent => 'Tasa (%)';
+
+  @override
+  String get catalogTaxRateInvalid => 'Escribe una tasa entre 0 y 100';
+
+  @override
+  String get catalogTaxInUse =>
+      'Este impuesto lo usan productos; cámbialos antes de desactivarlo';
+
+  @override
+  String get catalogTaxPlaceholderNote =>
+      'Las tasas son provisionales hasta que el contador las confirme.';
+
+  @override
+  String get catalogProductName => 'Nombre del producto';
+
+  @override
+  String get catalogProductCategory => 'Categoría';
+
+  @override
+  String get catalogProductUnit => 'Unidad';
+
+  @override
+  String get catalogUnitPiece => 'Pieza';
+
+  @override
+  String get catalogUnitKg => 'Kilo';
+
+  @override
+  String get catalogUnitPackage => 'Paquete';
+
+  @override
+  String get catalogProductDescription => 'Descripción (opcional)';
+
+  @override
+  String get catalogIva => 'IVA';
+
+  @override
+  String get catalogIeps => 'IEPS';
+
+  @override
+  String get catalogNoIeps => 'Sin IEPS';
+
+  @override
+  String get catalogPhoto => 'Foto';
+
+  @override
+  String get catalogPhotoChoose => 'Elegir foto';
+
+  @override
+  String get catalogPhotoRemove => 'Quitar foto';
+
+  @override
+  String get catalogPhotoNone => 'Sin foto';
+
+  @override
+  String get catalogDayOld => 'Pan del día anterior';
+
+  @override
+  String get catalogDayOldDiscountDays => 'Descuento después de (días)';
+
+  @override
+  String get catalogDayOldDiscountPercent => 'Descuento (%)';
+
+  @override
+  String get catalogDayOldWasteDays => 'Merma después de (días)';
+
+  @override
+  String get catalogDayOldPair =>
+      'Escribe los días y el porcentaje de descuento juntos, o deja ambos vacíos';
+
+  @override
+  String get catalogDayOldWasteAfter =>
+      'Los días de merma deben ser más que los días de descuento';
+
+  @override
+  String get catalogDayOldInvalid => 'Escribe un número entero';
+
+  @override
+  String get catalogVariants => 'Variantes';
+
+  @override
+  String get catalogAddVariant => 'Agregar variante';
+
+  @override
+  String get catalogRemoveVariant => 'Quitar variante';
+
+  @override
+  String get catalogVariantName => 'Variante';
+
+  @override
+  String get catalogVariantPrice => 'Precio';
+
+  @override
+  String get catalogVariantSku => 'SKU';
+
+  @override
+  String get catalogVariantBarcode => 'Código de barras';
+
+  @override
+  String catalogBranchPrice(String branch) {
+    return 'Precio en $branch';
+  }
+
+  @override
+  String get catalogBranchPriceHint => 'Igual que el precio base';
+
+  @override
+  String get catalogNeedsVariant =>
+      'El producto necesita al menos una variante';
+
+  @override
+  String get catalogRequired => 'Obligatorio';
+
+  @override
+  String get catalogPriceInvalid => 'Escribe un precio como 12.50';
+
+  @override
+  String catalogTaxSplit(String base, String ieps, String iva) {
+    return 'Base $base · IEPS $ieps · IVA $iva';
+  }
+
+  @override
+  String get catalogSkuInUse => 'Ese SKU ya lo usa otra variante';
+
+  @override
+  String get catalogBarcodeInUse =>
+      'Ese código de barras ya lo usa otra variante';
+
+  @override
+  String get catalogNameInUse =>
+      'Ya existe una categoría activa con ese nombre';
+
+  @override
+  String get catalogNeedsActiveVariant =>
+      'Un producto activo necesita al menos una variante activa';
+
+  @override
+  String get catalogSaved => 'Producto guardado';
+
+  @override
+  String get catalogCategorySaved => 'Categoría guardada';
+
+  @override
+  String get catalogTaxSaved => 'Impuesto guardado';
+
+  @override
+  String get catalogPhotoUploadFailed =>
+      'No se pudo subir la foto. Usa una imagen JPG, PNG o WebP de hasta 5 MB.';
+
+  @override
+  String catalogProductSubtitle(String category, String variants) {
+    return '$category · $variants';
+  }
+
+  @override
+  String catalogTaxSubtitle(String kind, String rate) {
+    return '$kind · $rate%';
+  }
 }

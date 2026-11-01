@@ -313,5 +313,126 @@
   "settingsPreviewProductName": "Concha de vainilla",
   "settingsPreviewProductPrice": "$15.00",
   "settingsPreviewSampleButton": "Botón de muestra",
-  "settingsSaved": "Ajustes guardados"
+  "settingsSaved": "Ajustes guardados",
+  "catalogTitle": "Catálogo",
+  "catalogTabProducts": "Productos",
+  "catalogTabCategories": "Categorías",
+  "catalogTabTaxes": "Impuestos",
+  "catalogSearchHint": "Buscar por nombre, SKU o código de barras",
+  "catalogAllCategories": "Todas las categorías",
+  "catalogShowInactive": "Mostrar inactivos",
+  "catalogNewProduct": "Nuevo producto",
+  "catalogEditProduct": "Editar producto",
+  "catalogNoProducts": "No hay productos con estos filtros",
+  "catalogErrorLoading": "No se pudo cargar el catálogo",
+  "catalogInactive": "Inactivo",
+  "catalogVariantCount": "{count, plural, =1{1 variante} other{{count} variantes}}",
+  "@catalogVariantCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "catalogNewCategory": "Nueva categoría",
+  "catalogEditCategory": "Editar categoría",
+  "catalogNoCategories": "Aún no hay categorías",
+  "catalogCategoryName": "Nombre de la categoría",
+  "catalogCategoryColor": "Color",
+  "catalogCategoryNoColor": "Sin color",
+  "catalogMoveUp": "Subir",
+  "catalogMoveDown": "Bajar",
+  "catalogActive": "Activo",
+  "catalogNewTaxRate": "Nuevo impuesto",
+  "catalogEditTaxRate": "Editar impuesto",
+  "catalogTaxKind": "Tipo",
+  "catalogTaxName": "Nombre",
+  "catalogTaxRatePercent": "Tasa (%)",
+  "catalogTaxRateInvalid": "Escribe una tasa entre 0 y 100",
+  "catalogTaxInUse": "Este impuesto lo usan productos; cámbialos antes de desactivarlo",
+  "catalogTaxPlaceholderNote": "Las tasas son provisionales hasta que el contador las confirme.",
+  "catalogProductName": "Nombre del producto",
+  "catalogProductCategory": "Categoría",
+  "catalogProductUnit": "Unidad",
+  "catalogUnitPiece": "Pieza",
+  "catalogUnitKg": "Kilo",
+  "catalogUnitPackage": "Paquete",
+  "catalogProductDescription": "Descripción (opcional)",
+  "catalogIva": "IVA",
+  "catalogIeps": "IEPS",
+  "catalogNoIeps": "Sin IEPS",
+  "catalogPhoto": "Foto",
+  "catalogPhotoChoose": "Elegir foto",
+  "catalogPhotoRemove": "Quitar foto",
+  "catalogPhotoNone": "Sin foto",
+  "catalogDayOld": "Pan del día anterior",
+  "catalogDayOldDiscountDays": "Descuento después de (días)",
+  "catalogDayOldDiscountPercent": "Descuento (%)",
+  "catalogDayOldWasteDays": "Merma después de (días)",
+  "catalogDayOldPair": "Escribe los días y el porcentaje de descuento juntos, o deja ambos vacíos",
+  "catalogDayOldWasteAfter": "Los días de merma deben ser más que los días de descuento",
+  "catalogDayOldInvalid": "Escribe un número entero",
+  "catalogVariants": "Variantes",
+  "catalogAddVariant": "Agregar variante",
+  "catalogRemoveVariant": "Quitar variante",
+  "catalogVariantName": "Variante",
+  "catalogVariantPrice": "Precio",
+  "catalogVariantSku": "SKU",
+  "catalogVariantBarcode": "Código de barras",
+  "catalogBranchPrice": "Precio en {branch}",
+  "@catalogBranchPrice": {
+    "placeholders": {
+      "branch": {
+        "type": "String"
+      }
+    }
+  },
+  "catalogBranchPriceHint": "Igual que el precio base",
+  "catalogNeedsVariant": "El producto necesita al menos una variante",
+  "catalogRequired": "Obligatorio",
+  "catalogPriceInvalid": "Escribe un precio como 12.50",
+  "catalogTaxSplit": "Base {base} · IEPS {ieps} · IVA {iva}",
+  "@catalogTaxSplit": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "ieps": {
+        "type": "String"
+      },
+      "iva": {
+        "type": "String"
+      }
+    }
+  },
+  "catalogSkuInUse": "Ese SKU ya lo usa otra variante",
+  "catalogBarcodeInUse": "Ese código de barras ya lo usa otra variante",
+  "catalogNameInUse": "Ya existe una categoría activa con ese nombre",
+  "catalogNeedsActiveVariant": "Un producto activo necesita al menos una variante activa",
+  "catalogSaved": "Producto guardado",
+  "catalogCategorySaved": "Categoría guardada",
+  "catalogTaxSaved": "Impuesto guardado",
+  "catalogPhotoUploadFailed": "No se pudo subir la foto. Usa una imagen JPG, PNG o WebP de hasta 5 MB.",
+  "catalogProductSubtitle": "{category} · {variants}",
+  "@catalogProductSubtitle": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "variants": {
+        "type": "String"
+      }
+    }
+  },
+  "catalogTaxSubtitle": "{kind} · {rate}%",
+  "@catalogTaxSubtitle": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      }
+    }
+  }
 }
