@@ -7,8 +7,10 @@ import 'package:bakery_pos/features/auth/data/till_auth_service.dart';
 import 'package:bakery_pos/features/auth/domain/approval_models.dart';
 import 'package:bakery_pos/features/auth/domain/till_auth_state.dart';
 import 'package:bakery_pos/features/sale/data/refund_repository.dart';
+import 'package:bakery_pos/features/sale/domain/sale_totals.dart';
 import 'package:bakery_pos/features/sale/domain/ticket.dart';
 import 'package:bakery_pos/features/sale/presentation/discount_dialog.dart';
+import 'package:bakery_pos/features/sale/presentation/payment_dialog.dart';
 import 'package:bakery_pos/features/sale/presentation/sale_screen.dart';
 import 'package:bakery_pos/features/till_catalog/data/photo_cache.dart';
 import 'package:bakery_pos/features/till_catalog/data/till_catalog_repository.dart';
@@ -352,6 +354,97 @@ void main() {
       );
     },
   );
+
+  group('discounts are checked again at payment', () {
+    const fiveOff = TicketDiscount(
+      kind: DiscountKind.amount,
+      value: 500,
+      reason: DiscountReason.promotion,
+    );
+
+    /// A $5.00 discount that fit the limit on a bigger ticket, now on one
+    /// $15.00 unit: 33%.
+    Future<ProviderContainer> ticketOverLimit(WidgetTester tester) async {
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(SaleScreen)),
+      );
+      container
+          .read(ticketProvider.notifier)
+          .restore(
+            const Ticket(
+              lines: [TicketLine(item: concha, quantity: 1, discount: fiveOff)],
+            ),
+          );
+      await tester.pump();
+      return container;
+    }
+
+    testWidgets('a cashier cannot be paid without a manager', (tester) async {
+      await pumpSale(tester, sessionOf(cashier, cashierPermissions));
+      await ticketOverLimit(tester);
+      await tester.runAsync(
+        () => tester.tap(find.byKey(const Key('ticket-pay'))),
+      );
+      await settle(tester);
+      expect(approvalsAsked, ['sale.discount_over_limit']);
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.byType(SnackBar), findsOneWidget);
+    });
+
+    testWidgets('a manager\'s PIN puts the approver on the discount', (
+      tester,
+    ) async {
+      approval = OfflineApprovalResult(
+        id: 'a1',
+        approverStaffId: manager.id,
+        requesterStaffId: cashier.id,
+        action: 'sale.discount_over_limit',
+        createdAt: DateTime.utc(2026, 11, 2),
+      );
+      await pumpSale(tester, sessionOf(cashier, cashierPermissions));
+      final container = await ticketOverLimit(tester);
+      await tester.runAsync(
+        () => tester.tap(find.byKey(const Key('ticket-pay'))),
+      );
+      await settle(tester);
+      expect(
+        container.read(ticketProvider).lines.single.discount!.approverStaffId,
+        manager.id,
+      );
+      expect(find.byType(PaymentDialog), findsOneWidget);
+    });
+
+    testWidgets('a manager resuming their own approval pays as themselves', (
+      tester,
+    ) async {
+      await pumpSale(
+        tester,
+        sessionOf(manager, [...cashierPermissions, 'sale.discount_over_limit']),
+      );
+      final container = await ticketOverLimit(tester);
+      container
+          .read(ticketProvider.notifier)
+          .restore(
+            Ticket(
+              lines: [
+                TicketLine(
+                  item: concha,
+                  quantity: 1,
+                  discount: fiveOff.withApprover(manager.id),
+                ),
+              ],
+            ),
+          );
+      await tester.runAsync(
+        () => tester.tap(find.byKey(const Key('ticket-pay'))),
+      );
+      await settle(tester);
+      expect(approvalsAsked, isEmpty);
+      expect(find.byType(PaymentDialog), findsOneWidget);
+      final dialog = tester.widget<PaymentDialog>(find.byType(PaymentDialog));
+      expect(dialog.totalCents, 1000);
+    });
+  });
 
   testWidgets('without a folio prefix the till asks to sync before charging', (
     tester,

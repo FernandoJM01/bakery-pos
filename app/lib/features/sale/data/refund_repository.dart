@@ -182,20 +182,66 @@ class RefundRepository {
   );
 
   /// Online, the server finds any sale of the branch; offline, only sales
-  /// made on this till can be found (brief 4.3). A sale made here is always
-  /// read locally, where its refunds from this till already show.
+  /// made on this till can be found (brief 4.3). A sale made here is read
+  /// locally, where refunds from this till show before they sync; the server
+  /// adds any made on another till of the branch.
   Future<RefundableSale> find(String folio, {required bool online}) async {
     final f = folio.trim().toUpperCase();
     final local = await _local(f);
-    if (local != null) return local;
     if (online && _api != null) {
       try {
-        return _fromServer(await _api.sales.lookupSale(folio: f));
+        final server = await _api.sales.lookupSale(folio: f);
+        if (local == null) return _fromServer(server);
+        await _catchUp(local, server);
+        return (await _local(f))!;
       } catch (_) {
         // Not found, or the connection dropped: same answer offline.
       }
     }
+    if (local != null) return local;
     throw const SaleNotFound();
+  }
+
+  /// Brings this till's copy of a sale level with refunds the server has
+  /// seen from other tills, so what is left and its amounts stay exact.
+  Future<void> _catchUp(RefundableSale local, Sale server) async {
+    final behind = [
+      for (final l in server.lines)
+        if (local.lines.any(
+          (x) =>
+              x.lineNo == l.lineNo && x.refundedQuantity < l.refundedQuantity,
+        ))
+          l,
+    ];
+    if (behind.isEmpty) return;
+    await _db.transaction(() async {
+      for (final l in behind) {
+        await (_db.update(_db.localSaleLines)..where(
+              (x) => x.saleId.equals(local.id) & x.lineNo.equals(l.lineNo),
+            ))
+            .write(
+              LocalSaleLinesCompanion(
+                refundedQuantity: Value(l.refundedQuantity),
+                refundedCents: Value(l.refundedCents ?? 0),
+              ),
+            );
+      }
+      final lines = await (_db.select(
+        _db.localSaleLines,
+      )..where((x) => x.saleId.equals(local.id))).get();
+      await (_db.update(
+        _db.localSales,
+      )..where((s) => s.id.equals(local.id))).write(
+        LocalSalesCompanion(
+          status: Value(
+            lines.every((l) => l.refundedQuantity == l.quantity)
+                ? 'REFUNDED'
+                : 'PARTIALLY_REFUNDED',
+          ),
+          refundedCents: Value(lines.fold(0, (a, l) => a + l.refundedCents)),
+        ),
+      );
+    });
   }
 
   /// Records a refund (or a void) of [units] per line number, with its
