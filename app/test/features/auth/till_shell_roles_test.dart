@@ -1,3 +1,5 @@
+import '../../fakes/idle_sync.dart';
+
 import 'package:bakery_pos/app.dart';
 import 'package:bakery_pos/core/router/app_router.dart';
 import 'package:bakery_pos/core/storage/local_database.dart';
@@ -48,6 +50,7 @@ Widget createTillShellTestWidget({
 }) {
   return ProviderScope(
     overrides: [
+      ...idleSyncOverrides,
       tillDatabaseProvider.overrideWithValue(
         AppDatabase(NativeDatabase.memory()),
       ),
@@ -73,6 +76,7 @@ Widget createTillRouterTestWidget({
 }) {
   return ProviderScope(
     overrides: [
+      ...idleSyncOverrides,
       tillDatabaseProvider.overrideWithValue(
         AppDatabase(NativeDatabase.memory()),
       ),

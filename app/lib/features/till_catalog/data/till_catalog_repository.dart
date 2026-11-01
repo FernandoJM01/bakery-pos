@@ -287,3 +287,8 @@ final tillCatalogRepositoryProvider = Provider<TillCatalogRepository>(
     ref.watch(restClientProvider).sync,
   ),
 );
+
+/// The local catalog the grid shows; invalidated after each pull.
+final tillCatalogProvider = FutureProvider<TillCatalog>(
+  (ref) => ref.watch(tillCatalogRepositoryProvider).load(),
+);

@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import '../../fakes/idle_sync.dart';
+
 import 'package:bakery_pos/core/api/api_client_provider.dart';
 import 'package:bakery_pos/core/api/generated/rest_client.dart';
 import 'package:bakery_pos/core/api/till_device_interceptor.dart';
@@ -221,6 +223,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              ...idleSyncOverrides,
               tillDatabaseProvider.overrideWithValue(db),
               secureStorageProvider.overrideWithValue(secureStorage),
               dioProvider.overrideWithValue(dio),

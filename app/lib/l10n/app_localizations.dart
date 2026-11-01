@@ -1605,6 +1605,66 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Desde {price}'**
   String gridPriceFrom(String price);
+
+  /// No description provided for @syncOnline.
+  ///
+  /// In es, this message translates to:
+  /// **'En línea'**
+  String get syncOnline;
+
+  /// No description provided for @syncOffline.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conexión'**
+  String get syncOffline;
+
+  /// No description provided for @syncWaiting.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} en espera'**
+  String syncWaiting(int count);
+
+  /// No description provided for @syncTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronización'**
+  String get syncTitle;
+
+  /// No description provided for @syncWaitingCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =0{Nada en espera} =1{1 registro en espera} other{{count} registros en espera}}'**
+  String syncWaitingCount(int count);
+
+  /// No description provided for @syncQuarantinedCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =0{Ningún registro en cuarentena} =1{1 registro en cuarentena} other{{count} registros en cuarentena}}'**
+  String syncQuarantinedCount(int count);
+
+  /// No description provided for @syncQuarantinedHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'El servidor no pudo aplicar estos registros. El dueño los revisa en el panel, en Sincronización.'**
+  String get syncQuarantinedHelp;
+
+  /// No description provided for @syncNow.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronizar ahora'**
+  String get syncNow;
+
+  /// No description provided for @syncDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronizado'**
+  String get syncDone;
+
+  /// No description provided for @syncFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo conectar con el servidor; se reintentará solo'**
+  String get syncFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -326,5 +326,36 @@
         "type": "String"
       }
     }
-  }
+  },
+  "syncOnline": "En línea",
+  "syncOffline": "Sin conexión",
+  "syncWaiting": "{count} en espera",
+  "@syncWaiting": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncTitle": "Sincronización",
+  "syncWaitingCount": "{count, plural, =0{Nada en espera} =1{1 registro en espera} other{{count} registros en espera}}",
+  "@syncWaitingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQuarantinedCount": "{count, plural, =0{Ningún registro en cuarentena} =1{1 registro en cuarentena} other{{count} registros en cuarentena}}",
+  "@syncQuarantinedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncQuarantinedHelp": "El servidor no pudo aplicar estos registros. El dueño los revisa en el panel, en Sincronización.",
+  "syncNow": "Sincronizar ahora",
+  "syncDone": "Sincronizado",
+  "syncFailed": "No se pudo conectar con el servidor; se reintentará solo"
 }

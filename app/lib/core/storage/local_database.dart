@@ -1,11 +1,14 @@
 import 'dart:io';
 
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart' show Database;
+import 'package:uuid/uuid.dart';
 
 import 'catalog_tables.dart';
 import 'secure_storage.dart';
@@ -77,6 +80,7 @@ class OfflineApprovalEntries extends Table {
     CatalogVariants,
     CatalogBranchPrices,
     SyncStateEntries,
+    OutboxEntries,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -85,7 +89,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -108,6 +112,9 @@ class AppDatabase extends _$AppDatabase {
         ]) {
           await m.createTable(table);
         }
+      }
+      if (from < 5) {
+        await m.createTable(outboxEntries);
       }
     },
   );
@@ -153,6 +160,7 @@ class AppDatabase extends _$AppDatabase {
     )..where((tbl) => tbl.role.isIn(rolesWithPermission))).get();
   }
 
+  /// Stores an offline approval and queues it for the server, together.
   Future<void> recordOfflineApproval({
     required String id,
     required String approverStaffId,
@@ -161,7 +169,7 @@ class AppDatabase extends _$AppDatabase {
     String? reference,
     required DateTime createdAt,
     DateTime? syncedAt,
-  }) async {
+  }) => transaction(() async {
     await into(offlineApprovalEntries).insert(
       OfflineApprovalEntriesCompanion(
         id: Value(id),
@@ -173,6 +181,113 @@ class AppDatabase extends _$AppDatabase {
         syncedAt: Value(syncedAt),
       ),
     );
+    await _queueOfflineEvent(
+      id: id,
+      action: 'auth.approval_granted',
+      staffId: requesterStaffId,
+      at: createdAt,
+      extra: {
+        'approverStaffId': approverStaffId,
+        'approvalAction': action,
+        'reference': reference,
+      },
+    );
+  });
+
+  /// Queues an `audit.offline_event` (M2 brief 4.3). The payload follows
+  /// the contract's `OfflineAuditPayload` and never carries a PIN.
+  Future<void> _queueOfflineEvent({
+    String? id,
+    required String action,
+    required String staffId,
+    required DateTime at,
+    Map<String, Object?> extra = const {},
+  }) async {
+    await into(outboxEntries).insert(
+      OutboxEntriesCompanion.insert(
+        id: id ?? const Uuid().v7(),
+        type: 'audit.offline_event',
+        occurredAt: at,
+        actorStaffId: Value(staffId),
+        payload: jsonEncode({
+          'action': action,
+          'staffId': staffId,
+          for (final e in extra.entries)
+            if (e.value != null) e.key: e.value,
+        }),
+      ),
+    );
+  }
+
+  /// An offline login that passed the PIN check: clears the counter and
+  /// queues `auth.login_success`.
+  Future<void> recordOfflineLoginSuccess(String staffId, DateTime now) =>
+      transaction(() async {
+        await resetLockout(staffId);
+        await _queueOfflineEvent(
+          action: 'auth.login_success',
+          staffId: staffId,
+          at: now,
+        );
+      });
+
+  /// A wrong PIN checked offline (a login, or an approver's PIN): counts it
+  /// and queues `auth.login_failure` for a login, plus `auth.locked` when it
+  /// locks the account. Returns the lock time, as [recordFailedPinAttempt].
+  Future<DateTime?> recordOfflinePinFailure(
+    String staffId,
+    DateTime now, {
+    bool isLogin = true,
+  }) => transaction(() async {
+    final already = await getActiveLockout(staffId, now);
+    final lockedUntil = await recordFailedPinAttempt(staffId, now);
+    if (isLogin) {
+      await _queueOfflineEvent(
+        action: 'auth.login_failure',
+        staffId: staffId,
+        at: now,
+      );
+    }
+    if (lockedUntil != null && already == null) {
+      await _queueOfflineEvent(
+        action: 'auth.locked',
+        staffId: staffId,
+        at: now,
+      );
+    }
+    return lockedUntil;
+  });
+
+  /// Pending records, oldest first.
+  Future<List<OutboxEntry>> pendingOutbox({int limit = 100}) =>
+      (select(outboxEntries)
+            ..where((o) => o.status.equals('PENDING'))
+            ..orderBy([
+              (o) => OrderingTerm(expression: o.occurredAt),
+              (o) => OrderingTerm(expression: o.id),
+            ])
+            ..limit(limit))
+          .get();
+
+  /// Counts by status, for the sync indicator.
+  Stream<({int pending, int quarantined})> watchOutboxCounts() {
+    final count = outboxEntries.id.count();
+    final query = selectOnly(outboxEntries)
+      ..addColumns([outboxEntries.status, count])
+      ..groupBy([outboxEntries.status]);
+    return query.watch().map((rows) {
+      var pending = 0;
+      var quarantined = 0;
+      for (final r in rows) {
+        final n = r.read(count) ?? 0;
+        if (r.read(outboxEntries.status) == 'QUARANTINED') {
+          quarantined = n;
+        } else {
+          pending += n;
+        }
+      }
+      return (pending: pending, quarantined: quarantined);
+    });
   }
 
   Future<List<OfflineApprovalEntry>> getOfflineApprovals() {
@@ -258,6 +373,7 @@ class AppDatabase extends _$AppDatabase {
       catalogVariants,
       catalogBranchPrices,
       syncStateEntries,
+      outboxEntries,
     ]) {
       await delete(table).go();
     }

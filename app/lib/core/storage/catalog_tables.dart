@@ -74,3 +74,24 @@ class SyncStateEntries extends Table {
   @override
   Set<Column> get primaryKey => {key};
 }
+
+/// Records the till must deliver to the server (M2 brief 4.3), written in
+/// the same transaction as the change they describe. `id` is a UUID v7 and
+/// the server's idempotency key.
+class OutboxEntries extends Table {
+  TextColumn get id => text()();
+  TextColumn get type => text()();
+  DateTimeColumn get occurredAt => dateTime()();
+  TextColumn get actorStaffId => text().nullable()();
+
+  /// JSON object; never holds a PIN.
+  TextColumn get payload => text()();
+  IntColumn get attempts => integer().withDefault(const Constant(0))();
+
+  /// `PENDING` or `QUARANTINED`; delivered records are deleted.
+  TextColumn get status => text().withDefault(const Constant('PENDING'))();
+  TextColumn get lastErrorCode => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}

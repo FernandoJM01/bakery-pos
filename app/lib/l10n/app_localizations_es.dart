@@ -812,4 +812,56 @@ class AppLocalizationsEs extends AppLocalizations {
   String gridPriceFrom(String price) {
     return 'Desde $price';
   }
+
+  @override
+  String get syncOnline => 'En línea';
+
+  @override
+  String get syncOffline => 'Sin conexión';
+
+  @override
+  String syncWaiting(int count) {
+    return '$count en espera';
+  }
+
+  @override
+  String get syncTitle => 'Sincronización';
+
+  @override
+  String syncWaitingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count registros en espera',
+      one: '1 registro en espera',
+      zero: 'Nada en espera',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncQuarantinedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count registros en cuarentena',
+      one: '1 registro en cuarentena',
+      zero: 'Ningún registro en cuarentena',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncQuarantinedHelp =>
+      'El servidor no pudo aplicar estos registros. El dueño los revisa en el panel, en Sincronización.';
+
+  @override
+  String get syncNow => 'Sincronizar ahora';
+
+  @override
+  String get syncDone => 'Sincronizado';
+
+  @override
+  String get syncFailed =>
+      'No se pudo conectar con el servidor; se reintentará solo';
 }
