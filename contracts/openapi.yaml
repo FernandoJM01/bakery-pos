@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
   title: Bakery POS API
-  version: 0.3.0-m3
+  version: 0.4.0-m4
   description: |
-    Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync) and 3 (sales).
+    Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync), 3 (sales) and 4 (cash shifts, audit and printing).
     Owned by the architect. Developers must not edit this file; open an issue labelled `contract` instead.
 
     Conventions:
@@ -32,6 +32,7 @@ tags:
   - name: sync
     description: Till catalog feed, outbox push and quarantine (M2)
   - name: sales
+  - name: shifts
     description: Sales and refunds made on tills, received through sync (M3)
 
 paths:
@@ -515,6 +516,105 @@ paths:
               schema: { $ref: '#/components/schemas/AuditPage' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/shifts:
+    get:
+      tags: [shifts]
+      operationId: listShifts
+      summary: Cash shifts for the back office, newest first
+      description: |
+        Owners (`reports.all`) see every branch. Staff with only `reports.branch` see their own branches;
+        asking for another branch returns 403. Shifts are created on tills and arrive through sync.
+      x-permission: reports.branch
+      parameters:
+        - name: from
+          in: query
+          description: Shifts opened at or after this time
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          description: Shifts opened before this time
+          schema: { type: string, format: date-time }
+        - name: branchId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: deviceId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: flagged
+          in: query
+          description: Only shifts with a flagged difference
+          schema: { type: boolean }
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+      responses:
+        '200':
+          description: Newest first by openedAt
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShiftPage' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/shifts/{shiftId}:
+    get:
+      tags: [shifts]
+      operationId: getShift
+      summary: A shift with its counts, movements and Z report
+      description: A shift of a branch outside the caller's scope reads as 404.
+      x-permission: reports.branch
+      parameters:
+        - name: shiftId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: The shift
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShiftDetail' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/shifts/{shiftId}/notes:
+    post:
+      tags: [shifts]
+      operationId: addShiftNote
+      summary: Adds a manager's note to a closed shift
+      description: Counts never change; a correction is a note beside them. Writes `cash.note_added`.
+      x-permission: reports.branch
+      parameters:
+        - name: shiftId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [note]
+              additionalProperties: false
+              properties:
+                note: { type: string, minLength: 1, maxLength: 500 }
+      responses:
+        '200':
+          description: The shift with the note
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShiftDetail' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
 
   /v1/tax-rates:
     get:
@@ -1537,6 +1637,12 @@ components:
         - sale.refunded
         - sale.voided
         - sale.ticket_discarded
+        - cash.shift_opened
+        - cash.movement
+        - cash.shift_closed
+        - cash.variance_flagged
+        - cash.drawer_opened
+        - cash.note_added
     AuditEntry:
       type: object
       required: [id, occurredAt, action]
@@ -1834,9 +1940,10 @@ components:
       description: |
         Known types: `audit.offline_event` (payload `OfflineAuditPayload`), `sale.completed`
         (payload `SaleCompletedPayload`, record `id` = sale ID) and `sale.refunded` (payload
-        `SaleRefundedPayload`, record `id` = refund ID). The server accepts any string and quarantines
+        `SaleRefundedPayload`, record `id` = refund ID), `shift.opened` (payload `ShiftOpenedPayload`, record `id` = shift ID),
+        `cash.movement` (payload `CashMovementPayload`) and `shift.closed` (payload `ShiftClosedPayload`). The server accepts any string and quarantines
         unknown types with `SYNC_UNKNOWN_TYPE`, so an older server never rejects a whole batch.
-      examples: [audit.offline_event, sale.completed, sale.refunded]
+      examples: [audit.offline_event, sale.completed, sale.refunded, shift.opened, cash.movement, shift.closed]
     SyncRecord:
       type: object
       required: [id, type, occurredAt, payload]
@@ -1859,7 +1966,7 @@ components:
       properties:
         action:
           type: string
-          enum: [auth.login_success, auth.login_failure, auth.locked, auth.approval_granted, sale.ticket_discarded]
+          enum: [auth.login_success, auth.login_failure, auth.locked, auth.approval_granted, sale.ticket_discarded, cash.drawer_opened]
         staffId:
           type: string
           format: uuid
@@ -1947,11 +2054,14 @@ components:
 
     SaleSettings:
       type: object
-      required: [discountLimitBp]
+      required: [discountLimitBp, cashVarianceFlagCents]
       properties:
         discountLimitBp:
           allOf: [{ $ref: '#/components/schemas/BasisPoints' }]
           description: Largest discount share a cashier may give without a manager (`1000` = 10%). M3 brief 4.2 step 7.
+        cashVarianceFlagCents:
+          allOf: [{ $ref: '#/components/schemas/AnyCents' }]
+          description: A close whose difference passes this amount, in either direction, is flagged (`5000` = $50.00). M4 brief section 2.
     AnyCents:
       type: integer
       minimum: 0
@@ -2037,13 +2147,13 @@ components:
       description: |
         Payload of `sale.completed`. The record `id` is the sale ID. Every amount must match the totals in M3 brief
         section 4.2, recomputed by the server. Exactly one CASH payment in M3.
-      required: [folio, folioNumber, cashierStaffId, lines, voidedLines, grossCents, discountCents, totalCents, payments]
+      required: [folio, folioNumber, cashierStaffId, shiftId, lines, voidedLines, grossCents, discountCents, totalCents, payments]
       additionalProperties: false
       properties:
         folio: { $ref: '#/components/schemas/Folio' }
         folioNumber: { type: integer, minimum: 1, maximum: 999999 }
         cashierStaffId: { type: string, format: uuid }
-        shiftId: { type: [string, 'null'], format: uuid, description: 'Null until cash shifts (M4)' }
+        shiftId: { type: string, format: uuid, description: 'The open shift of this device (M4.1)' }
         lines:
           type: array
           minItems: 1
@@ -2088,10 +2198,11 @@ components:
       description: |
         Payload of `sale.refunded`. The record `id` is the refund ID. Amounts follow M3 brief section 4.3.
         A VOID covers every remaining unit of a sale made on the same device on the same local day.
-      required: [saleId, kind, reason, staffId, lines, totalCents]
+      required: [saleId, shiftId, kind, reason, staffId, lines, totalCents]
       additionalProperties: false
       properties:
         saleId: { type: string, format: uuid }
+        shiftId: { type: string, format: uuid, description: 'The open shift of the device paying the money, which may differ from the sale''s (M4 brief section 2)' }
         kind: { $ref: '#/components/schemas/RefundKind' }
         reason: { $ref: '#/components/schemas/RefundReason' }
         note: { type: [string, 'null'], maxLength: 120 }
@@ -2106,6 +2217,175 @@ components:
           maxItems: 500
           items: { $ref: '#/components/schemas/RefundLineInput' }
         totalCents: { $ref: '#/components/schemas/AnyCents' }
+    Denomination:
+      type: integer
+      description: Value of a bill or coin in centavos. Bills and coins of the same value share a row.
+      enum: [100000, 50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100, 50]
+    CashCountRow:
+      type: object
+      required: [denominationCents, quantity]
+      additionalProperties: false
+      properties:
+        denominationCents: { $ref: '#/components/schemas/Denomination' }
+        quantity: { type: integer, minimum: 0, maximum: 100000 }
+    CashCount:
+      type: array
+      description: One row per denomination at most. The sum of value times quantity must equal the stated amount.
+      minItems: 1
+      maxItems: 11
+      items: { $ref: '#/components/schemas/CashCountRow' }
+    ShiftOpenedPayload:
+      type: object
+      description: Payload of `shift.opened`. The record `id` is the shift ID. M4 brief section 4.1.
+      required: [staffId, floatCents, count]
+      additionalProperties: false
+      properties:
+        staffId: { type: string, format: uuid }
+        floatCents: { $ref: '#/components/schemas/AnyCents' }
+        count: { $ref: '#/components/schemas/CashCount' }
+    CashMovementKind:
+      type: string
+      enum: [IN, OUT]
+    CashMovementReason:
+      type: string
+      enum: [CHANGE_FUND, SUPPLIER_PAYMENT, BANK_DROP, OTHER]
+    CashMovementPayload:
+      type: object
+      description: Payload of `cash.movement`. The record `id` is the movement ID. A note is required with `OTHER`.
+      required: [shiftId, kind, amountCents, reason, staffId]
+      additionalProperties: false
+      properties:
+        shiftId: { type: string, format: uuid }
+        kind: { $ref: '#/components/schemas/CashMovementKind' }
+        amountCents:
+          allOf: [{ $ref: '#/components/schemas/AnyCents' }]
+          minimum: 1
+        reason: { $ref: '#/components/schemas/CashMovementReason' }
+        note: { type: [string, 'null'], maxLength: 120 }
+        staffId: { type: string, format: uuid }
+        approverStaffId:
+          type: [string, 'null']
+          format: uuid
+          description: Required when `staffId` lacks `cash.movement`; the approver must hold it
+    ShiftClosedPayload:
+      type: object
+      description: |
+        Payload of `shift.closed`. The record `id` is a new ID; `shiftId` names the shift. The server recomputes
+        expected, variance and the flag with M4 brief section 4.3 and rejects any difference. A note is required
+        when flagged.
+      required: [shiftId, zNumber, staffId, count, countedCents, expectedCents, varianceCents, flagged]
+      additionalProperties: false
+      properties:
+        shiftId: { type: string, format: uuid }
+        zNumber: { type: integer, minimum: 1, maximum: 9999 }
+        staffId: { type: string, format: uuid }
+        count: { $ref: '#/components/schemas/CashCount' }
+        countedCents: { $ref: '#/components/schemas/AnyCents' }
+        expectedCents: { type: integer, description: 'Can be negative when more cash left than came in' }
+        varianceCents: { type: integer, description: 'counted minus expected' }
+        flagged: { type: boolean }
+        note: { type: [string, 'null'], maxLength: 500 }
+    ShiftStatus:
+      type: string
+      enum: [OPEN, CLOSED]
+    ShiftSummary:
+      type: object
+      required: [id, branchId, deviceId, status, openedAt, openedByStaffId, openedByName, floatCents, flagged]
+      properties:
+        id: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        deviceId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/ShiftStatus' }
+        zNumber: { type: [integer, 'null'] }
+        zLabel: { type: [string, 'null'], examples: [SUC1-02-Z0012] }
+        openedAt: { type: string, format: date-time }
+        openedByStaffId: { type: string, format: uuid }
+        openedByName: { type: string }
+        closedAt: { type: [string, 'null'], format: date-time }
+        closedByStaffId: { type: [string, 'null'], format: uuid }
+        closedByName: { type: [string, 'null'] }
+        floatCents: { $ref: '#/components/schemas/AnyCents' }
+        expectedCents: { type: [integer, 'null'] }
+        countedCents: { type: [integer, 'null'] }
+        varianceCents: { type: [integer, 'null'] }
+        flagged: { type: boolean }
+    ShiftPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/ShiftSummary' }
+        nextCursor: { type: [string, 'null'] }
+    CashMovement:
+      type: object
+      required: [id, kind, amountCents, reason, staffId, occurredAt]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { $ref: '#/components/schemas/CashMovementKind' }
+        amountCents: { $ref: '#/components/schemas/AnyCents' }
+        reason: { $ref: '#/components/schemas/CashMovementReason' }
+        note: { type: [string, 'null'] }
+        staffId: { type: string, format: uuid }
+        approverStaffId: { type: [string, 'null'], format: uuid }
+        occurredAt: { type: string, format: date-time }
+    ShiftNote:
+      type: object
+      required: [staffId, note, createdAt]
+      properties:
+        staffId: { type: string, format: uuid }
+        note: { type: string }
+        createdAt: { type: string, format: date-time }
+    ZReport:
+      type: object
+      description: M4 brief section 4.5. Tax by rate is net of refunds, from stored amounts.
+      required: [saleCount, grossCents, discountCents, netCents, taxes, refundCount, refundCents, voidCount, voidCents, prepaidCollectedCents, cashInCents, cashOutCents, movements]
+      properties:
+        saleCount: { type: integer }
+        grossCents: { type: integer }
+        discountCents: { type: integer }
+        netCents: { type: integer }
+        taxes:
+          type: array
+          items: { $ref: '#/components/schemas/TaxByRate' }
+        refundCount: { type: integer }
+        refundCents: { type: integer }
+        voidCount: { type: integer }
+        voidCents: { type: integer }
+        prepaidCollectedCents: { type: integer, description: '0 until orders in Sprint 6' }
+        cashInCents: { type: integer }
+        cashOutCents: { type: integer }
+        movements:
+          type: array
+          description: Total per kind and reason
+          items:
+            type: object
+            required: [kind, reason, amountCents]
+            properties:
+              kind: { $ref: '#/components/schemas/CashMovementKind' }
+              reason: { $ref: '#/components/schemas/CashMovementReason' }
+              amountCents: { type: integer }
+    ShiftDetail:
+      allOf:
+        - { $ref: '#/components/schemas/ShiftSummary' }
+        - type: object
+          required: [openCount, movements, notes]
+          properties:
+            openCount: { $ref: '#/components/schemas/CashCount' }
+            closeCount:
+              oneOf:
+                - { $ref: '#/components/schemas/CashCount' }
+                - { type: 'null' }
+            movements:
+              type: array
+              items: { $ref: '#/components/schemas/CashMovement' }
+            notes:
+              type: array
+              items: { $ref: '#/components/schemas/ShiftNote' }
+            zReport:
+              oneOf:
+                - { $ref: '#/components/schemas/ZReport' }
+                - { type: 'null' }
     SaleStatus:
       type: string
       enum: [COMPLETED, PARTIALLY_REFUNDED, REFUNDED, VOIDED]
