@@ -69,14 +69,15 @@ model Staff {
   createdAt                  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt                  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  staffBranches     StaffBranch[]
-  createdDevices    Device[]      @relation("DeviceCreatedBy")
-  createdPhotos     Photo[]       @relation("PhotoCreatedBy")
-  authSessions      AuthSession[]
-  actorAuditLogs    AuditLog[]    @relation("AuditLogActor")
-  approverAuditLogs AuditLog[]    @relation("AuditLogApprover")
-  approverApprovals Approval[]    @relation("ApprovalApprover")
-  requesterApprovals Approval[]   @relation("ApprovalRequester")
+  staffBranches      StaffBranch[]
+  createdDevices     Device[]         @relation("DeviceCreatedBy")
+  createdPhotos      Photo[]          @relation("PhotoCreatedBy")
+  authSessions       AuthSession[]
+  actorAuditLogs     AuditLog[]       @relation("AuditLogActor")
+  approverAuditLogs  AuditLog[]       @relation("AuditLogApprover")
+  approverApprovals  Approval[]       @relation("ApprovalApprover")
+  requesterApprovals Approval[]       @relation("ApprovalRequester")
+  resolvedQuarantine SyncQuarantine[] @relation("QuarantineResolvedBy")
 
   @@map("staff")
 }
@@ -132,6 +133,7 @@ model Device {
   authSessions AuthSession[]
   auditLogs    AuditLog[]
   approvals    Approval[]
+  syncInbox    SyncInbox[]
 
   @@map("device")
 }
@@ -331,3 +333,48 @@ model BranchPrice {
   @@map("branch_price")
 }
 
+enum SyncInboxStatus {
+  APPLIED
+  QUARANTINED
+
+  @@map("sync_inbox_status")
+}
+
+/// One row per record a till ever delivered; the primary key makes delivery
+/// idempotent (M2 brief 4.4).
+model SyncInbox {
+  recordId   String          @id @map("record_id") @db.Uuid
+  deviceId   String          @map("device_id") @db.Uuid
+  type       String          @db.VarChar(60)
+  occurredAt DateTime        @map("occurred_at") @db.Timestamptz(6)
+  receivedAt DateTime        @map("received_at") @db.Timestamptz(6)
+  status     SyncInboxStatus
+
+  device     Device          @relation(fields: [deviceId], references: [id], onDelete: Restrict)
+  quarantine SyncQuarantine?
+
+  @@index([deviceId])
+  @@map("sync_inbox")
+}
+
+/// Records the server could not apply, kept for the owner to review.
+model SyncQuarantine {
+  recordId       String    @id @map("record_id") @db.Uuid
+  deviceId       String    @map("device_id") @db.Uuid
+  branchId       String    @map("branch_id") @db.Uuid
+  type           String    @db.VarChar(60)
+  payload        Json
+  errorCode      String    @map("error_code") @db.VarChar(40)
+  errorMessage   String    @map("error_message") @db.VarChar(500)
+  occurredAt     DateTime  @map("occurred_at") @db.Timestamptz(6)
+  receivedAt     DateTime  @map("received_at") @db.Timestamptz(6)
+  resolvedAt     DateTime? @map("resolved_at") @db.Timestamptz(6)
+  resolvedBy     String?   @map("resolved_by") @db.Uuid
+  resolutionNote String?   @map("resolution_note") @db.VarChar(500)
+
+  inbox    SyncInbox @relation(fields: [recordId], references: [recordId], onDelete: Restrict)
+  resolver Staff?    @relation("QuarantineResolvedBy", fields: [resolvedBy], references: [id], onDelete: Restrict)
+
+  @@index([receivedAt(sort: Desc), recordId(sort: Desc)])
+  @@map("sync_quarantine")
+}
