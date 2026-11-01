@@ -6,7 +6,17 @@ describe('Environment validation', () => {
     MIGRATION_DATABASE_URL: 'postgres://pos:pos_dev@localhost:5432/pos_dev',
     JWT_SECRET: 'test-jwt-secret-key-super-secure',
     DEVICE_TOKEN_PEPPER: 'test-device-pepper-super-secure',
+    PHOTO_DIR: '/data/photos',
   };
+
+  it('refuses to start when PHOTO_DIR is missing', () => {
+    const env = { ...validBaseEnv };
+    delete (env as Record<string, unknown>).PHOTO_DIR;
+
+    expect(() => validateEnv(env)).toThrow(
+      'Server refuses to start: required environment variable(s) missing or invalid: PHOTO_DIR',
+    );
+  });
 
   it('A3: refuses to start when DATABASE_URL is missing', () => {
     const env = { ...validBaseEnv };

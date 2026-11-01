@@ -16,6 +16,10 @@ import { HealthModule } from './health/health.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { BranchesModule } from './branches/branches.module';
 import { StaffModule } from './staff/staff.module';
+import { CatalogModule } from './catalog/catalog.module';
+import { PhotosModule } from './photos/photos.module';
+import { SyncModule } from './sync/sync.module';
+import { SalesModule } from './sales/sales.module';
 
 @Module({
   imports: [
@@ -69,6 +73,10 @@ import { StaffModule } from './staff/staff.module';
     DevicesModule,
     BranchesModule,
     StaffModule,
+    CatalogModule,
+    PhotosModule,
+    SyncModule,
+    SalesModule,
     HealthModule,
   ],
   providers: [
