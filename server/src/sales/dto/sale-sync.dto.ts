@@ -172,9 +172,8 @@ export class SaleCompletedPayloadDto {
   @IsUUID()
   cashierStaffId!: string;
 
-  @IsOptional()
   @IsUUID()
-  shiftId?: string | null;
+  shiftId!: string;
 
   @IsArray()
   @ArrayMinSize(1)
@@ -231,6 +230,9 @@ export class RefundLineInputDto {
 export class SaleRefundedPayloadDto {
   @IsUUID()
   saleId!: string;
+
+  @IsUUID()
+  shiftId!: string;
 
   @IsIn(['REFUND', 'VOID'])
   kind!: 'REFUND' | 'VOID';

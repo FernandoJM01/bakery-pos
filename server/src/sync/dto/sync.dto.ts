@@ -67,6 +67,7 @@ export const OFFLINE_AUDIT_ACTIONS = [
   'auth.locked',
   'auth.approval_granted',
   'sale.ticket_discarded',
+  'cash.drawer_opened',
 ] as const;
 
 /** What a discarded ticket held (`sale.ticket_discarded`, M3 brief 4.1). */

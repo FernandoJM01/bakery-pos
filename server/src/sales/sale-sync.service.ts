@@ -14,6 +14,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SyncRecordDto } from '../sync/dto/sync.dto';
 import {
   checkApprover,
+  checkShift,
   findStaff,
   holds,
   inBranch,
@@ -77,6 +78,14 @@ export class SaleSyncService {
     if (device.type !== DeviceType.TILL || !device.folioPrefix) {
       return rejected('Only a sales till can record sales');
     }
+
+    const shift = await checkShift(
+      this.prisma,
+      device.id,
+      p.shiftId,
+      occurredAt,
+    );
+    if (isRejection(shift)) return shift;
 
     // Folio: this till's prefix, a number it has not used.
     if (p.folio !== folioFor(device.folioPrefix, p.folioNumber)) {
@@ -254,7 +263,7 @@ export class SaleSyncService {
       folio: p.folio,
       folioNumber: p.folioNumber,
       cashierStaffId: cashier.id,
-      shiftId: p.shiftId ?? null,
+      shiftId: p.shiftId,
       occurredAt,
       receivedAt,
       grossCents: totals.grossCents,
@@ -360,6 +369,13 @@ export class SaleSyncService {
     if (new Set(p.lines.map((l) => l.lineNo)).size !== p.lines.length) {
       return rejected('Line numbers repeat');
     }
+    const shift = await checkShift(
+      this.prisma,
+      device.id,
+      p.shiftId,
+      occurredAt,
+    );
+    if (isRejection(shift)) return shift;
 
     const sale = await this.prisma.sale.findUnique({
       where: { id: p.saleId },
@@ -475,6 +491,7 @@ export class SaleSyncService {
         reason: p.reason,
         note: p.note ?? null,
         deviceId: device.id,
+        shiftId: p.shiftId,
         staffId: p.staffId,
         approverStaffId: p.approverStaffId ?? null,
         occurredAt,

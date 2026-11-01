@@ -86,7 +86,7 @@ Shows branch, till, Z number, who opened and closed and when; sales count; gross
 - `shift.opened`: device is a `TILL`; the staff member belongs to the branch and holds `cash.open_shift`; no other `OPEN` shift on the device; the count adds up to `floatCents`.
 - `cash.movement`: the shift exists on this device and is open at `occurredAt`; the staff member holds `cash.movement`, or a valid approver does.
 - `sale.completed` and `sale.refunded`: `shiftId` must be a shift of this device. A sale or refund with `occurredAt` after the shift's `closedAt` is rejected.
-- `shift.closed`: the shift is open on this device; the staff member holds `cash.close_shift`; the Z number is the next for the device; the count adds up to `countedCents`; the server recomputes expected, variance and the flag and rejects a difference. Records arrive oldest first, so all the shift's sales are in before the close.
+- `shift.closed`: the shift is open on this device; the staff member holds `cash.close_shift`; the Z number was not used before on this device, so one quarantined close cannot block every later one; the count adds up to `countedCents`; the server recomputes expected, variance and the flag and rejects a difference. Records arrive oldest first, so all the shift's sales are in before the close.
 - Rejections use `SYNC_INVALID_PAYLOAD` (shape) or `SYNC_REJECTED` (rules), go to quarantine, and never block other records.
 
 ## 5. Screens
