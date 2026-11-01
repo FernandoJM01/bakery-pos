@@ -7,7 +7,10 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart' show Database;
 
+import 'catalog_tables.dart';
 import 'secure_storage.dart';
+
+export 'catalog_tables.dart';
 
 part 'local_database.g.dart';
 
@@ -68,6 +71,12 @@ class OfflineApprovalEntries extends Table {
     SessionStateEntries,
     StaffLockoutEntries,
     OfflineApprovalEntries,
+    CatalogTaxRates,
+    CatalogCategories,
+    CatalogProducts,
+    CatalogVariants,
+    CatalogBranchPrices,
+    SyncStateEntries,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -76,7 +85,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -87,6 +96,18 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 3) {
         await m.createTable(offlineApprovalEntries);
+      }
+      if (from < 4) {
+        for (final table in <TableInfo>[
+          catalogTaxRates,
+          catalogCategories,
+          catalogProducts,
+          catalogVariants,
+          catalogBranchPrices,
+          syncStateEntries,
+        ]) {
+          await m.createTable(table);
+        }
       }
     },
   );
@@ -230,6 +251,16 @@ class AppDatabase extends _$AppDatabase {
     await delete(sessionStateEntries).go();
     await delete(staffLockoutEntries).go();
     await delete(offlineApprovalEntries).go();
+    for (final table in <TableInfo>[
+      catalogTaxRates,
+      catalogCategories,
+      catalogProducts,
+      catalogVariants,
+      catalogBranchPrices,
+      syncStateEntries,
+    ]) {
+      await delete(table).go();
+    }
   }
 
   static Future<void> deleteDatabaseFile() async {

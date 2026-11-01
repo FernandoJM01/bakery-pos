@@ -6,6 +6,7 @@ import 'package:bakery_pos/features/auth/data/till_auth_service.dart';
 import 'package:bakery_pos/features/auth/domain/till_auth_state.dart';
 import 'package:bakery_pos/features/auth/presentation/till_home_screen.dart';
 import 'package:bakery_pos/l10n/app_localizations.dart';
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -47,6 +48,9 @@ Widget createTillShellTestWidget({
 }) {
   return ProviderScope(
     overrides: [
+      tillDatabaseProvider.overrideWithValue(
+        AppDatabase(NativeDatabase.memory()),
+      ),
       tillSessionProvider.overrideWith(
         () => _StaticTillSessionNotifier(session),
       ),
@@ -69,6 +73,9 @@ Widget createTillRouterTestWidget({
 }) {
   return ProviderScope(
     overrides: [
+      tillDatabaseProvider.overrideWithValue(
+        AppDatabase(NativeDatabase.memory()),
+      ),
       tillSessionProvider.overrideWith(
         () => _StaticTillSessionNotifier(session),
       ),
