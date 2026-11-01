@@ -8,11 +8,15 @@ import '../../../l10n/app_localizations.dart';
 import '../../auth/data/till_auth_service.dart';
 import '../../till_catalog/data/till_catalog_repository.dart';
 import '../../till_catalog/presentation/product_grid_screen.dart';
+import '../data/held_ticket_repository.dart';
+import '../data/refund_repository.dart';
 import '../data/sale_repository.dart';
 import '../domain/ticket.dart';
 import 'discount_dialog.dart';
+import 'held_tickets.dart';
 import 'payment_dialog.dart';
 import 'receipt_dialog.dart';
+import 'refund_dialog.dart';
 
 SaleItem saleItemOf(GridProduct p, GridVariant v) => SaleItem(
   variantId: v.id,
@@ -157,6 +161,13 @@ class TicketPanel extends ConsumerWidget {
     );
   }
 
+  Future<void> _refund(BuildContext context, RefundKind kind) async {
+    final result = await showRefundFlow(context, kind);
+    if (result != null && context.mounted) {
+      await showRefundDone(context, kind, result);
+    }
+  }
+
   Future<void> _ticketDiscount(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
     final ticket = ref.read(ticketProvider);
@@ -177,6 +188,7 @@ class TicketPanel extends ConsumerWidget {
     final theme = Theme.of(context);
     final ticket = ref.watch(ticketProvider);
     final totals = ticket.totals;
+    final heldCount = ref.watch(heldTicketsProvider).value?.length ?? 0;
 
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.paddingMedium),
@@ -198,6 +210,46 @@ class TicketPanel extends ConsumerWidget {
                 onPressed: ticket.isEmpty
                     ? null
                     : () => confirmDiscardTicket(context, ref),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              OutlinedButton.icon(
+                key: const Key('ticket-hold'),
+                icon: const Icon(Icons.pause_circle_outline),
+                label: Text(l10n.saleHold),
+                onPressed: ticket.isEmpty
+                    ? null
+                    : () => holdCurrentTicket(context, ref),
+              ),
+              const SizedBox(width: AppDimensions.paddingSmall),
+              Expanded(
+                child: TextButton(
+                  key: const Key('held-open'),
+                  onPressed: () => showDialog<void>(
+                    context: context,
+                    builder: (_) => const HeldTicketsDialog(),
+                  ),
+                  child: Text(l10n.saleHeldOpen(heldCount)),
+                ),
+              ),
+              PopupMenuButton<RefundKind>(
+                key: const Key('sale-menu'),
+                tooltip: l10n.saleMenu,
+                onSelected: (kind) => _refund(context, kind),
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    key: const Key('menu-refund'),
+                    value: RefundKind.refund,
+                    child: Text(l10n.saleMenuRefund),
+                  ),
+                  PopupMenuItem(
+                    key: const Key('menu-void'),
+                    value: RefundKind.voidSale,
+                    child: Text(l10n.saleMenuVoid),
+                  ),
+                ],
               ),
             ],
           ),

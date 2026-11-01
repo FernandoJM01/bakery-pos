@@ -512,5 +512,102 @@
         "type": "String"
       }
     }
-  }
+  },
+  "saleHold": "Guardar",
+  "saleHoldTitle": "Guardar ticket",
+  "saleHoldName": "Nombre (opcional)",
+  "saleHoldNameHint": "Por ejemplo: Señora del rebozo",
+  "saleHeldOpen": "En espera ({count})",
+  "@saleHeldOpen": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "saleHeldTitle": "Tickets en espera",
+  "saleHeldEmpty": "No hay tickets en espera",
+  "saleHeldUnnamed": "Ticket sin nombre",
+  "saleHeldSubtitle": "{time} · {count} productos · {total}",
+  "@saleHeldSubtitle": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "saleHeldResume": "Retomar",
+  "saleHeldDiscard": "Descartar",
+  "saleHeldBusy": "Cobra o guarda el ticket actual antes de retomar otro",
+  "saleMenu": "Más opciones",
+  "saleMenuRefund": "Devolución",
+  "saleMenuVoid": "Cancelar venta",
+  "refundFolio": "Folio del ticket",
+  "refundFolioHint": "Por ejemplo: SUC1-02-000153",
+  "refundSearch": "Buscar",
+  "refundNotFound": "No se encontró esa venta. Sin conexión solo se encuentran las ventas de esta caja.",
+  "refundSaleTitle": "Venta {folio}",
+  "@refundSaleTitle": {
+    "placeholders": {
+      "folio": {
+        "type": "String"
+      }
+    }
+  },
+  "refundLineUnits": "{left} de {quantity} por devolver",
+  "@refundLineUnits": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      },
+      "quantity": {
+        "type": "int"
+      }
+    }
+  },
+  "refundRestock": "Vuelve al inventario",
+  "refundReason": "Motivo",
+  "refundReasonCustomerReturn": "El cliente lo devolvió",
+  "refundReasonWrongItem": "Producto equivocado",
+  "refundReasonQuality": "Calidad",
+  "refundReasonCashierError": "Error de cobro",
+  "refundReasonOther": "Otro",
+  "refundNote": "Nota",
+  "refundNoteRequired": "Escribe una nota para el motivo Otro",
+  "refundReasonRequired": "Elige un motivo",
+  "refundNothing": "Elige al menos una pieza",
+  "refundGiveBack": "Entregar {amount} al cliente",
+  "@refundGiveBack": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "refundConfirm": "Devolver",
+  "voidConfirm": "Cancelar venta",
+  "refundApprovalNeeded": "Sin la autorización de un gerente no se puede hacer",
+  "refundTooMany": "En la línea {lineNo} solo quedan {left} piezas",
+  "@refundTooMany": {
+    "placeholders": {
+      "lineNo": {
+        "type": "int"
+      },
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "voidOtherTill": "Solo se puede cancelar en la caja que hizo la venta",
+  "voidOtherDay": "Solo se puede cancelar el mismo día de la venta",
+  "voidAlreadyReturned": "Esta venta ya no tiene piezas por devolver",
+  "refundAlreadyReturned": "Esta venta ya se devolvió completa",
+  "refundDoneTitle": "Devolución registrada",
+  "voidDoneTitle": "Venta cancelada"
 }

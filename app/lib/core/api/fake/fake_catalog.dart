@@ -385,6 +385,12 @@ class FakeCatalog {
         photoIds.add(id);
         return _ok({'id': id, 'width': 800, 'height': 800, 'bytes': 1024}, 201);
 
+      case ('GET', ['sales', 'lookup']):
+        final folio = query['folio']?.toString();
+        final sale = sales.where((x) => x['folio'] == folio).firstOrNull;
+        if (sale == null) return _err(404, 'NOT_FOUND', 'Sale not found');
+        return _ok(saleView(sale));
+
       case ('GET', ['sync', 'catalog']):
         return _ok(_pull(query));
       case ('POST', ['sync', 'push']):
@@ -459,6 +465,42 @@ class FakeCatalog {
           for (final r in taken)
             if (r.$2 == list) r.$3,
         ],
+    };
+  }
+
+  /// A stored `sale.completed` payload as the contract's `Sale`.
+  Map<String, dynamic> saleView(Map<String, dynamic> p) {
+    final lines = [
+      for (final l in (p['lines'] as List).cast<Map>())
+        {
+          ...Map<String, dynamic>.from(l)..remove('discount'),
+          'refundedQuantity': l['refundedQuantity'] ?? 0,
+          'refundedCents': l['refundedCents'] ?? 0,
+        },
+    ];
+    return {
+      'id': p['id'],
+      'folio': p['folio'],
+      'folioNumber': p['folioNumber'],
+      'branchId': deviceBranchId,
+      'deviceId': p['deviceId'] ?? 'fake-other-till',
+      'cashierStaffId': p['cashierStaffId'],
+      'cashierName': 'Ana (Cajera)',
+      'occurredAt': p['occurredAt'],
+      'receivedAt': p['occurredAt'],
+      'status': p['status'] ?? 'COMPLETED',
+      'lineCount': lines.length,
+      'grossCents': p['grossCents'],
+      'discountCents': p['discountCents'],
+      'totalCents': p['totalCents'],
+      'refundedCents': p['refundedCents'] ?? 0,
+      'shiftId': null,
+      'lines': lines,
+      'discounts': <Object>[],
+      'taxes': <Object>[],
+      'payments': p['payments'],
+      'voidedLines': p['voidedLines'] ?? <Object>[],
+      'refunds': <Object>[],
     };
   }
 

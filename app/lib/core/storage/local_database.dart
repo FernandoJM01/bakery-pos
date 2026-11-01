@@ -86,6 +86,8 @@ class OfflineApprovalEntries extends Table {
     LocalSales,
     LocalSaleLines,
     LocalSaleDiscounts,
+    LocalHeldTickets,
+    LocalRefunds,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -94,7 +96,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -125,6 +127,10 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(localSales);
         await m.createTable(localSaleLines);
         await m.createTable(localSaleDiscounts);
+      }
+      if (from < 7) {
+        await m.createTable(localHeldTickets);
+        await m.createTable(localRefunds);
       }
     },
   );
@@ -404,6 +410,8 @@ class AppDatabase extends _$AppDatabase {
       localSales,
       localSaleLines,
       localSaleDiscounts,
+      localHeldTickets,
+      localRefunds,
     ]) {
       await delete(table).go();
     }

@@ -1060,4 +1060,150 @@ class AppLocalizationsEs extends AppLocalizations {
   String saleChooseVariantTitle(String product) {
     return '$product: elige la presentación';
   }
+
+  @override
+  String get saleHold => 'Guardar';
+
+  @override
+  String get saleHoldTitle => 'Guardar ticket';
+
+  @override
+  String get saleHoldName => 'Nombre (opcional)';
+
+  @override
+  String get saleHoldNameHint => 'Por ejemplo: Señora del rebozo';
+
+  @override
+  String saleHeldOpen(int count) {
+    return 'En espera ($count)';
+  }
+
+  @override
+  String get saleHeldTitle => 'Tickets en espera';
+
+  @override
+  String get saleHeldEmpty => 'No hay tickets en espera';
+
+  @override
+  String get saleHeldUnnamed => 'Ticket sin nombre';
+
+  @override
+  String saleHeldSubtitle(String time, int count, String total) {
+    return '$time · $count productos · $total';
+  }
+
+  @override
+  String get saleHeldResume => 'Retomar';
+
+  @override
+  String get saleHeldDiscard => 'Descartar';
+
+  @override
+  String get saleHeldBusy =>
+      'Cobra o guarda el ticket actual antes de retomar otro';
+
+  @override
+  String get saleMenu => 'Más opciones';
+
+  @override
+  String get saleMenuRefund => 'Devolución';
+
+  @override
+  String get saleMenuVoid => 'Cancelar venta';
+
+  @override
+  String get refundFolio => 'Folio del ticket';
+
+  @override
+  String get refundFolioHint => 'Por ejemplo: SUC1-02-000153';
+
+  @override
+  String get refundSearch => 'Buscar';
+
+  @override
+  String get refundNotFound =>
+      'No se encontró esa venta. Sin conexión solo se encuentran las ventas de esta caja.';
+
+  @override
+  String refundSaleTitle(String folio) {
+    return 'Venta $folio';
+  }
+
+  @override
+  String refundLineUnits(int left, int quantity) {
+    return '$left de $quantity por devolver';
+  }
+
+  @override
+  String get refundRestock => 'Vuelve al inventario';
+
+  @override
+  String get refundReason => 'Motivo';
+
+  @override
+  String get refundReasonCustomerReturn => 'El cliente lo devolvió';
+
+  @override
+  String get refundReasonWrongItem => 'Producto equivocado';
+
+  @override
+  String get refundReasonQuality => 'Calidad';
+
+  @override
+  String get refundReasonCashierError => 'Error de cobro';
+
+  @override
+  String get refundReasonOther => 'Otro';
+
+  @override
+  String get refundNote => 'Nota';
+
+  @override
+  String get refundNoteRequired => 'Escribe una nota para el motivo Otro';
+
+  @override
+  String get refundReasonRequired => 'Elige un motivo';
+
+  @override
+  String get refundNothing => 'Elige al menos una pieza';
+
+  @override
+  String refundGiveBack(String amount) {
+    return 'Entregar $amount al cliente';
+  }
+
+  @override
+  String get refundConfirm => 'Devolver';
+
+  @override
+  String get voidConfirm => 'Cancelar venta';
+
+  @override
+  String get refundApprovalNeeded =>
+      'Sin la autorización de un gerente no se puede hacer';
+
+  @override
+  String refundTooMany(int lineNo, int left) {
+    return 'En la línea $lineNo solo quedan $left piezas';
+  }
+
+  @override
+  String get voidOtherTill =>
+      'Solo se puede cancelar en la caja que hizo la venta';
+
+  @override
+  String get voidOtherDay => 'Solo se puede cancelar el mismo día de la venta';
+
+  @override
+  String get voidAlreadyReturned =>
+      'Esta venta ya no tiene piezas por devolver';
+
+  @override
+  String get refundAlreadyReturned => 'Esta venta ya se devolvió completa';
+
+  @override
+  String get refundDoneTitle => 'Devolución registrada';
+
+  @override
+  String get voidDoneTitle => 'Venta cancelada';
 }

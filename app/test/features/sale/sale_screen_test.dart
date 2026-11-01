@@ -6,6 +6,7 @@ import 'package:bakery_pos/core/storage/secure_storage.dart';
 import 'package:bakery_pos/features/auth/data/till_auth_service.dart';
 import 'package:bakery_pos/features/auth/domain/approval_models.dart';
 import 'package:bakery_pos/features/auth/domain/till_auth_state.dart';
+import 'package:bakery_pos/features/sale/data/refund_repository.dart';
 import 'package:bakery_pos/features/sale/domain/ticket.dart';
 import 'package:bakery_pos/features/sale/presentation/discount_dialog.dart';
 import 'package:bakery_pos/features/sale/presentation/sale_screen.dart';
@@ -53,14 +54,19 @@ void main() {
   });
   tearDown(() => db.close());
 
-  Future<void> pumpSale(WidgetTester tester, TillSession session) async {
+  Future<void> pumpSale(
+    WidgetTester tester,
+    TillSession session, {
+    bool seed = true,
+  }) async {
     tester.view.physicalSize = const Size(1280, 800);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.runAsync(() => seedTill(db));
+    if (seed) await tester.runAsync(() => seedTill(db));
     await tester.pumpWidget(
       ProviderScope(
+        key: UniqueKey(),
         overrides: [
           tillDatabaseProvider.overrideWithValue(db),
           tillCatalogRepositoryProvider.overrideWithValue(
@@ -364,6 +370,164 @@ void main() {
     await settle(tester);
     expect(find.byType(SnackBar), findsOneWidget);
     expect(find.byKey(const Key('payment-total')), findsNothing);
+  });
+
+  testWidgets(
+    'D6: a held ticket is visible after another cashier logs in and resumes with its lines',
+    (tester) async {
+      await pumpSale(tester, sessionOf(cashier, cashierPermissions));
+      await tester.tap(find.text('Concha'));
+      await tester.tap(find.text('Pastel'));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('ticket-hold')));
+      await settle(tester);
+      await tester.enterText(
+        find.byKey(const Key('hold-name')),
+        'Señora del rebozo',
+      );
+      await tester.runAsync(
+        () => tester.tap(find.byKey(const Key('hold-confirm'))),
+      );
+      await settle(tester);
+      expect(find.byKey(const Key('ticket-empty')), findsOneWidget);
+      expect(find.text('En espera (1)'), findsOneWidget);
+
+      // A new session: the manager logs in on the same till.
+      await pumpSale(
+        tester,
+        sessionOf(manager, [...cashierPermissions, 'sale.refund']),
+        seed: false,
+      );
+      expect(find.text('En espera (1)'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('held-open')));
+      await settle(tester);
+      expect(find.text('Señora del rebozo'), findsOneWidget);
+      await tester.runAsync(() => tester.tap(find.textContaining('Retomar')));
+      await settle(tester);
+      expect(find.byKey(const Key('ticket-line-1')), findsOneWidget);
+      expect(find.byKey(const Key('ticket-line-2')), findsOneWidget);
+      expect(
+        tester.widget<Text>(find.byKey(const Key('ticket-total'))).data,
+        r'$37.00',
+      );
+      expect(find.text('En espera (0)'), findsOneWidget);
+    },
+  );
+
+  Future<String> sellOne(WidgetTester tester) async {
+    await tester.tap(find.text('Pastel'));
+    await tester.tap(find.text('Pastel'));
+    await tester.pump();
+    await tester.runAsync(
+      () => tester.tap(find.byKey(const Key('ticket-pay'))),
+    );
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('payment-exact')));
+    await tester.pump();
+    await tester.runAsync(
+      () => tester.tap(find.byKey(const Key('payment-finish'))),
+    );
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('receipt-new-sale')));
+    await settle(tester);
+    return 'SUC1-02-000001';
+  }
+
+  Future<void> openFlow(WidgetTester tester, String menu, String folio) async {
+    await tester.tap(find.byKey(const Key('sale-menu')));
+    await settle(tester);
+    await tester.tap(find.byKey(Key(menu)));
+    await settle(tester);
+    await tester.enterText(find.byKey(const Key('refund-folio')), folio);
+    await tester.runAsync(
+      () => tester.tap(find.byKey(const Key('refund-search'))),
+    );
+    await settle(tester);
+  }
+
+  testWidgets(
+    "D8: a cashier's cancel needs a manager's PIN and then marks the sale VOIDED",
+    (tester) async {
+      await pumpSale(tester, sessionOf(cashier, cashierPermissions));
+      final folio = await sellOne(tester);
+      await openFlow(tester, 'menu-void', folio);
+      // Every unit is taken; the cashier only picks the reason.
+      expect(
+        tester.widget<Text>(find.byKey(const Key('refund-units-1'))).data,
+        '2',
+      );
+      expect(find.text(r'Entregar $44.00 al cliente'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('refund-reason-CASHIER_ERROR')));
+      await tester.pump();
+      await tester.runAsync(
+        () => tester.tap(find.byKey(const Key('refund-confirm'))),
+      );
+      await settle(tester);
+      expect(approvalsAsked, ['sale.void_after_payment']);
+      expect(find.byKey(const Key('refund-error')), findsOneWidget);
+
+      approval = OfflineApprovalResult(
+        id: 'a2',
+        approverStaffId: manager.id,
+        requesterStaffId: cashier.id,
+        action: 'sale.void_after_payment',
+        createdAt: DateTime.utc(2026, 11, 2),
+      );
+      await tester.runAsync(
+        () => tester.tap(find.byKey(const Key('refund-confirm'))),
+      );
+      await settle(tester);
+      expect(find.byKey(const Key('refund-done')), findsOneWidget);
+      expect(
+        tester.widget<Text>(find.byKey(const Key('refund-done-amount'))).data,
+        r'Entregar $44.00 al cliente',
+      );
+      final sale = await tester.runAsync(
+        () => db.select(db.localSales).getSingle(),
+      );
+      expect(sale!.status, 'VOIDED');
+      final refund = await tester.runAsync(
+        () => db.select(db.localRefunds).getSingle(),
+      );
+      expect(refund!.approverStaffId, manager.id);
+      expect(refund.kind, RefundKind.voidSale.json);
+    },
+  );
+
+  testWidgets('D7: a manager refunds 1 of 2 units without asking anyone', (
+    tester,
+  ) async {
+    await pumpSale(
+      tester,
+      sessionOf(manager, [...cashierPermissions, 'sale.refund']),
+    );
+    final folio = await sellOne(tester);
+    await openFlow(tester, 'menu-refund', folio);
+    await tester.tap(find.byKey(const Key('refund-plus-1')));
+    await tester.pump();
+    expect(find.text(r'Entregar $22.00 al cliente'), findsOneWidget);
+    // At most what is left.
+    await tester.tap(find.byKey(const Key('refund-plus-1')));
+    await tester.pump();
+    expect(
+      tester
+          .widget<IconButton>(find.byKey(const Key('refund-plus-1')))
+          .onPressed,
+      isNull,
+    );
+    await tester.tap(find.byKey(const Key('refund-minus-1')));
+    await tester.tap(find.byKey(const Key('refund-reason-QUALITY')));
+    await tester.pump();
+    await tester.runAsync(
+      () => tester.tap(find.byKey(const Key('refund-confirm'))),
+    );
+    await settle(tester);
+    expect(approvalsAsked, isEmpty);
+    expect(find.byKey(const Key('refund-done')), findsOneWidget);
+    final sale = await tester.runAsync(
+      () => db.select(db.localSales).getSingle(),
+    );
+    expect(sale!.status, 'PARTIALLY_REFUNDED');
   });
 }
 
