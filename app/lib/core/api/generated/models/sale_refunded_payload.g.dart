@@ -9,6 +9,7 @@ part of 'sale_refunded_payload.dart';
 SaleRefundedPayload _$SaleRefundedPayloadFromJson(Map<String, dynamic> json) =>
     SaleRefundedPayload(
       saleId: json['saleId'] as String,
+      shiftId: json['shiftId'] as String,
       kind: RefundKind.fromJson(json['kind'] as String),
       reason: RefundReason.fromJson(json['reason'] as String),
       staffId: json['staffId'] as String,
@@ -24,6 +25,7 @@ Map<String, dynamic> _$SaleRefundedPayloadToJson(
   SaleRefundedPayload instance,
 ) => <String, dynamic>{
   'saleId': instance.saleId,
+  'shiftId': instance.shiftId,
   'kind': _$RefundKindEnumMap[instance.kind]!,
   'reason': _$RefundReasonEnumMap[instance.reason]!,
   'note': ?instance.note,

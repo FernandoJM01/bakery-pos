@@ -4534,6 +4534,17 @@ class $LocalSalesTable extends LocalSales
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
+  static const VerificationMeta _shiftIdMeta = const VerificationMeta(
+    'shiftId',
+  );
+  @override
+  late final GeneratedColumn<String> shiftId = GeneratedColumn<String>(
+    'shift_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _cashierStaffIdMeta = const VerificationMeta(
     'cashierStaffId',
   );
@@ -4661,6 +4672,7 @@ class $LocalSalesTable extends LocalSales
     id,
     folio,
     folioNumber,
+    shiftId,
     cashierStaffId,
     cashierName,
     occurredAt,
@@ -4708,6 +4720,12 @@ class $LocalSalesTable extends LocalSales
       );
     } else if (isInserting) {
       context.missing(_folioNumberMeta);
+    }
+    if (data.containsKey('shift_id')) {
+      context.handle(
+        _shiftIdMeta,
+        shiftId.isAcceptableOrUnknown(data['shift_id']!, _shiftIdMeta),
+      );
     }
     if (data.containsKey('cashier_staff_id')) {
       context.handle(
@@ -4833,6 +4851,10 @@ class $LocalSalesTable extends LocalSales
         DriftSqlType.int,
         data['${effectivePrefix}folio_number'],
       )!,
+      shiftId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}shift_id'],
+      ),
       cashierStaffId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}cashier_staff_id'],
@@ -4890,6 +4912,9 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
   final String id;
   final String folio;
   final int folioNumber;
+
+  /// Null only on sales from before shifts (M4).
+  final String? shiftId;
   final String cashierStaffId;
   final String cashierName;
   final DateTime occurredAt;
@@ -4911,6 +4936,7 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
     required this.id,
     required this.folio,
     required this.folioNumber,
+    this.shiftId,
     required this.cashierStaffId,
     required this.cashierName,
     required this.occurredAt,
@@ -4929,6 +4955,9 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
     map['id'] = Variable<String>(id);
     map['folio'] = Variable<String>(folio);
     map['folio_number'] = Variable<int>(folioNumber);
+    if (!nullToAbsent || shiftId != null) {
+      map['shift_id'] = Variable<String>(shiftId);
+    }
     map['cashier_staff_id'] = Variable<String>(cashierStaffId);
     map['cashier_name'] = Variable<String>(cashierName);
     map['occurred_at'] = Variable<DateTime>(occurredAt);
@@ -4948,6 +4977,9 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
       id: Value(id),
       folio: Value(folio),
       folioNumber: Value(folioNumber),
+      shiftId: shiftId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(shiftId),
       cashierStaffId: Value(cashierStaffId),
       cashierName: Value(cashierName),
       occurredAt: Value(occurredAt),
@@ -4971,6 +5003,7 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
       id: serializer.fromJson<String>(json['id']),
       folio: serializer.fromJson<String>(json['folio']),
       folioNumber: serializer.fromJson<int>(json['folioNumber']),
+      shiftId: serializer.fromJson<String?>(json['shiftId']),
       cashierStaffId: serializer.fromJson<String>(json['cashierStaffId']),
       cashierName: serializer.fromJson<String>(json['cashierName']),
       occurredAt: serializer.fromJson<DateTime>(json['occurredAt']),
@@ -4991,6 +5024,7 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
       'id': serializer.toJson<String>(id),
       'folio': serializer.toJson<String>(folio),
       'folioNumber': serializer.toJson<int>(folioNumber),
+      'shiftId': serializer.toJson<String?>(shiftId),
       'cashierStaffId': serializer.toJson<String>(cashierStaffId),
       'cashierName': serializer.toJson<String>(cashierName),
       'occurredAt': serializer.toJson<DateTime>(occurredAt),
@@ -5009,6 +5043,7 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
     String? id,
     String? folio,
     int? folioNumber,
+    Value<String?> shiftId = const Value.absent(),
     String? cashierStaffId,
     String? cashierName,
     DateTime? occurredAt,
@@ -5024,6 +5059,7 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
     id: id ?? this.id,
     folio: folio ?? this.folio,
     folioNumber: folioNumber ?? this.folioNumber,
+    shiftId: shiftId.present ? shiftId.value : this.shiftId,
     cashierStaffId: cashierStaffId ?? this.cashierStaffId,
     cashierName: cashierName ?? this.cashierName,
     occurredAt: occurredAt ?? this.occurredAt,
@@ -5043,6 +5079,7 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
       folioNumber: data.folioNumber.present
           ? data.folioNumber.value
           : this.folioNumber,
+      shiftId: data.shiftId.present ? data.shiftId.value : this.shiftId,
       cashierStaffId: data.cashierStaffId.present
           ? data.cashierStaffId.value
           : this.cashierStaffId,
@@ -5083,6 +5120,7 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
           ..write('id: $id, ')
           ..write('folio: $folio, ')
           ..write('folioNumber: $folioNumber, ')
+          ..write('shiftId: $shiftId, ')
           ..write('cashierStaffId: $cashierStaffId, ')
           ..write('cashierName: $cashierName, ')
           ..write('occurredAt: $occurredAt, ')
@@ -5103,6 +5141,7 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
     id,
     folio,
     folioNumber,
+    shiftId,
     cashierStaffId,
     cashierName,
     occurredAt,
@@ -5122,6 +5161,7 @@ class LocalSale extends DataClass implements Insertable<LocalSale> {
           other.id == this.id &&
           other.folio == this.folio &&
           other.folioNumber == this.folioNumber &&
+          other.shiftId == this.shiftId &&
           other.cashierStaffId == this.cashierStaffId &&
           other.cashierName == this.cashierName &&
           other.occurredAt == this.occurredAt &&
@@ -5139,6 +5179,7 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
   final Value<String> id;
   final Value<String> folio;
   final Value<int> folioNumber;
+  final Value<String?> shiftId;
   final Value<String> cashierStaffId;
   final Value<String> cashierName;
   final Value<DateTime> occurredAt;
@@ -5155,6 +5196,7 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
     this.id = const Value.absent(),
     this.folio = const Value.absent(),
     this.folioNumber = const Value.absent(),
+    this.shiftId = const Value.absent(),
     this.cashierStaffId = const Value.absent(),
     this.cashierName = const Value.absent(),
     this.occurredAt = const Value.absent(),
@@ -5172,6 +5214,7 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
     required String id,
     required String folio,
     required int folioNumber,
+    this.shiftId = const Value.absent(),
     required String cashierStaffId,
     required String cashierName,
     required DateTime occurredAt,
@@ -5199,6 +5242,7 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
     Expression<String>? id,
     Expression<String>? folio,
     Expression<int>? folioNumber,
+    Expression<String>? shiftId,
     Expression<String>? cashierStaffId,
     Expression<String>? cashierName,
     Expression<DateTime>? occurredAt,
@@ -5216,6 +5260,7 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
       if (id != null) 'id': id,
       if (folio != null) 'folio': folio,
       if (folioNumber != null) 'folio_number': folioNumber,
+      if (shiftId != null) 'shift_id': shiftId,
       if (cashierStaffId != null) 'cashier_staff_id': cashierStaffId,
       if (cashierName != null) 'cashier_name': cashierName,
       if (occurredAt != null) 'occurred_at': occurredAt,
@@ -5235,6 +5280,7 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
     Value<String>? id,
     Value<String>? folio,
     Value<int>? folioNumber,
+    Value<String?>? shiftId,
     Value<String>? cashierStaffId,
     Value<String>? cashierName,
     Value<DateTime>? occurredAt,
@@ -5252,6 +5298,7 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
       id: id ?? this.id,
       folio: folio ?? this.folio,
       folioNumber: folioNumber ?? this.folioNumber,
+      shiftId: shiftId ?? this.shiftId,
       cashierStaffId: cashierStaffId ?? this.cashierStaffId,
       cashierName: cashierName ?? this.cashierName,
       occurredAt: occurredAt ?? this.occurredAt,
@@ -5278,6 +5325,9 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
     }
     if (folioNumber.present) {
       map['folio_number'] = Variable<int>(folioNumber.value);
+    }
+    if (shiftId.present) {
+      map['shift_id'] = Variable<String>(shiftId.value);
     }
     if (cashierStaffId.present) {
       map['cashier_staff_id'] = Variable<String>(cashierStaffId.value);
@@ -5324,6 +5374,7 @@ class LocalSalesCompanion extends UpdateCompanion<LocalSale> {
           ..write('id: $id, ')
           ..write('folio: $folio, ')
           ..write('folioNumber: $folioNumber, ')
+          ..write('shiftId: $shiftId, ')
           ..write('cashierStaffId: $cashierStaffId, ')
           ..write('cashierName: $cashierName, ')
           ..write('occurredAt: $occurredAt, ')
@@ -7525,6 +7576,17 @@ class $LocalRefundsTable extends LocalRefunds
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _shiftIdMeta = const VerificationMeta(
+    'shiftId',
+  );
+  @override
+  late final GeneratedColumn<String> shiftId = GeneratedColumn<String>(
+    'shift_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _kindMeta = const VerificationMeta('kind');
   @override
   late final GeneratedColumn<String> kind = GeneratedColumn<String>(
@@ -7607,11 +7669,24 @@ class $LocalRefundsTable extends LocalRefunds
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _ratesJsonMeta = const VerificationMeta(
+    'ratesJson',
+  );
+  @override
+  late final GeneratedColumn<String> ratesJson = GeneratedColumn<String>(
+    'rates_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
     saleId,
     folio,
+    shiftId,
     kind,
     reason,
     note,
@@ -7620,6 +7695,7 @@ class $LocalRefundsTable extends LocalRefunds
     occurredAt,
     totalCents,
     linesJson,
+    ratesJson,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -7653,6 +7729,12 @@ class $LocalRefundsTable extends LocalRefunds
       );
     } else if (isInserting) {
       context.missing(_folioMeta);
+    }
+    if (data.containsKey('shift_id')) {
+      context.handle(
+        _shiftIdMeta,
+        shiftId.isAcceptableOrUnknown(data['shift_id']!, _shiftIdMeta),
+      );
     }
     if (data.containsKey('kind')) {
       context.handle(
@@ -7717,6 +7799,12 @@ class $LocalRefundsTable extends LocalRefunds
     } else if (isInserting) {
       context.missing(_linesJsonMeta);
     }
+    if (data.containsKey('rates_json')) {
+      context.handle(
+        _ratesJsonMeta,
+        ratesJson.isAcceptableOrUnknown(data['rates_json']!, _ratesJsonMeta),
+      );
+    }
     return context;
   }
 
@@ -7738,6 +7826,10 @@ class $LocalRefundsTable extends LocalRefunds
         DriftSqlType.string,
         data['${effectivePrefix}folio'],
       )!,
+      shiftId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}shift_id'],
+      ),
       kind: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}kind'],
@@ -7770,6 +7862,10 @@ class $LocalRefundsTable extends LocalRefunds
         DriftSqlType.string,
         data['${effectivePrefix}lines_json'],
       )!,
+      ratesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rates_json'],
+      )!,
     );
   }
 
@@ -7784,6 +7880,9 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
   final String saleId;
   final String folio;
 
+  /// The shift of this till that paid the money (M4).
+  final String? shiftId;
+
   /// `REFUND` or `VOID`.
   final String kind;
   final String reason;
@@ -7795,10 +7894,15 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
 
   /// The refund lines, as the outbox payload's `lines`.
   final String linesJson;
+
+  /// `lineNo`, `ivaBp` and `iepsBp` per line, for the Z report: a sale made
+  /// on another till has no lines here to read them from.
+  final String ratesJson;
   const LocalRefund({
     required this.id,
     required this.saleId,
     required this.folio,
+    this.shiftId,
     required this.kind,
     required this.reason,
     this.note,
@@ -7807,6 +7911,7 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
     required this.occurredAt,
     required this.totalCents,
     required this.linesJson,
+    required this.ratesJson,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -7814,6 +7919,9 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
     map['id'] = Variable<String>(id);
     map['sale_id'] = Variable<String>(saleId);
     map['folio'] = Variable<String>(folio);
+    if (!nullToAbsent || shiftId != null) {
+      map['shift_id'] = Variable<String>(shiftId);
+    }
     map['kind'] = Variable<String>(kind);
     map['reason'] = Variable<String>(reason);
     if (!nullToAbsent || note != null) {
@@ -7826,6 +7934,7 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
     map['occurred_at'] = Variable<DateTime>(occurredAt);
     map['total_cents'] = Variable<int>(totalCents);
     map['lines_json'] = Variable<String>(linesJson);
+    map['rates_json'] = Variable<String>(ratesJson);
     return map;
   }
 
@@ -7834,6 +7943,9 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
       id: Value(id),
       saleId: Value(saleId),
       folio: Value(folio),
+      shiftId: shiftId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(shiftId),
       kind: Value(kind),
       reason: Value(reason),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
@@ -7844,6 +7956,7 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
       occurredAt: Value(occurredAt),
       totalCents: Value(totalCents),
       linesJson: Value(linesJson),
+      ratesJson: Value(ratesJson),
     );
   }
 
@@ -7856,6 +7969,7 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
       id: serializer.fromJson<String>(json['id']),
       saleId: serializer.fromJson<String>(json['saleId']),
       folio: serializer.fromJson<String>(json['folio']),
+      shiftId: serializer.fromJson<String?>(json['shiftId']),
       kind: serializer.fromJson<String>(json['kind']),
       reason: serializer.fromJson<String>(json['reason']),
       note: serializer.fromJson<String?>(json['note']),
@@ -7864,6 +7978,7 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
       occurredAt: serializer.fromJson<DateTime>(json['occurredAt']),
       totalCents: serializer.fromJson<int>(json['totalCents']),
       linesJson: serializer.fromJson<String>(json['linesJson']),
+      ratesJson: serializer.fromJson<String>(json['ratesJson']),
     );
   }
   @override
@@ -7873,6 +7988,7 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
       'id': serializer.toJson<String>(id),
       'saleId': serializer.toJson<String>(saleId),
       'folio': serializer.toJson<String>(folio),
+      'shiftId': serializer.toJson<String?>(shiftId),
       'kind': serializer.toJson<String>(kind),
       'reason': serializer.toJson<String>(reason),
       'note': serializer.toJson<String?>(note),
@@ -7881,6 +7997,7 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
       'occurredAt': serializer.toJson<DateTime>(occurredAt),
       'totalCents': serializer.toJson<int>(totalCents),
       'linesJson': serializer.toJson<String>(linesJson),
+      'ratesJson': serializer.toJson<String>(ratesJson),
     };
   }
 
@@ -7888,6 +8005,7 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
     String? id,
     String? saleId,
     String? folio,
+    Value<String?> shiftId = const Value.absent(),
     String? kind,
     String? reason,
     Value<String?> note = const Value.absent(),
@@ -7896,10 +8014,12 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
     DateTime? occurredAt,
     int? totalCents,
     String? linesJson,
+    String? ratesJson,
   }) => LocalRefund(
     id: id ?? this.id,
     saleId: saleId ?? this.saleId,
     folio: folio ?? this.folio,
+    shiftId: shiftId.present ? shiftId.value : this.shiftId,
     kind: kind ?? this.kind,
     reason: reason ?? this.reason,
     note: note.present ? note.value : this.note,
@@ -7910,12 +8030,14 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
     occurredAt: occurredAt ?? this.occurredAt,
     totalCents: totalCents ?? this.totalCents,
     linesJson: linesJson ?? this.linesJson,
+    ratesJson: ratesJson ?? this.ratesJson,
   );
   LocalRefund copyWithCompanion(LocalRefundsCompanion data) {
     return LocalRefund(
       id: data.id.present ? data.id.value : this.id,
       saleId: data.saleId.present ? data.saleId.value : this.saleId,
       folio: data.folio.present ? data.folio.value : this.folio,
+      shiftId: data.shiftId.present ? data.shiftId.value : this.shiftId,
       kind: data.kind.present ? data.kind.value : this.kind,
       reason: data.reason.present ? data.reason.value : this.reason,
       note: data.note.present ? data.note.value : this.note,
@@ -7930,6 +8052,7 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
           ? data.totalCents.value
           : this.totalCents,
       linesJson: data.linesJson.present ? data.linesJson.value : this.linesJson,
+      ratesJson: data.ratesJson.present ? data.ratesJson.value : this.ratesJson,
     );
   }
 
@@ -7939,6 +8062,7 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
           ..write('id: $id, ')
           ..write('saleId: $saleId, ')
           ..write('folio: $folio, ')
+          ..write('shiftId: $shiftId, ')
           ..write('kind: $kind, ')
           ..write('reason: $reason, ')
           ..write('note: $note, ')
@@ -7946,7 +8070,8 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
           ..write('approverStaffId: $approverStaffId, ')
           ..write('occurredAt: $occurredAt, ')
           ..write('totalCents: $totalCents, ')
-          ..write('linesJson: $linesJson')
+          ..write('linesJson: $linesJson, ')
+          ..write('ratesJson: $ratesJson')
           ..write(')'))
         .toString();
   }
@@ -7956,6 +8081,7 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
     id,
     saleId,
     folio,
+    shiftId,
     kind,
     reason,
     note,
@@ -7964,6 +8090,7 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
     occurredAt,
     totalCents,
     linesJson,
+    ratesJson,
   );
   @override
   bool operator ==(Object other) =>
@@ -7972,6 +8099,7 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
           other.id == this.id &&
           other.saleId == this.saleId &&
           other.folio == this.folio &&
+          other.shiftId == this.shiftId &&
           other.kind == this.kind &&
           other.reason == this.reason &&
           other.note == this.note &&
@@ -7979,13 +8107,15 @@ class LocalRefund extends DataClass implements Insertable<LocalRefund> {
           other.approverStaffId == this.approverStaffId &&
           other.occurredAt == this.occurredAt &&
           other.totalCents == this.totalCents &&
-          other.linesJson == this.linesJson);
+          other.linesJson == this.linesJson &&
+          other.ratesJson == this.ratesJson);
 }
 
 class LocalRefundsCompanion extends UpdateCompanion<LocalRefund> {
   final Value<String> id;
   final Value<String> saleId;
   final Value<String> folio;
+  final Value<String?> shiftId;
   final Value<String> kind;
   final Value<String> reason;
   final Value<String?> note;
@@ -7994,11 +8124,13 @@ class LocalRefundsCompanion extends UpdateCompanion<LocalRefund> {
   final Value<DateTime> occurredAt;
   final Value<int> totalCents;
   final Value<String> linesJson;
+  final Value<String> ratesJson;
   final Value<int> rowid;
   const LocalRefundsCompanion({
     this.id = const Value.absent(),
     this.saleId = const Value.absent(),
     this.folio = const Value.absent(),
+    this.shiftId = const Value.absent(),
     this.kind = const Value.absent(),
     this.reason = const Value.absent(),
     this.note = const Value.absent(),
@@ -8007,12 +8139,14 @@ class LocalRefundsCompanion extends UpdateCompanion<LocalRefund> {
     this.occurredAt = const Value.absent(),
     this.totalCents = const Value.absent(),
     this.linesJson = const Value.absent(),
+    this.ratesJson = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalRefundsCompanion.insert({
     required String id,
     required String saleId,
     required String folio,
+    this.shiftId = const Value.absent(),
     required String kind,
     required String reason,
     this.note = const Value.absent(),
@@ -8021,6 +8155,7 @@ class LocalRefundsCompanion extends UpdateCompanion<LocalRefund> {
     required DateTime occurredAt,
     required int totalCents,
     required String linesJson,
+    this.ratesJson = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        saleId = Value(saleId),
@@ -8035,6 +8170,7 @@ class LocalRefundsCompanion extends UpdateCompanion<LocalRefund> {
     Expression<String>? id,
     Expression<String>? saleId,
     Expression<String>? folio,
+    Expression<String>? shiftId,
     Expression<String>? kind,
     Expression<String>? reason,
     Expression<String>? note,
@@ -8043,12 +8179,14 @@ class LocalRefundsCompanion extends UpdateCompanion<LocalRefund> {
     Expression<DateTime>? occurredAt,
     Expression<int>? totalCents,
     Expression<String>? linesJson,
+    Expression<String>? ratesJson,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (saleId != null) 'sale_id': saleId,
       if (folio != null) 'folio': folio,
+      if (shiftId != null) 'shift_id': shiftId,
       if (kind != null) 'kind': kind,
       if (reason != null) 'reason': reason,
       if (note != null) 'note': note,
@@ -8057,6 +8195,7 @@ class LocalRefundsCompanion extends UpdateCompanion<LocalRefund> {
       if (occurredAt != null) 'occurred_at': occurredAt,
       if (totalCents != null) 'total_cents': totalCents,
       if (linesJson != null) 'lines_json': linesJson,
+      if (ratesJson != null) 'rates_json': ratesJson,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -8065,6 +8204,7 @@ class LocalRefundsCompanion extends UpdateCompanion<LocalRefund> {
     Value<String>? id,
     Value<String>? saleId,
     Value<String>? folio,
+    Value<String?>? shiftId,
     Value<String>? kind,
     Value<String>? reason,
     Value<String?>? note,
@@ -8073,12 +8213,14 @@ class LocalRefundsCompanion extends UpdateCompanion<LocalRefund> {
     Value<DateTime>? occurredAt,
     Value<int>? totalCents,
     Value<String>? linesJson,
+    Value<String>? ratesJson,
     Value<int>? rowid,
   }) {
     return LocalRefundsCompanion(
       id: id ?? this.id,
       saleId: saleId ?? this.saleId,
       folio: folio ?? this.folio,
+      shiftId: shiftId ?? this.shiftId,
       kind: kind ?? this.kind,
       reason: reason ?? this.reason,
       note: note ?? this.note,
@@ -8087,6 +8229,7 @@ class LocalRefundsCompanion extends UpdateCompanion<LocalRefund> {
       occurredAt: occurredAt ?? this.occurredAt,
       totalCents: totalCents ?? this.totalCents,
       linesJson: linesJson ?? this.linesJson,
+      ratesJson: ratesJson ?? this.ratesJson,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -8102,6 +8245,9 @@ class LocalRefundsCompanion extends UpdateCompanion<LocalRefund> {
     }
     if (folio.present) {
       map['folio'] = Variable<String>(folio.value);
+    }
+    if (shiftId.present) {
+      map['shift_id'] = Variable<String>(shiftId.value);
     }
     if (kind.present) {
       map['kind'] = Variable<String>(kind.value);
@@ -8127,6 +8273,9 @@ class LocalRefundsCompanion extends UpdateCompanion<LocalRefund> {
     if (linesJson.present) {
       map['lines_json'] = Variable<String>(linesJson.value);
     }
+    if (ratesJson.present) {
+      map['rates_json'] = Variable<String>(ratesJson.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -8139,6 +8288,7 @@ class LocalRefundsCompanion extends UpdateCompanion<LocalRefund> {
           ..write('id: $id, ')
           ..write('saleId: $saleId, ')
           ..write('folio: $folio, ')
+          ..write('shiftId: $shiftId, ')
           ..write('kind: $kind, ')
           ..write('reason: $reason, ')
           ..write('note: $note, ')
@@ -8147,6 +8297,1797 @@ class LocalRefundsCompanion extends UpdateCompanion<LocalRefund> {
           ..write('occurredAt: $occurredAt, ')
           ..write('totalCents: $totalCents, ')
           ..write('linesJson: $linesJson, ')
+          ..write('ratesJson: $ratesJson, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalShiftsTable extends LocalShifts
+    with TableInfo<$LocalShiftsTable, LocalShift> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalShiftsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _openedAtMeta = const VerificationMeta(
+    'openedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> openedAt = GeneratedColumn<DateTime>(
+    'opened_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _openedByStaffIdMeta = const VerificationMeta(
+    'openedByStaffId',
+  );
+  @override
+  late final GeneratedColumn<String> openedByStaffId = GeneratedColumn<String>(
+    'opened_by_staff_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _openedByNameMeta = const VerificationMeta(
+    'openedByName',
+  );
+  @override
+  late final GeneratedColumn<String> openedByName = GeneratedColumn<String>(
+    'opened_by_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _floatCentsMeta = const VerificationMeta(
+    'floatCents',
+  );
+  @override
+  late final GeneratedColumn<int> floatCents = GeneratedColumn<int>(
+    'float_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _zNumberMeta = const VerificationMeta(
+    'zNumber',
+  );
+  @override
+  late final GeneratedColumn<int> zNumber = GeneratedColumn<int>(
+    'z_number',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _closedAtMeta = const VerificationMeta(
+    'closedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> closedAt = GeneratedColumn<DateTime>(
+    'closed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _closedByStaffIdMeta = const VerificationMeta(
+    'closedByStaffId',
+  );
+  @override
+  late final GeneratedColumn<String> closedByStaffId = GeneratedColumn<String>(
+    'closed_by_staff_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _closedByNameMeta = const VerificationMeta(
+    'closedByName',
+  );
+  @override
+  late final GeneratedColumn<String> closedByName = GeneratedColumn<String>(
+    'closed_by_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _expectedCentsMeta = const VerificationMeta(
+    'expectedCents',
+  );
+  @override
+  late final GeneratedColumn<int> expectedCents = GeneratedColumn<int>(
+    'expected_cents',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _countedCentsMeta = const VerificationMeta(
+    'countedCents',
+  );
+  @override
+  late final GeneratedColumn<int> countedCents = GeneratedColumn<int>(
+    'counted_cents',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _varianceCentsMeta = const VerificationMeta(
+    'varianceCents',
+  );
+  @override
+  late final GeneratedColumn<int> varianceCents = GeneratedColumn<int>(
+    'variance_cents',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _flaggedMeta = const VerificationMeta(
+    'flagged',
+  );
+  @override
+  late final GeneratedColumn<bool> flagged = GeneratedColumn<bool>(
+    'flagged',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("flagged" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    status,
+    openedAt,
+    openedByStaffId,
+    openedByName,
+    floatCents,
+    zNumber,
+    closedAt,
+    closedByStaffId,
+    closedByName,
+    expectedCents,
+    countedCents,
+    varianceCents,
+    flagged,
+    note,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_shifts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalShift> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('opened_at')) {
+      context.handle(
+        _openedAtMeta,
+        openedAt.isAcceptableOrUnknown(data['opened_at']!, _openedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_openedAtMeta);
+    }
+    if (data.containsKey('opened_by_staff_id')) {
+      context.handle(
+        _openedByStaffIdMeta,
+        openedByStaffId.isAcceptableOrUnknown(
+          data['opened_by_staff_id']!,
+          _openedByStaffIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_openedByStaffIdMeta);
+    }
+    if (data.containsKey('opened_by_name')) {
+      context.handle(
+        _openedByNameMeta,
+        openedByName.isAcceptableOrUnknown(
+          data['opened_by_name']!,
+          _openedByNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_openedByNameMeta);
+    }
+    if (data.containsKey('float_cents')) {
+      context.handle(
+        _floatCentsMeta,
+        floatCents.isAcceptableOrUnknown(data['float_cents']!, _floatCentsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_floatCentsMeta);
+    }
+    if (data.containsKey('z_number')) {
+      context.handle(
+        _zNumberMeta,
+        zNumber.isAcceptableOrUnknown(data['z_number']!, _zNumberMeta),
+      );
+    }
+    if (data.containsKey('closed_at')) {
+      context.handle(
+        _closedAtMeta,
+        closedAt.isAcceptableOrUnknown(data['closed_at']!, _closedAtMeta),
+      );
+    }
+    if (data.containsKey('closed_by_staff_id')) {
+      context.handle(
+        _closedByStaffIdMeta,
+        closedByStaffId.isAcceptableOrUnknown(
+          data['closed_by_staff_id']!,
+          _closedByStaffIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('closed_by_name')) {
+      context.handle(
+        _closedByNameMeta,
+        closedByName.isAcceptableOrUnknown(
+          data['closed_by_name']!,
+          _closedByNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('expected_cents')) {
+      context.handle(
+        _expectedCentsMeta,
+        expectedCents.isAcceptableOrUnknown(
+          data['expected_cents']!,
+          _expectedCentsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('counted_cents')) {
+      context.handle(
+        _countedCentsMeta,
+        countedCents.isAcceptableOrUnknown(
+          data['counted_cents']!,
+          _countedCentsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('variance_cents')) {
+      context.handle(
+        _varianceCentsMeta,
+        varianceCents.isAcceptableOrUnknown(
+          data['variance_cents']!,
+          _varianceCentsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('flagged')) {
+      context.handle(
+        _flaggedMeta,
+        flagged.isAcceptableOrUnknown(data['flagged']!, _flaggedMeta),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalShift map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalShift(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      openedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}opened_at'],
+      )!,
+      openedByStaffId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}opened_by_staff_id'],
+      )!,
+      openedByName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}opened_by_name'],
+      )!,
+      floatCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}float_cents'],
+      )!,
+      zNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}z_number'],
+      ),
+      closedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}closed_at'],
+      ),
+      closedByStaffId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}closed_by_staff_id'],
+      ),
+      closedByName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}closed_by_name'],
+      ),
+      expectedCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}expected_cents'],
+      ),
+      countedCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}counted_cents'],
+      ),
+      varianceCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}variance_cents'],
+      ),
+      flagged: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}flagged'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+    );
+  }
+
+  @override
+  $LocalShiftsTable createAlias(String alias) {
+    return $LocalShiftsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalShift extends DataClass implements Insertable<LocalShift> {
+  final String id;
+  final String status;
+  final DateTime openedAt;
+  final String openedByStaffId;
+  final String openedByName;
+  final int floatCents;
+  final int? zNumber;
+  final DateTime? closedAt;
+  final String? closedByStaffId;
+  final String? closedByName;
+  final int? expectedCents;
+  final int? countedCents;
+  final int? varianceCents;
+  final bool flagged;
+  final String? note;
+  const LocalShift({
+    required this.id,
+    required this.status,
+    required this.openedAt,
+    required this.openedByStaffId,
+    required this.openedByName,
+    required this.floatCents,
+    this.zNumber,
+    this.closedAt,
+    this.closedByStaffId,
+    this.closedByName,
+    this.expectedCents,
+    this.countedCents,
+    this.varianceCents,
+    required this.flagged,
+    this.note,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['status'] = Variable<String>(status);
+    map['opened_at'] = Variable<DateTime>(openedAt);
+    map['opened_by_staff_id'] = Variable<String>(openedByStaffId);
+    map['opened_by_name'] = Variable<String>(openedByName);
+    map['float_cents'] = Variable<int>(floatCents);
+    if (!nullToAbsent || zNumber != null) {
+      map['z_number'] = Variable<int>(zNumber);
+    }
+    if (!nullToAbsent || closedAt != null) {
+      map['closed_at'] = Variable<DateTime>(closedAt);
+    }
+    if (!nullToAbsent || closedByStaffId != null) {
+      map['closed_by_staff_id'] = Variable<String>(closedByStaffId);
+    }
+    if (!nullToAbsent || closedByName != null) {
+      map['closed_by_name'] = Variable<String>(closedByName);
+    }
+    if (!nullToAbsent || expectedCents != null) {
+      map['expected_cents'] = Variable<int>(expectedCents);
+    }
+    if (!nullToAbsent || countedCents != null) {
+      map['counted_cents'] = Variable<int>(countedCents);
+    }
+    if (!nullToAbsent || varianceCents != null) {
+      map['variance_cents'] = Variable<int>(varianceCents);
+    }
+    map['flagged'] = Variable<bool>(flagged);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    return map;
+  }
+
+  LocalShiftsCompanion toCompanion(bool nullToAbsent) {
+    return LocalShiftsCompanion(
+      id: Value(id),
+      status: Value(status),
+      openedAt: Value(openedAt),
+      openedByStaffId: Value(openedByStaffId),
+      openedByName: Value(openedByName),
+      floatCents: Value(floatCents),
+      zNumber: zNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(zNumber),
+      closedAt: closedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(closedAt),
+      closedByStaffId: closedByStaffId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(closedByStaffId),
+      closedByName: closedByName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(closedByName),
+      expectedCents: expectedCents == null && nullToAbsent
+          ? const Value.absent()
+          : Value(expectedCents),
+      countedCents: countedCents == null && nullToAbsent
+          ? const Value.absent()
+          : Value(countedCents),
+      varianceCents: varianceCents == null && nullToAbsent
+          ? const Value.absent()
+          : Value(varianceCents),
+      flagged: Value(flagged),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+    );
+  }
+
+  factory LocalShift.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalShift(
+      id: serializer.fromJson<String>(json['id']),
+      status: serializer.fromJson<String>(json['status']),
+      openedAt: serializer.fromJson<DateTime>(json['openedAt']),
+      openedByStaffId: serializer.fromJson<String>(json['openedByStaffId']),
+      openedByName: serializer.fromJson<String>(json['openedByName']),
+      floatCents: serializer.fromJson<int>(json['floatCents']),
+      zNumber: serializer.fromJson<int?>(json['zNumber']),
+      closedAt: serializer.fromJson<DateTime?>(json['closedAt']),
+      closedByStaffId: serializer.fromJson<String?>(json['closedByStaffId']),
+      closedByName: serializer.fromJson<String?>(json['closedByName']),
+      expectedCents: serializer.fromJson<int?>(json['expectedCents']),
+      countedCents: serializer.fromJson<int?>(json['countedCents']),
+      varianceCents: serializer.fromJson<int?>(json['varianceCents']),
+      flagged: serializer.fromJson<bool>(json['flagged']),
+      note: serializer.fromJson<String?>(json['note']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'status': serializer.toJson<String>(status),
+      'openedAt': serializer.toJson<DateTime>(openedAt),
+      'openedByStaffId': serializer.toJson<String>(openedByStaffId),
+      'openedByName': serializer.toJson<String>(openedByName),
+      'floatCents': serializer.toJson<int>(floatCents),
+      'zNumber': serializer.toJson<int?>(zNumber),
+      'closedAt': serializer.toJson<DateTime?>(closedAt),
+      'closedByStaffId': serializer.toJson<String?>(closedByStaffId),
+      'closedByName': serializer.toJson<String?>(closedByName),
+      'expectedCents': serializer.toJson<int?>(expectedCents),
+      'countedCents': serializer.toJson<int?>(countedCents),
+      'varianceCents': serializer.toJson<int?>(varianceCents),
+      'flagged': serializer.toJson<bool>(flagged),
+      'note': serializer.toJson<String?>(note),
+    };
+  }
+
+  LocalShift copyWith({
+    String? id,
+    String? status,
+    DateTime? openedAt,
+    String? openedByStaffId,
+    String? openedByName,
+    int? floatCents,
+    Value<int?> zNumber = const Value.absent(),
+    Value<DateTime?> closedAt = const Value.absent(),
+    Value<String?> closedByStaffId = const Value.absent(),
+    Value<String?> closedByName = const Value.absent(),
+    Value<int?> expectedCents = const Value.absent(),
+    Value<int?> countedCents = const Value.absent(),
+    Value<int?> varianceCents = const Value.absent(),
+    bool? flagged,
+    Value<String?> note = const Value.absent(),
+  }) => LocalShift(
+    id: id ?? this.id,
+    status: status ?? this.status,
+    openedAt: openedAt ?? this.openedAt,
+    openedByStaffId: openedByStaffId ?? this.openedByStaffId,
+    openedByName: openedByName ?? this.openedByName,
+    floatCents: floatCents ?? this.floatCents,
+    zNumber: zNumber.present ? zNumber.value : this.zNumber,
+    closedAt: closedAt.present ? closedAt.value : this.closedAt,
+    closedByStaffId: closedByStaffId.present
+        ? closedByStaffId.value
+        : this.closedByStaffId,
+    closedByName: closedByName.present ? closedByName.value : this.closedByName,
+    expectedCents: expectedCents.present
+        ? expectedCents.value
+        : this.expectedCents,
+    countedCents: countedCents.present ? countedCents.value : this.countedCents,
+    varianceCents: varianceCents.present
+        ? varianceCents.value
+        : this.varianceCents,
+    flagged: flagged ?? this.flagged,
+    note: note.present ? note.value : this.note,
+  );
+  LocalShift copyWithCompanion(LocalShiftsCompanion data) {
+    return LocalShift(
+      id: data.id.present ? data.id.value : this.id,
+      status: data.status.present ? data.status.value : this.status,
+      openedAt: data.openedAt.present ? data.openedAt.value : this.openedAt,
+      openedByStaffId: data.openedByStaffId.present
+          ? data.openedByStaffId.value
+          : this.openedByStaffId,
+      openedByName: data.openedByName.present
+          ? data.openedByName.value
+          : this.openedByName,
+      floatCents: data.floatCents.present
+          ? data.floatCents.value
+          : this.floatCents,
+      zNumber: data.zNumber.present ? data.zNumber.value : this.zNumber,
+      closedAt: data.closedAt.present ? data.closedAt.value : this.closedAt,
+      closedByStaffId: data.closedByStaffId.present
+          ? data.closedByStaffId.value
+          : this.closedByStaffId,
+      closedByName: data.closedByName.present
+          ? data.closedByName.value
+          : this.closedByName,
+      expectedCents: data.expectedCents.present
+          ? data.expectedCents.value
+          : this.expectedCents,
+      countedCents: data.countedCents.present
+          ? data.countedCents.value
+          : this.countedCents,
+      varianceCents: data.varianceCents.present
+          ? data.varianceCents.value
+          : this.varianceCents,
+      flagged: data.flagged.present ? data.flagged.value : this.flagged,
+      note: data.note.present ? data.note.value : this.note,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalShift(')
+          ..write('id: $id, ')
+          ..write('status: $status, ')
+          ..write('openedAt: $openedAt, ')
+          ..write('openedByStaffId: $openedByStaffId, ')
+          ..write('openedByName: $openedByName, ')
+          ..write('floatCents: $floatCents, ')
+          ..write('zNumber: $zNumber, ')
+          ..write('closedAt: $closedAt, ')
+          ..write('closedByStaffId: $closedByStaffId, ')
+          ..write('closedByName: $closedByName, ')
+          ..write('expectedCents: $expectedCents, ')
+          ..write('countedCents: $countedCents, ')
+          ..write('varianceCents: $varianceCents, ')
+          ..write('flagged: $flagged, ')
+          ..write('note: $note')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    status,
+    openedAt,
+    openedByStaffId,
+    openedByName,
+    floatCents,
+    zNumber,
+    closedAt,
+    closedByStaffId,
+    closedByName,
+    expectedCents,
+    countedCents,
+    varianceCents,
+    flagged,
+    note,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalShift &&
+          other.id == this.id &&
+          other.status == this.status &&
+          other.openedAt == this.openedAt &&
+          other.openedByStaffId == this.openedByStaffId &&
+          other.openedByName == this.openedByName &&
+          other.floatCents == this.floatCents &&
+          other.zNumber == this.zNumber &&
+          other.closedAt == this.closedAt &&
+          other.closedByStaffId == this.closedByStaffId &&
+          other.closedByName == this.closedByName &&
+          other.expectedCents == this.expectedCents &&
+          other.countedCents == this.countedCents &&
+          other.varianceCents == this.varianceCents &&
+          other.flagged == this.flagged &&
+          other.note == this.note);
+}
+
+class LocalShiftsCompanion extends UpdateCompanion<LocalShift> {
+  final Value<String> id;
+  final Value<String> status;
+  final Value<DateTime> openedAt;
+  final Value<String> openedByStaffId;
+  final Value<String> openedByName;
+  final Value<int> floatCents;
+  final Value<int?> zNumber;
+  final Value<DateTime?> closedAt;
+  final Value<String?> closedByStaffId;
+  final Value<String?> closedByName;
+  final Value<int?> expectedCents;
+  final Value<int?> countedCents;
+  final Value<int?> varianceCents;
+  final Value<bool> flagged;
+  final Value<String?> note;
+  final Value<int> rowid;
+  const LocalShiftsCompanion({
+    this.id = const Value.absent(),
+    this.status = const Value.absent(),
+    this.openedAt = const Value.absent(),
+    this.openedByStaffId = const Value.absent(),
+    this.openedByName = const Value.absent(),
+    this.floatCents = const Value.absent(),
+    this.zNumber = const Value.absent(),
+    this.closedAt = const Value.absent(),
+    this.closedByStaffId = const Value.absent(),
+    this.closedByName = const Value.absent(),
+    this.expectedCents = const Value.absent(),
+    this.countedCents = const Value.absent(),
+    this.varianceCents = const Value.absent(),
+    this.flagged = const Value.absent(),
+    this.note = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalShiftsCompanion.insert({
+    required String id,
+    required String status,
+    required DateTime openedAt,
+    required String openedByStaffId,
+    required String openedByName,
+    required int floatCents,
+    this.zNumber = const Value.absent(),
+    this.closedAt = const Value.absent(),
+    this.closedByStaffId = const Value.absent(),
+    this.closedByName = const Value.absent(),
+    this.expectedCents = const Value.absent(),
+    this.countedCents = const Value.absent(),
+    this.varianceCents = const Value.absent(),
+    this.flagged = const Value.absent(),
+    this.note = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       status = Value(status),
+       openedAt = Value(openedAt),
+       openedByStaffId = Value(openedByStaffId),
+       openedByName = Value(openedByName),
+       floatCents = Value(floatCents);
+  static Insertable<LocalShift> custom({
+    Expression<String>? id,
+    Expression<String>? status,
+    Expression<DateTime>? openedAt,
+    Expression<String>? openedByStaffId,
+    Expression<String>? openedByName,
+    Expression<int>? floatCents,
+    Expression<int>? zNumber,
+    Expression<DateTime>? closedAt,
+    Expression<String>? closedByStaffId,
+    Expression<String>? closedByName,
+    Expression<int>? expectedCents,
+    Expression<int>? countedCents,
+    Expression<int>? varianceCents,
+    Expression<bool>? flagged,
+    Expression<String>? note,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (status != null) 'status': status,
+      if (openedAt != null) 'opened_at': openedAt,
+      if (openedByStaffId != null) 'opened_by_staff_id': openedByStaffId,
+      if (openedByName != null) 'opened_by_name': openedByName,
+      if (floatCents != null) 'float_cents': floatCents,
+      if (zNumber != null) 'z_number': zNumber,
+      if (closedAt != null) 'closed_at': closedAt,
+      if (closedByStaffId != null) 'closed_by_staff_id': closedByStaffId,
+      if (closedByName != null) 'closed_by_name': closedByName,
+      if (expectedCents != null) 'expected_cents': expectedCents,
+      if (countedCents != null) 'counted_cents': countedCents,
+      if (varianceCents != null) 'variance_cents': varianceCents,
+      if (flagged != null) 'flagged': flagged,
+      if (note != null) 'note': note,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalShiftsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? status,
+    Value<DateTime>? openedAt,
+    Value<String>? openedByStaffId,
+    Value<String>? openedByName,
+    Value<int>? floatCents,
+    Value<int?>? zNumber,
+    Value<DateTime?>? closedAt,
+    Value<String?>? closedByStaffId,
+    Value<String?>? closedByName,
+    Value<int?>? expectedCents,
+    Value<int?>? countedCents,
+    Value<int?>? varianceCents,
+    Value<bool>? flagged,
+    Value<String?>? note,
+    Value<int>? rowid,
+  }) {
+    return LocalShiftsCompanion(
+      id: id ?? this.id,
+      status: status ?? this.status,
+      openedAt: openedAt ?? this.openedAt,
+      openedByStaffId: openedByStaffId ?? this.openedByStaffId,
+      openedByName: openedByName ?? this.openedByName,
+      floatCents: floatCents ?? this.floatCents,
+      zNumber: zNumber ?? this.zNumber,
+      closedAt: closedAt ?? this.closedAt,
+      closedByStaffId: closedByStaffId ?? this.closedByStaffId,
+      closedByName: closedByName ?? this.closedByName,
+      expectedCents: expectedCents ?? this.expectedCents,
+      countedCents: countedCents ?? this.countedCents,
+      varianceCents: varianceCents ?? this.varianceCents,
+      flagged: flagged ?? this.flagged,
+      note: note ?? this.note,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (openedAt.present) {
+      map['opened_at'] = Variable<DateTime>(openedAt.value);
+    }
+    if (openedByStaffId.present) {
+      map['opened_by_staff_id'] = Variable<String>(openedByStaffId.value);
+    }
+    if (openedByName.present) {
+      map['opened_by_name'] = Variable<String>(openedByName.value);
+    }
+    if (floatCents.present) {
+      map['float_cents'] = Variable<int>(floatCents.value);
+    }
+    if (zNumber.present) {
+      map['z_number'] = Variable<int>(zNumber.value);
+    }
+    if (closedAt.present) {
+      map['closed_at'] = Variable<DateTime>(closedAt.value);
+    }
+    if (closedByStaffId.present) {
+      map['closed_by_staff_id'] = Variable<String>(closedByStaffId.value);
+    }
+    if (closedByName.present) {
+      map['closed_by_name'] = Variable<String>(closedByName.value);
+    }
+    if (expectedCents.present) {
+      map['expected_cents'] = Variable<int>(expectedCents.value);
+    }
+    if (countedCents.present) {
+      map['counted_cents'] = Variable<int>(countedCents.value);
+    }
+    if (varianceCents.present) {
+      map['variance_cents'] = Variable<int>(varianceCents.value);
+    }
+    if (flagged.present) {
+      map['flagged'] = Variable<bool>(flagged.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalShiftsCompanion(')
+          ..write('id: $id, ')
+          ..write('status: $status, ')
+          ..write('openedAt: $openedAt, ')
+          ..write('openedByStaffId: $openedByStaffId, ')
+          ..write('openedByName: $openedByName, ')
+          ..write('floatCents: $floatCents, ')
+          ..write('zNumber: $zNumber, ')
+          ..write('closedAt: $closedAt, ')
+          ..write('closedByStaffId: $closedByStaffId, ')
+          ..write('closedByName: $closedByName, ')
+          ..write('expectedCents: $expectedCents, ')
+          ..write('countedCents: $countedCents, ')
+          ..write('varianceCents: $varianceCents, ')
+          ..write('flagged: $flagged, ')
+          ..write('note: $note, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalCashMovementsTable extends LocalCashMovements
+    with TableInfo<$LocalCashMovementsTable, LocalCashMovement> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalCashMovementsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _shiftIdMeta = const VerificationMeta(
+    'shiftId',
+  );
+  @override
+  late final GeneratedColumn<String> shiftId = GeneratedColumn<String>(
+    'shift_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountCentsMeta = const VerificationMeta(
+    'amountCents',
+  );
+  @override
+  late final GeneratedColumn<int> amountCents = GeneratedColumn<int>(
+    'amount_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _reasonMeta = const VerificationMeta('reason');
+  @override
+  late final GeneratedColumn<String> reason = GeneratedColumn<String>(
+    'reason',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _staffIdMeta = const VerificationMeta(
+    'staffId',
+  );
+  @override
+  late final GeneratedColumn<String> staffId = GeneratedColumn<String>(
+    'staff_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _approverStaffIdMeta = const VerificationMeta(
+    'approverStaffId',
+  );
+  @override
+  late final GeneratedColumn<String> approverStaffId = GeneratedColumn<String>(
+    'approver_staff_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _occurredAtMeta = const VerificationMeta(
+    'occurredAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> occurredAt = GeneratedColumn<DateTime>(
+    'occurred_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    shiftId,
+    kind,
+    amountCents,
+    reason,
+    note,
+    staffId,
+    approverStaffId,
+    occurredAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_cash_movements';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalCashMovement> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('shift_id')) {
+      context.handle(
+        _shiftIdMeta,
+        shiftId.isAcceptableOrUnknown(data['shift_id']!, _shiftIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_shiftIdMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('amount_cents')) {
+      context.handle(
+        _amountCentsMeta,
+        amountCents.isAcceptableOrUnknown(
+          data['amount_cents']!,
+          _amountCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_amountCentsMeta);
+    }
+    if (data.containsKey('reason')) {
+      context.handle(
+        _reasonMeta,
+        reason.isAcceptableOrUnknown(data['reason']!, _reasonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_reasonMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('staff_id')) {
+      context.handle(
+        _staffIdMeta,
+        staffId.isAcceptableOrUnknown(data['staff_id']!, _staffIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_staffIdMeta);
+    }
+    if (data.containsKey('approver_staff_id')) {
+      context.handle(
+        _approverStaffIdMeta,
+        approverStaffId.isAcceptableOrUnknown(
+          data['approver_staff_id']!,
+          _approverStaffIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('occurred_at')) {
+      context.handle(
+        _occurredAtMeta,
+        occurredAt.isAcceptableOrUnknown(data['occurred_at']!, _occurredAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_occurredAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalCashMovement map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalCashMovement(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      shiftId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}shift_id'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      amountCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount_cents'],
+      )!,
+      reason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reason'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      staffId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}staff_id'],
+      )!,
+      approverStaffId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}approver_staff_id'],
+      ),
+      occurredAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}occurred_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalCashMovementsTable createAlias(String alias) {
+    return $LocalCashMovementsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalCashMovement extends DataClass
+    implements Insertable<LocalCashMovement> {
+  final String id;
+  final String shiftId;
+
+  /// `IN` or `OUT`.
+  final String kind;
+  final int amountCents;
+  final String reason;
+  final String? note;
+  final String staffId;
+  final String? approverStaffId;
+  final DateTime occurredAt;
+  const LocalCashMovement({
+    required this.id,
+    required this.shiftId,
+    required this.kind,
+    required this.amountCents,
+    required this.reason,
+    this.note,
+    required this.staffId,
+    this.approverStaffId,
+    required this.occurredAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['shift_id'] = Variable<String>(shiftId);
+    map['kind'] = Variable<String>(kind);
+    map['amount_cents'] = Variable<int>(amountCents);
+    map['reason'] = Variable<String>(reason);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    map['staff_id'] = Variable<String>(staffId);
+    if (!nullToAbsent || approverStaffId != null) {
+      map['approver_staff_id'] = Variable<String>(approverStaffId);
+    }
+    map['occurred_at'] = Variable<DateTime>(occurredAt);
+    return map;
+  }
+
+  LocalCashMovementsCompanion toCompanion(bool nullToAbsent) {
+    return LocalCashMovementsCompanion(
+      id: Value(id),
+      shiftId: Value(shiftId),
+      kind: Value(kind),
+      amountCents: Value(amountCents),
+      reason: Value(reason),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      staffId: Value(staffId),
+      approverStaffId: approverStaffId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(approverStaffId),
+      occurredAt: Value(occurredAt),
+    );
+  }
+
+  factory LocalCashMovement.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalCashMovement(
+      id: serializer.fromJson<String>(json['id']),
+      shiftId: serializer.fromJson<String>(json['shiftId']),
+      kind: serializer.fromJson<String>(json['kind']),
+      amountCents: serializer.fromJson<int>(json['amountCents']),
+      reason: serializer.fromJson<String>(json['reason']),
+      note: serializer.fromJson<String?>(json['note']),
+      staffId: serializer.fromJson<String>(json['staffId']),
+      approverStaffId: serializer.fromJson<String?>(json['approverStaffId']),
+      occurredAt: serializer.fromJson<DateTime>(json['occurredAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'shiftId': serializer.toJson<String>(shiftId),
+      'kind': serializer.toJson<String>(kind),
+      'amountCents': serializer.toJson<int>(amountCents),
+      'reason': serializer.toJson<String>(reason),
+      'note': serializer.toJson<String?>(note),
+      'staffId': serializer.toJson<String>(staffId),
+      'approverStaffId': serializer.toJson<String?>(approverStaffId),
+      'occurredAt': serializer.toJson<DateTime>(occurredAt),
+    };
+  }
+
+  LocalCashMovement copyWith({
+    String? id,
+    String? shiftId,
+    String? kind,
+    int? amountCents,
+    String? reason,
+    Value<String?> note = const Value.absent(),
+    String? staffId,
+    Value<String?> approverStaffId = const Value.absent(),
+    DateTime? occurredAt,
+  }) => LocalCashMovement(
+    id: id ?? this.id,
+    shiftId: shiftId ?? this.shiftId,
+    kind: kind ?? this.kind,
+    amountCents: amountCents ?? this.amountCents,
+    reason: reason ?? this.reason,
+    note: note.present ? note.value : this.note,
+    staffId: staffId ?? this.staffId,
+    approverStaffId: approverStaffId.present
+        ? approverStaffId.value
+        : this.approverStaffId,
+    occurredAt: occurredAt ?? this.occurredAt,
+  );
+  LocalCashMovement copyWithCompanion(LocalCashMovementsCompanion data) {
+    return LocalCashMovement(
+      id: data.id.present ? data.id.value : this.id,
+      shiftId: data.shiftId.present ? data.shiftId.value : this.shiftId,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      amountCents: data.amountCents.present
+          ? data.amountCents.value
+          : this.amountCents,
+      reason: data.reason.present ? data.reason.value : this.reason,
+      note: data.note.present ? data.note.value : this.note,
+      staffId: data.staffId.present ? data.staffId.value : this.staffId,
+      approverStaffId: data.approverStaffId.present
+          ? data.approverStaffId.value
+          : this.approverStaffId,
+      occurredAt: data.occurredAt.present
+          ? data.occurredAt.value
+          : this.occurredAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCashMovement(')
+          ..write('id: $id, ')
+          ..write('shiftId: $shiftId, ')
+          ..write('kind: $kind, ')
+          ..write('amountCents: $amountCents, ')
+          ..write('reason: $reason, ')
+          ..write('note: $note, ')
+          ..write('staffId: $staffId, ')
+          ..write('approverStaffId: $approverStaffId, ')
+          ..write('occurredAt: $occurredAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    shiftId,
+    kind,
+    amountCents,
+    reason,
+    note,
+    staffId,
+    approverStaffId,
+    occurredAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalCashMovement &&
+          other.id == this.id &&
+          other.shiftId == this.shiftId &&
+          other.kind == this.kind &&
+          other.amountCents == this.amountCents &&
+          other.reason == this.reason &&
+          other.note == this.note &&
+          other.staffId == this.staffId &&
+          other.approverStaffId == this.approverStaffId &&
+          other.occurredAt == this.occurredAt);
+}
+
+class LocalCashMovementsCompanion extends UpdateCompanion<LocalCashMovement> {
+  final Value<String> id;
+  final Value<String> shiftId;
+  final Value<String> kind;
+  final Value<int> amountCents;
+  final Value<String> reason;
+  final Value<String?> note;
+  final Value<String> staffId;
+  final Value<String?> approverStaffId;
+  final Value<DateTime> occurredAt;
+  final Value<int> rowid;
+  const LocalCashMovementsCompanion({
+    this.id = const Value.absent(),
+    this.shiftId = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.amountCents = const Value.absent(),
+    this.reason = const Value.absent(),
+    this.note = const Value.absent(),
+    this.staffId = const Value.absent(),
+    this.approverStaffId = const Value.absent(),
+    this.occurredAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalCashMovementsCompanion.insert({
+    required String id,
+    required String shiftId,
+    required String kind,
+    required int amountCents,
+    required String reason,
+    this.note = const Value.absent(),
+    required String staffId,
+    this.approverStaffId = const Value.absent(),
+    required DateTime occurredAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       shiftId = Value(shiftId),
+       kind = Value(kind),
+       amountCents = Value(amountCents),
+       reason = Value(reason),
+       staffId = Value(staffId),
+       occurredAt = Value(occurredAt);
+  static Insertable<LocalCashMovement> custom({
+    Expression<String>? id,
+    Expression<String>? shiftId,
+    Expression<String>? kind,
+    Expression<int>? amountCents,
+    Expression<String>? reason,
+    Expression<String>? note,
+    Expression<String>? staffId,
+    Expression<String>? approverStaffId,
+    Expression<DateTime>? occurredAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (shiftId != null) 'shift_id': shiftId,
+      if (kind != null) 'kind': kind,
+      if (amountCents != null) 'amount_cents': amountCents,
+      if (reason != null) 'reason': reason,
+      if (note != null) 'note': note,
+      if (staffId != null) 'staff_id': staffId,
+      if (approverStaffId != null) 'approver_staff_id': approverStaffId,
+      if (occurredAt != null) 'occurred_at': occurredAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalCashMovementsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? shiftId,
+    Value<String>? kind,
+    Value<int>? amountCents,
+    Value<String>? reason,
+    Value<String?>? note,
+    Value<String>? staffId,
+    Value<String?>? approverStaffId,
+    Value<DateTime>? occurredAt,
+    Value<int>? rowid,
+  }) {
+    return LocalCashMovementsCompanion(
+      id: id ?? this.id,
+      shiftId: shiftId ?? this.shiftId,
+      kind: kind ?? this.kind,
+      amountCents: amountCents ?? this.amountCents,
+      reason: reason ?? this.reason,
+      note: note ?? this.note,
+      staffId: staffId ?? this.staffId,
+      approverStaffId: approverStaffId ?? this.approverStaffId,
+      occurredAt: occurredAt ?? this.occurredAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (shiftId.present) {
+      map['shift_id'] = Variable<String>(shiftId.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (amountCents.present) {
+      map['amount_cents'] = Variable<int>(amountCents.value);
+    }
+    if (reason.present) {
+      map['reason'] = Variable<String>(reason.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (staffId.present) {
+      map['staff_id'] = Variable<String>(staffId.value);
+    }
+    if (approverStaffId.present) {
+      map['approver_staff_id'] = Variable<String>(approverStaffId.value);
+    }
+    if (occurredAt.present) {
+      map['occurred_at'] = Variable<DateTime>(occurredAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCashMovementsCompanion(')
+          ..write('id: $id, ')
+          ..write('shiftId: $shiftId, ')
+          ..write('kind: $kind, ')
+          ..write('amountCents: $amountCents, ')
+          ..write('reason: $reason, ')
+          ..write('note: $note, ')
+          ..write('staffId: $staffId, ')
+          ..write('approverStaffId: $approverStaffId, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalCashCountsTable extends LocalCashCounts
+    with TableInfo<$LocalCashCountsTable, LocalCashCount> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalCashCountsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _shiftIdMeta = const VerificationMeta(
+    'shiftId',
+  );
+  @override
+  late final GeneratedColumn<String> shiftId = GeneratedColumn<String>(
+    'shift_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _stageMeta = const VerificationMeta('stage');
+  @override
+  late final GeneratedColumn<String> stage = GeneratedColumn<String>(
+    'stage',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _denominationCentsMeta = const VerificationMeta(
+    'denominationCents',
+  );
+  @override
+  late final GeneratedColumn<int> denominationCents = GeneratedColumn<int>(
+    'denomination_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _quantityMeta = const VerificationMeta(
+    'quantity',
+  );
+  @override
+  late final GeneratedColumn<int> quantity = GeneratedColumn<int>(
+    'quantity',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    shiftId,
+    stage,
+    denominationCents,
+    quantity,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_cash_counts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalCashCount> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('shift_id')) {
+      context.handle(
+        _shiftIdMeta,
+        shiftId.isAcceptableOrUnknown(data['shift_id']!, _shiftIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_shiftIdMeta);
+    }
+    if (data.containsKey('stage')) {
+      context.handle(
+        _stageMeta,
+        stage.isAcceptableOrUnknown(data['stage']!, _stageMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_stageMeta);
+    }
+    if (data.containsKey('denomination_cents')) {
+      context.handle(
+        _denominationCentsMeta,
+        denominationCents.isAcceptableOrUnknown(
+          data['denomination_cents']!,
+          _denominationCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_denominationCentsMeta);
+    }
+    if (data.containsKey('quantity')) {
+      context.handle(
+        _quantityMeta,
+        quantity.isAcceptableOrUnknown(data['quantity']!, _quantityMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_quantityMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {shiftId, stage, denominationCents};
+  @override
+  LocalCashCount map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalCashCount(
+      shiftId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}shift_id'],
+      )!,
+      stage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}stage'],
+      )!,
+      denominationCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}denomination_cents'],
+      )!,
+      quantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}quantity'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalCashCountsTable createAlias(String alias) {
+    return $LocalCashCountsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalCashCount extends DataClass implements Insertable<LocalCashCount> {
+  final String shiftId;
+
+  /// `OPEN` or `CLOSE`.
+  final String stage;
+  final int denominationCents;
+  final int quantity;
+  const LocalCashCount({
+    required this.shiftId,
+    required this.stage,
+    required this.denominationCents,
+    required this.quantity,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['shift_id'] = Variable<String>(shiftId);
+    map['stage'] = Variable<String>(stage);
+    map['denomination_cents'] = Variable<int>(denominationCents);
+    map['quantity'] = Variable<int>(quantity);
+    return map;
+  }
+
+  LocalCashCountsCompanion toCompanion(bool nullToAbsent) {
+    return LocalCashCountsCompanion(
+      shiftId: Value(shiftId),
+      stage: Value(stage),
+      denominationCents: Value(denominationCents),
+      quantity: Value(quantity),
+    );
+  }
+
+  factory LocalCashCount.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalCashCount(
+      shiftId: serializer.fromJson<String>(json['shiftId']),
+      stage: serializer.fromJson<String>(json['stage']),
+      denominationCents: serializer.fromJson<int>(json['denominationCents']),
+      quantity: serializer.fromJson<int>(json['quantity']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'shiftId': serializer.toJson<String>(shiftId),
+      'stage': serializer.toJson<String>(stage),
+      'denominationCents': serializer.toJson<int>(denominationCents),
+      'quantity': serializer.toJson<int>(quantity),
+    };
+  }
+
+  LocalCashCount copyWith({
+    String? shiftId,
+    String? stage,
+    int? denominationCents,
+    int? quantity,
+  }) => LocalCashCount(
+    shiftId: shiftId ?? this.shiftId,
+    stage: stage ?? this.stage,
+    denominationCents: denominationCents ?? this.denominationCents,
+    quantity: quantity ?? this.quantity,
+  );
+  LocalCashCount copyWithCompanion(LocalCashCountsCompanion data) {
+    return LocalCashCount(
+      shiftId: data.shiftId.present ? data.shiftId.value : this.shiftId,
+      stage: data.stage.present ? data.stage.value : this.stage,
+      denominationCents: data.denominationCents.present
+          ? data.denominationCents.value
+          : this.denominationCents,
+      quantity: data.quantity.present ? data.quantity.value : this.quantity,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCashCount(')
+          ..write('shiftId: $shiftId, ')
+          ..write('stage: $stage, ')
+          ..write('denominationCents: $denominationCents, ')
+          ..write('quantity: $quantity')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(shiftId, stage, denominationCents, quantity);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalCashCount &&
+          other.shiftId == this.shiftId &&
+          other.stage == this.stage &&
+          other.denominationCents == this.denominationCents &&
+          other.quantity == this.quantity);
+}
+
+class LocalCashCountsCompanion extends UpdateCompanion<LocalCashCount> {
+  final Value<String> shiftId;
+  final Value<String> stage;
+  final Value<int> denominationCents;
+  final Value<int> quantity;
+  final Value<int> rowid;
+  const LocalCashCountsCompanion({
+    this.shiftId = const Value.absent(),
+    this.stage = const Value.absent(),
+    this.denominationCents = const Value.absent(),
+    this.quantity = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalCashCountsCompanion.insert({
+    required String shiftId,
+    required String stage,
+    required int denominationCents,
+    required int quantity,
+    this.rowid = const Value.absent(),
+  }) : shiftId = Value(shiftId),
+       stage = Value(stage),
+       denominationCents = Value(denominationCents),
+       quantity = Value(quantity);
+  static Insertable<LocalCashCount> custom({
+    Expression<String>? shiftId,
+    Expression<String>? stage,
+    Expression<int>? denominationCents,
+    Expression<int>? quantity,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (shiftId != null) 'shift_id': shiftId,
+      if (stage != null) 'stage': stage,
+      if (denominationCents != null) 'denomination_cents': denominationCents,
+      if (quantity != null) 'quantity': quantity,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalCashCountsCompanion copyWith({
+    Value<String>? shiftId,
+    Value<String>? stage,
+    Value<int>? denominationCents,
+    Value<int>? quantity,
+    Value<int>? rowid,
+  }) {
+    return LocalCashCountsCompanion(
+      shiftId: shiftId ?? this.shiftId,
+      stage: stage ?? this.stage,
+      denominationCents: denominationCents ?? this.denominationCents,
+      quantity: quantity ?? this.quantity,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (shiftId.present) {
+      map['shift_id'] = Variable<String>(shiftId.value);
+    }
+    if (stage.present) {
+      map['stage'] = Variable<String>(stage.value);
+    }
+    if (denominationCents.present) {
+      map['denomination_cents'] = Variable<int>(denominationCents.value);
+    }
+    if (quantity.present) {
+      map['quantity'] = Variable<int>(quantity.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalCashCountsCompanion(')
+          ..write('shiftId: $shiftId, ')
+          ..write('stage: $stage, ')
+          ..write('denominationCents: $denominationCents, ')
+          ..write('quantity: $quantity, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -8191,6 +10132,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $LocalRefundsTable localRefunds = $LocalRefundsTable(this);
+  late final $LocalShiftsTable localShifts = $LocalShiftsTable(this);
+  late final $LocalCashMovementsTable localCashMovements =
+      $LocalCashMovementsTable(this);
+  late final $LocalCashCountsTable localCashCounts = $LocalCashCountsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -8213,6 +10160,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localSaleDiscounts,
     localHeldTickets,
     localRefunds,
+    localShifts,
+    localCashMovements,
+    localCashCounts,
   ];
 }
 
@@ -10898,6 +12848,7 @@ typedef $$LocalSalesTableCreateCompanionBuilder = LocalSalesCompanion Function({
   required String id,
   required String folio,
   required int folioNumber,
+  Value<String?> shiftId,
   required String cashierStaffId,
   required String cashierName,
   required DateTime occurredAt,
@@ -10915,6 +12866,7 @@ typedef $$LocalSalesTableUpdateCompanionBuilder = LocalSalesCompanion Function({
   Value<String> id,
   Value<String> folio,
   Value<int> folioNumber,
+  Value<String?> shiftId,
   Value<String> cashierStaffId,
   Value<String> cashierName,
   Value<DateTime> occurredAt,
@@ -10950,6 +12902,11 @@ class $$LocalSalesTableFilterComposer
 
   ColumnFilters<int> get folioNumber => $composableBuilder(
     column: $table.folioNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get shiftId => $composableBuilder(
+    column: $table.shiftId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11033,6 +12990,11 @@ class $$LocalSalesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get shiftId => $composableBuilder(
+    column: $table.shiftId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get cashierStaffId => $composableBuilder(
     column: $table.cashierStaffId,
     builder: (column) => ColumnOrderings(column),
@@ -11108,6 +13070,9 @@ class $$LocalSalesTableAnnotationComposer
     column: $table.folioNumber,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get shiftId =>
+      $composableBuilder(column: $table.shiftId, builder: (column) => column);
 
   GeneratedColumn<String> get cashierStaffId => $composableBuilder(
     column: $table.cashierStaffId,
@@ -11197,6 +13162,7 @@ class $$LocalSalesTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> folio = const Value.absent(),
                 Value<int> folioNumber = const Value.absent(),
+                Value<String?> shiftId = const Value.absent(),
                 Value<String> cashierStaffId = const Value.absent(),
                 Value<String> cashierName = const Value.absent(),
                 Value<DateTime> occurredAt = const Value.absent(),
@@ -11213,6 +13179,7 @@ class $$LocalSalesTableTableManager
                 id: id,
                 folio: folio,
                 folioNumber: folioNumber,
+                shiftId: shiftId,
                 cashierStaffId: cashierStaffId,
                 cashierName: cashierName,
                 occurredAt: occurredAt,
@@ -11231,6 +13198,7 @@ class $$LocalSalesTableTableManager
                 required String id,
                 required String folio,
                 required int folioNumber,
+                Value<String?> shiftId = const Value.absent(),
                 required String cashierStaffId,
                 required String cashierName,
                 required DateTime occurredAt,
@@ -11247,6 +13215,7 @@ class $$LocalSalesTableTableManager
                 id: id,
                 folio: folio,
                 folioNumber: folioNumber,
+                shiftId: shiftId,
                 cashierStaffId: cashierStaffId,
                 cashierName: cashierName,
                 occurredAt: occurredAt,
@@ -12371,6 +14340,7 @@ typedef $$LocalRefundsTableCreateCompanionBuilder =
       required String id,
       required String saleId,
       required String folio,
+      Value<String?> shiftId,
       required String kind,
       required String reason,
       Value<String?> note,
@@ -12379,6 +14349,7 @@ typedef $$LocalRefundsTableCreateCompanionBuilder =
       required DateTime occurredAt,
       required int totalCents,
       required String linesJson,
+      Value<String> ratesJson,
       Value<int> rowid,
     });
 typedef $$LocalRefundsTableUpdateCompanionBuilder =
@@ -12386,6 +14357,7 @@ typedef $$LocalRefundsTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> saleId,
       Value<String> folio,
+      Value<String?> shiftId,
       Value<String> kind,
       Value<String> reason,
       Value<String?> note,
@@ -12394,6 +14366,7 @@ typedef $$LocalRefundsTableUpdateCompanionBuilder =
       Value<DateTime> occurredAt,
       Value<int> totalCents,
       Value<String> linesJson,
+      Value<String> ratesJson,
       Value<int> rowid,
     });
 
@@ -12418,6 +14391,11 @@ class $$LocalRefundsTableFilterComposer
 
   ColumnFilters<String> get folio => $composableBuilder(
     column: $table.folio,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get shiftId => $composableBuilder(
+    column: $table.shiftId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12460,6 +14438,11 @@ class $$LocalRefundsTableFilterComposer
     column: $table.linesJson,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnFilters<String> get ratesJson => $composableBuilder(
+    column: $table.ratesJson,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
 class $$LocalRefundsTableOrderingComposer
@@ -12483,6 +14466,11 @@ class $$LocalRefundsTableOrderingComposer
 
   ColumnOrderings<String> get folio => $composableBuilder(
     column: $table.folio,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get shiftId => $composableBuilder(
+    column: $table.shiftId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -12525,6 +14513,11 @@ class $$LocalRefundsTableOrderingComposer
     column: $table.linesJson,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get ratesJson => $composableBuilder(
+    column: $table.ratesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalRefundsTableAnnotationComposer
@@ -12544,6 +14537,9 @@ class $$LocalRefundsTableAnnotationComposer
 
   GeneratedColumn<String> get folio =>
       $composableBuilder(column: $table.folio, builder: (column) => column);
+
+  GeneratedColumn<String> get shiftId =>
+      $composableBuilder(column: $table.shiftId, builder: (column) => column);
 
   GeneratedColumn<String> get kind =>
       $composableBuilder(column: $table.kind, builder: (column) => column);
@@ -12574,6 +14570,9 @@ class $$LocalRefundsTableAnnotationComposer
 
   GeneratedColumn<String> get linesJson =>
       $composableBuilder(column: $table.linesJson, builder: (column) => column);
+
+  GeneratedColumn<String> get ratesJson =>
+      $composableBuilder(column: $table.ratesJson, builder: (column) => column);
 }
 
 class $$LocalRefundsTableTableManager
@@ -12610,6 +14609,7 @@ class $$LocalRefundsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> saleId = const Value.absent(),
                 Value<String> folio = const Value.absent(),
+                Value<String?> shiftId = const Value.absent(),
                 Value<String> kind = const Value.absent(),
                 Value<String> reason = const Value.absent(),
                 Value<String?> note = const Value.absent(),
@@ -12618,11 +14618,13 @@ class $$LocalRefundsTableTableManager
                 Value<DateTime> occurredAt = const Value.absent(),
                 Value<int> totalCents = const Value.absent(),
                 Value<String> linesJson = const Value.absent(),
+                Value<String> ratesJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalRefundsCompanion(
                 id: id,
                 saleId: saleId,
                 folio: folio,
+                shiftId: shiftId,
                 kind: kind,
                 reason: reason,
                 note: note,
@@ -12631,6 +14633,7 @@ class $$LocalRefundsTableTableManager
                 occurredAt: occurredAt,
                 totalCents: totalCents,
                 linesJson: linesJson,
+                ratesJson: ratesJson,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -12638,6 +14641,7 @@ class $$LocalRefundsTableTableManager
                 required String id,
                 required String saleId,
                 required String folio,
+                Value<String?> shiftId = const Value.absent(),
                 required String kind,
                 required String reason,
                 Value<String?> note = const Value.absent(),
@@ -12646,11 +14650,13 @@ class $$LocalRefundsTableTableManager
                 required DateTime occurredAt,
                 required int totalCents,
                 required String linesJson,
+                Value<String> ratesJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalRefundsCompanion.insert(
                 id: id,
                 saleId: saleId,
                 folio: folio,
+                shiftId: shiftId,
                 kind: kind,
                 reason: reason,
                 note: note,
@@ -12659,6 +14665,7 @@ class $$LocalRefundsTableTableManager
                 occurredAt: occurredAt,
                 totalCents: totalCents,
                 linesJson: linesJson,
+                ratesJson: ratesJson,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -12693,6 +14700,925 @@ typedef $$LocalRefundsTableProcessedTableManager =
         BaseReferences<_$AppDatabase, $LocalRefundsTable, LocalRefund>,
       ),
       LocalRefund,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalShiftsTableCreateCompanionBuilder =
+    LocalShiftsCompanion Function({
+      required String id,
+      required String status,
+      required DateTime openedAt,
+      required String openedByStaffId,
+      required String openedByName,
+      required int floatCents,
+      Value<int?> zNumber,
+      Value<DateTime?> closedAt,
+      Value<String?> closedByStaffId,
+      Value<String?> closedByName,
+      Value<int?> expectedCents,
+      Value<int?> countedCents,
+      Value<int?> varianceCents,
+      Value<bool> flagged,
+      Value<String?> note,
+      Value<int> rowid,
+    });
+typedef $$LocalShiftsTableUpdateCompanionBuilder =
+    LocalShiftsCompanion Function({
+      Value<String> id,
+      Value<String> status,
+      Value<DateTime> openedAt,
+      Value<String> openedByStaffId,
+      Value<String> openedByName,
+      Value<int> floatCents,
+      Value<int?> zNumber,
+      Value<DateTime?> closedAt,
+      Value<String?> closedByStaffId,
+      Value<String?> closedByName,
+      Value<int?> expectedCents,
+      Value<int?> countedCents,
+      Value<int?> varianceCents,
+      Value<bool> flagged,
+      Value<String?> note,
+      Value<int> rowid,
+    });
+
+class $$LocalShiftsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalShiftsTable> {
+  $$LocalShiftsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get openedAt => $composableBuilder(
+    column: $table.openedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get openedByStaffId => $composableBuilder(
+    column: $table.openedByStaffId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get openedByName => $composableBuilder(
+    column: $table.openedByName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get floatCents => $composableBuilder(
+    column: $table.floatCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get zNumber => $composableBuilder(
+    column: $table.zNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get closedAt => $composableBuilder(
+    column: $table.closedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get closedByStaffId => $composableBuilder(
+    column: $table.closedByStaffId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get closedByName => $composableBuilder(
+    column: $table.closedByName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get expectedCents => $composableBuilder(
+    column: $table.expectedCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get countedCents => $composableBuilder(
+    column: $table.countedCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get varianceCents => $composableBuilder(
+    column: $table.varianceCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get flagged => $composableBuilder(
+    column: $table.flagged,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalShiftsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalShiftsTable> {
+  $$LocalShiftsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get openedAt => $composableBuilder(
+    column: $table.openedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get openedByStaffId => $composableBuilder(
+    column: $table.openedByStaffId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get openedByName => $composableBuilder(
+    column: $table.openedByName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get floatCents => $composableBuilder(
+    column: $table.floatCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get zNumber => $composableBuilder(
+    column: $table.zNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get closedAt => $composableBuilder(
+    column: $table.closedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get closedByStaffId => $composableBuilder(
+    column: $table.closedByStaffId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get closedByName => $composableBuilder(
+    column: $table.closedByName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get expectedCents => $composableBuilder(
+    column: $table.expectedCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get countedCents => $composableBuilder(
+    column: $table.countedCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get varianceCents => $composableBuilder(
+    column: $table.varianceCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get flagged => $composableBuilder(
+    column: $table.flagged,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalShiftsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalShiftsTable> {
+  $$LocalShiftsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get openedAt =>
+      $composableBuilder(column: $table.openedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get openedByStaffId => $composableBuilder(
+    column: $table.openedByStaffId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get openedByName => $composableBuilder(
+    column: $table.openedByName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get floatCents => $composableBuilder(
+    column: $table.floatCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get zNumber =>
+      $composableBuilder(column: $table.zNumber, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get closedAt =>
+      $composableBuilder(column: $table.closedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get closedByStaffId => $composableBuilder(
+    column: $table.closedByStaffId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get closedByName => $composableBuilder(
+    column: $table.closedByName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get expectedCents => $composableBuilder(
+    column: $table.expectedCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get countedCents => $composableBuilder(
+    column: $table.countedCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get varianceCents => $composableBuilder(
+    column: $table.varianceCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get flagged =>
+      $composableBuilder(column: $table.flagged, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+}
+
+class $$LocalShiftsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalShiftsTable,
+          LocalShift,
+          $$LocalShiftsTableFilterComposer,
+          $$LocalShiftsTableOrderingComposer,
+          $$LocalShiftsTableAnnotationComposer,
+          $$LocalShiftsTableCreateCompanionBuilder,
+          $$LocalShiftsTableUpdateCompanionBuilder,
+          (
+            LocalShift,
+            BaseReferences<_$AppDatabase, $LocalShiftsTable, LocalShift>,
+          ),
+          LocalShift,
+          PrefetchHooks Function()
+        > {
+  $$LocalShiftsTableTableManager(_$AppDatabase db, $LocalShiftsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalShiftsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalShiftsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalShiftsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime> openedAt = const Value.absent(),
+                Value<String> openedByStaffId = const Value.absent(),
+                Value<String> openedByName = const Value.absent(),
+                Value<int> floatCents = const Value.absent(),
+                Value<int?> zNumber = const Value.absent(),
+                Value<DateTime?> closedAt = const Value.absent(),
+                Value<String?> closedByStaffId = const Value.absent(),
+                Value<String?> closedByName = const Value.absent(),
+                Value<int?> expectedCents = const Value.absent(),
+                Value<int?> countedCents = const Value.absent(),
+                Value<int?> varianceCents = const Value.absent(),
+                Value<bool> flagged = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalShiftsCompanion(
+                id: id,
+                status: status,
+                openedAt: openedAt,
+                openedByStaffId: openedByStaffId,
+                openedByName: openedByName,
+                floatCents: floatCents,
+                zNumber: zNumber,
+                closedAt: closedAt,
+                closedByStaffId: closedByStaffId,
+                closedByName: closedByName,
+                expectedCents: expectedCents,
+                countedCents: countedCents,
+                varianceCents: varianceCents,
+                flagged: flagged,
+                note: note,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String status,
+                required DateTime openedAt,
+                required String openedByStaffId,
+                required String openedByName,
+                required int floatCents,
+                Value<int?> zNumber = const Value.absent(),
+                Value<DateTime?> closedAt = const Value.absent(),
+                Value<String?> closedByStaffId = const Value.absent(),
+                Value<String?> closedByName = const Value.absent(),
+                Value<int?> expectedCents = const Value.absent(),
+                Value<int?> countedCents = const Value.absent(),
+                Value<int?> varianceCents = const Value.absent(),
+                Value<bool> flagged = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalShiftsCompanion.insert(
+                id: id,
+                status: status,
+                openedAt: openedAt,
+                openedByStaffId: openedByStaffId,
+                openedByName: openedByName,
+                floatCents: floatCents,
+                zNumber: zNumber,
+                closedAt: closedAt,
+                closedByStaffId: closedByStaffId,
+                closedByName: closedByName,
+                expectedCents: expectedCents,
+                countedCents: countedCents,
+                varianceCents: varianceCents,
+                flagged: flagged,
+                note: note,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalShiftsTable, LocalShift>(table),
+                  BaseReferences<_$AppDatabase, $LocalShiftsTable, LocalShift>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalShiftsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalShiftsTable,
+      LocalShift,
+      $$LocalShiftsTableFilterComposer,
+      $$LocalShiftsTableOrderingComposer,
+      $$LocalShiftsTableAnnotationComposer,
+      $$LocalShiftsTableCreateCompanionBuilder,
+      $$LocalShiftsTableUpdateCompanionBuilder,
+      (
+        LocalShift,
+        BaseReferences<_$AppDatabase, $LocalShiftsTable, LocalShift>,
+      ),
+      LocalShift,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalCashMovementsTableCreateCompanionBuilder =
+    LocalCashMovementsCompanion Function({
+      required String id,
+      required String shiftId,
+      required String kind,
+      required int amountCents,
+      required String reason,
+      Value<String?> note,
+      required String staffId,
+      Value<String?> approverStaffId,
+      required DateTime occurredAt,
+      Value<int> rowid,
+    });
+typedef $$LocalCashMovementsTableUpdateCompanionBuilder =
+    LocalCashMovementsCompanion Function({
+      Value<String> id,
+      Value<String> shiftId,
+      Value<String> kind,
+      Value<int> amountCents,
+      Value<String> reason,
+      Value<String?> note,
+      Value<String> staffId,
+      Value<String?> approverStaffId,
+      Value<DateTime> occurredAt,
+      Value<int> rowid,
+    });
+
+class $$LocalCashMovementsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalCashMovementsTable> {
+  $$LocalCashMovementsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get shiftId => $composableBuilder(
+    column: $table.shiftId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reason => $composableBuilder(
+    column: $table.reason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get staffId => $composableBuilder(
+    column: $table.staffId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get approverStaffId => $composableBuilder(
+    column: $table.approverStaffId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get occurredAt => $composableBuilder(
+    column: $table.occurredAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalCashMovementsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalCashMovementsTable> {
+  $$LocalCashMovementsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get shiftId => $composableBuilder(
+    column: $table.shiftId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reason => $composableBuilder(
+    column: $table.reason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get staffId => $composableBuilder(
+    column: $table.staffId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get approverStaffId => $composableBuilder(
+    column: $table.approverStaffId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get occurredAt => $composableBuilder(
+    column: $table.occurredAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalCashMovementsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalCashMovementsTable> {
+  $$LocalCashMovementsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get shiftId =>
+      $composableBuilder(column: $table.shiftId, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get reason =>
+      $composableBuilder(column: $table.reason, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get staffId =>
+      $composableBuilder(column: $table.staffId, builder: (column) => column);
+
+  GeneratedColumn<String> get approverStaffId => $composableBuilder(
+    column: $table.approverStaffId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get occurredAt => $composableBuilder(
+    column: $table.occurredAt,
+    builder: (column) => column,
+  );
+}
+
+class $$LocalCashMovementsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalCashMovementsTable,
+          LocalCashMovement,
+          $$LocalCashMovementsTableFilterComposer,
+          $$LocalCashMovementsTableOrderingComposer,
+          $$LocalCashMovementsTableAnnotationComposer,
+          $$LocalCashMovementsTableCreateCompanionBuilder,
+          $$LocalCashMovementsTableUpdateCompanionBuilder,
+          (
+            LocalCashMovement,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalCashMovementsTable,
+              LocalCashMovement
+            >,
+          ),
+          LocalCashMovement,
+          PrefetchHooks Function()
+        > {
+  $$LocalCashMovementsTableTableManager(
+    _$AppDatabase db,
+    $LocalCashMovementsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalCashMovementsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalCashMovementsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalCashMovementsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> shiftId = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<int> amountCents = const Value.absent(),
+                Value<String> reason = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<String> staffId = const Value.absent(),
+                Value<String?> approverStaffId = const Value.absent(),
+                Value<DateTime> occurredAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCashMovementsCompanion(
+                id: id,
+                shiftId: shiftId,
+                kind: kind,
+                amountCents: amountCents,
+                reason: reason,
+                note: note,
+                staffId: staffId,
+                approverStaffId: approverStaffId,
+                occurredAt: occurredAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String shiftId,
+                required String kind,
+                required int amountCents,
+                required String reason,
+                Value<String?> note = const Value.absent(),
+                required String staffId,
+                Value<String?> approverStaffId = const Value.absent(),
+                required DateTime occurredAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCashMovementsCompanion.insert(
+                id: id,
+                shiftId: shiftId,
+                kind: kind,
+                amountCents: amountCents,
+                reason: reason,
+                note: note,
+                staffId: staffId,
+                approverStaffId: approverStaffId,
+                occurredAt: occurredAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalCashMovementsTable, LocalCashMovement>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalCashMovementsTable,
+                    LocalCashMovement
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalCashMovementsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalCashMovementsTable,
+      LocalCashMovement,
+      $$LocalCashMovementsTableFilterComposer,
+      $$LocalCashMovementsTableOrderingComposer,
+      $$LocalCashMovementsTableAnnotationComposer,
+      $$LocalCashMovementsTableCreateCompanionBuilder,
+      $$LocalCashMovementsTableUpdateCompanionBuilder,
+      (
+        LocalCashMovement,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalCashMovementsTable,
+          LocalCashMovement
+        >,
+      ),
+      LocalCashMovement,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalCashCountsTableCreateCompanionBuilder =
+    LocalCashCountsCompanion Function({
+      required String shiftId,
+      required String stage,
+      required int denominationCents,
+      required int quantity,
+      Value<int> rowid,
+    });
+typedef $$LocalCashCountsTableUpdateCompanionBuilder =
+    LocalCashCountsCompanion Function({
+      Value<String> shiftId,
+      Value<String> stage,
+      Value<int> denominationCents,
+      Value<int> quantity,
+      Value<int> rowid,
+    });
+
+class $$LocalCashCountsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalCashCountsTable> {
+  $$LocalCashCountsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get shiftId => $composableBuilder(
+    column: $table.shiftId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get stage => $composableBuilder(
+    column: $table.stage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get denominationCents => $composableBuilder(
+    column: $table.denominationCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalCashCountsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalCashCountsTable> {
+  $$LocalCashCountsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get shiftId => $composableBuilder(
+    column: $table.shiftId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get stage => $composableBuilder(
+    column: $table.stage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get denominationCents => $composableBuilder(
+    column: $table.denominationCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalCashCountsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalCashCountsTable> {
+  $$LocalCashCountsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get shiftId =>
+      $composableBuilder(column: $table.shiftId, builder: (column) => column);
+
+  GeneratedColumn<String> get stage =>
+      $composableBuilder(column: $table.stage, builder: (column) => column);
+
+  GeneratedColumn<int> get denominationCents => $composableBuilder(
+    column: $table.denominationCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get quantity =>
+      $composableBuilder(column: $table.quantity, builder: (column) => column);
+}
+
+class $$LocalCashCountsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalCashCountsTable,
+          LocalCashCount,
+          $$LocalCashCountsTableFilterComposer,
+          $$LocalCashCountsTableOrderingComposer,
+          $$LocalCashCountsTableAnnotationComposer,
+          $$LocalCashCountsTableCreateCompanionBuilder,
+          $$LocalCashCountsTableUpdateCompanionBuilder,
+          (
+            LocalCashCount,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalCashCountsTable,
+              LocalCashCount
+            >,
+          ),
+          LocalCashCount,
+          PrefetchHooks Function()
+        > {
+  $$LocalCashCountsTableTableManager(
+    _$AppDatabase db,
+    $LocalCashCountsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalCashCountsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalCashCountsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalCashCountsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> shiftId = const Value.absent(),
+                Value<String> stage = const Value.absent(),
+                Value<int> denominationCents = const Value.absent(),
+                Value<int> quantity = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCashCountsCompanion(
+                shiftId: shiftId,
+                stage: stage,
+                denominationCents: denominationCents,
+                quantity: quantity,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String shiftId,
+                required String stage,
+                required int denominationCents,
+                required int quantity,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalCashCountsCompanion.insert(
+                shiftId: shiftId,
+                stage: stage,
+                denominationCents: denominationCents,
+                quantity: quantity,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalCashCountsTable, LocalCashCount>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalCashCountsTable,
+                    LocalCashCount
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalCashCountsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalCashCountsTable,
+      LocalCashCount,
+      $$LocalCashCountsTableFilterComposer,
+      $$LocalCashCountsTableOrderingComposer,
+      $$LocalCashCountsTableAnnotationComposer,
+      $$LocalCashCountsTableCreateCompanionBuilder,
+      $$LocalCashCountsTableUpdateCompanionBuilder,
+      (
+        LocalCashCount,
+        BaseReferences<_$AppDatabase, $LocalCashCountsTable, LocalCashCount>,
+      ),
+      LocalCashCount,
       PrefetchHooks Function()
     >;
 
@@ -12736,4 +15662,10 @@ class $AppDatabaseManager {
       $$LocalHeldTicketsTableTableManager(_db, _db.localHeldTickets);
   $$LocalRefundsTableTableManager get localRefunds =>
       $$LocalRefundsTableTableManager(_db, _db.localRefunds);
+  $$LocalShiftsTableTableManager get localShifts =>
+      $$LocalShiftsTableTableManager(_db, _db.localShifts);
+  $$LocalCashMovementsTableTableManager get localCashMovements =>
+      $$LocalCashMovementsTableTableManager(_db, _db.localCashMovements);
+  $$LocalCashCountsTableTableManager get localCashCounts =>
+      $$LocalCashCountsTableTableManager(_db, _db.localCashCounts);
 }

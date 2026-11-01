@@ -64,5 +64,11 @@ const _$AuditActionEnumMap = {
   AuditAction.undefined27: 'sale.refunded',
   AuditAction.undefined28: 'sale.voided',
   AuditAction.undefined29: 'sale.ticket_discarded',
+  AuditAction.undefined30: 'cash.shift_opened',
+  AuditAction.undefined31: 'cash.movement',
+  AuditAction.undefined32: 'cash.shift_closed',
+  AuditAction.undefined33: 'cash.variance_flagged',
+  AuditAction.undefined34: 'cash.drawer_opened',
+  AuditAction.undefined35: 'cash.note_added',
   AuditAction.$unknown: r'$unknown',
 };

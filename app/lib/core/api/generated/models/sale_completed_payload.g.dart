@@ -12,6 +12,7 @@ SaleCompletedPayload _$SaleCompletedPayloadFromJson(
   folio: json['folio'] as Folio,
   folioNumber: (json['folioNumber'] as num).toInt(),
   cashierStaffId: json['cashierStaffId'] as String,
+  shiftId: json['shiftId'] as String,
   lines: (json['lines'] as List<dynamic>)
       .map((e) => SaleLineInput.fromJson(e as Map<String, dynamic>))
       .toList(),
@@ -24,7 +25,6 @@ SaleCompletedPayload _$SaleCompletedPayloadFromJson(
   payments: (json['payments'] as List<dynamic>)
       .map((e) => PaymentInput.fromJson(e as Map<String, dynamic>))
       .toList(),
-  shiftId: json['shiftId'] as String?,
   orderDiscount: json['orderDiscount'] == null
       ? null
       : DiscountInput.fromJson(json['orderDiscount'] as Map<String, dynamic>),
@@ -36,7 +36,7 @@ Map<String, dynamic> _$SaleCompletedPayloadToJson(
   'folio': instance.folio,
   'folioNumber': instance.folioNumber,
   'cashierStaffId': instance.cashierStaffId,
-  'shiftId': ?instance.shiftId,
+  'shiftId': instance.shiftId,
   'lines': instance.lines,
   'orderDiscount': ?instance.orderDiscount,
   'voidedLines': instance.voidedLines,

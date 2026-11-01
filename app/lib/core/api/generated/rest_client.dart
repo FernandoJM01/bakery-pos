@@ -10,13 +10,14 @@ import 'auth/auth_api_client.dart';
 import 'branches/branches_api_client.dart';
 import 'staff/staff_api_client.dart';
 import 'audit/audit_api_client.dart';
+import 'shifts/shifts_api_client.dart';
 import 'catalog/catalog_api_client.dart';
 import 'sync/sync_api_client.dart';
 import 'sales/sales_api_client.dart';
 
-/// Bakery POS API `v0.3.0-m3`.
+/// Bakery POS API `v0.4.0-m4`.
 ///
-/// Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync) and 3 (sales).
+/// Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync), 3 (sales) and 4 (cash shifts, audit and printing).
 /// Owned by the architect. Developers must not edit this file; open an issue labelled `contract` instead.
 ///
 /// Conventions:.
@@ -33,7 +34,7 @@ class RestClient {
   final Dio _dio;
   final String? _baseUrl;
 
-  static String get version => '0.3.0-m3';
+  static String get version => '0.4.0-m4';
 
   SystemApiClient? _system;
   DevicesApiClient? _devices;
@@ -41,6 +42,7 @@ class RestClient {
   BranchesApiClient? _branches;
   StaffApiClient? _staff;
   AuditApiClient? _audit;
+  ShiftsApiClient? _shifts;
   CatalogApiClient? _catalog;
   SyncApiClient? _sync;
   SalesApiClient? _sales;
@@ -61,6 +63,9 @@ class RestClient {
 
   AuditApiClient get audit =>
       _audit ??= AuditApiClient(_dio, baseUrl: _baseUrl);
+
+  ShiftsApiClient get shifts =>
+      _shifts ??= ShiftsApiClient(_dio, baseUrl: _baseUrl);
 
   CatalogApiClient get catalog =>
       _catalog ??= CatalogApiClient(_dio, baseUrl: _baseUrl);

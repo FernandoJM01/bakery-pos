@@ -26,6 +26,10 @@ enum OfflineAuditPayloadAction {
   @JsonValue('sale.ticket_discarded')
   undefined4('sale.ticket_discarded'),
 
+  /// Incorrect name has been replaced. Original name: `cash.drawer_opened`.
+  @JsonValue('cash.drawer_opened')
+  undefined5('cash.drawer_opened'),
+
   /// Default value for all unparsed values, allows backward compatibility when adding new values on the backend.
   $unknown(null);
 

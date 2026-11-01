@@ -126,6 +126,30 @@ enum AuditAction {
   @JsonValue('sale.ticket_discarded')
   undefined29('sale.ticket_discarded'),
 
+  /// Incorrect name has been replaced. Original name: `cash.shift_opened`.
+  @JsonValue('cash.shift_opened')
+  undefined30('cash.shift_opened'),
+
+  /// Incorrect name has been replaced. Original name: `cash.movement`.
+  @JsonValue('cash.movement')
+  undefined31('cash.movement'),
+
+  /// Incorrect name has been replaced. Original name: `cash.shift_closed`.
+  @JsonValue('cash.shift_closed')
+  undefined32('cash.shift_closed'),
+
+  /// Incorrect name has been replaced. Original name: `cash.variance_flagged`.
+  @JsonValue('cash.variance_flagged')
+  undefined33('cash.variance_flagged'),
+
+  /// Incorrect name has been replaced. Original name: `cash.drawer_opened`.
+  @JsonValue('cash.drawer_opened')
+  undefined34('cash.drawer_opened'),
+
+  /// Incorrect name has been replaced. Original name: `cash.note_added`.
+  @JsonValue('cash.note_added')
+  undefined35('cash.note_added'),
+
   /// Default value for all unparsed values, allows backward compatibility when adding new values on the backend.
   $unknown(null);
 
