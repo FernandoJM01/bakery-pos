@@ -21,7 +21,7 @@ FakeReply _err(
 );
 
 class FakeCatalog {
-  FakeCatalog({required this.branchIds}) {
+  FakeCatalog({required this.branchIds, this.deviceId = 'fake-device'}) {
     for (final (kind, name, bp) in [
       ('IVA', 'IVA 0%', 0),
       ('IVA', 'IVA 16%', 1600),
@@ -40,6 +40,9 @@ class FakeCatalog {
   }
 
   final List<String> branchIds;
+
+  /// The till that pushes records, for quarantine entries.
+  final String deviceId;
 
   /// Device branch used by the sync routes (the fake has one till).
   String get deviceBranchId => branchIds.first;
@@ -486,7 +489,7 @@ class FakeCatalog {
       }
       final entry = <String, dynamic>{
         'recordId': id,
-        'deviceId': 'fake-device',
+        'deviceId': deviceId,
         'branchId': deviceBranchId,
         'type': r['type'],
         'occurredAt': r['occurredAt'],

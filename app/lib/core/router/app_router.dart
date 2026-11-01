@@ -28,6 +28,7 @@ class AppRoutes {
   static const String backofficeDevices = '/backoffice/devices';
   static const String backofficeAudit = '/backoffice/audit';
   static const String backofficeCatalog = '/backoffice/catalog';
+  static const String backofficeSync = '/backoffice/sync';
 }
 
 const tillSectionRoutes = [
@@ -41,9 +42,11 @@ const tillSectionRoutes = [
 
 const backofficeSectionRoutes = [
   AppRoutes.backofficeBranches,
+  AppRoutes.backofficeCatalog,
   AppRoutes.backofficeStaff,
   AppRoutes.backofficeDevices,
   AppRoutes.backofficeAudit,
+  AppRoutes.backofficeSync,
 ];
 
 List<String> getPermittedTillRoutes(List<String> permissions) {
@@ -75,6 +78,9 @@ List<String> getPermittedBackofficeRoutes(List<String> permissions) {
   if (permissions.contains('branches.manage')) {
     permitted.add(AppRoutes.backofficeBranches);
   }
+  if (permissions.contains('catalog.manage')) {
+    permitted.add(AppRoutes.backofficeCatalog);
+  }
   if (permissions.contains('staff.manage')) {
     permitted.add(AppRoutes.backofficeStaff);
   }
@@ -83,6 +89,9 @@ List<String> getPermittedBackofficeRoutes(List<String> permissions) {
   }
   if (permissions.contains('audit.view')) {
     permitted.add(AppRoutes.backofficeAudit);
+  }
+  if (permissions.contains('settings.manage')) {
+    permitted.add(AppRoutes.backofficeSync);
   }
   return permitted;
 }
@@ -372,6 +381,15 @@ GoRouter createAppRouter(
                 BackofficeSectionPlaceholder.forRoute(
                   AppRoutes.backofficeCatalog,
                 ),
+          ),
+          GoRoute(
+            path: AppRoutes.backofficeSync,
+            builder: (context, state) =>
+                backofficeSectionBuilder?.call(
+                  context,
+                  AppRoutes.backofficeSync,
+                ) ??
+                BackofficeSectionPlaceholder.forRoute(AppRoutes.backofficeSync),
           ),
           GoRoute(
             path: AppRoutes.backofficeAudit,

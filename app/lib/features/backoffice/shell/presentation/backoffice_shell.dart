@@ -70,6 +70,16 @@ class BackofficeShell extends ConsumerWidget {
         ),
       );
     }
+    if (permissions.contains('settings.manage')) {
+      navItems.add(
+        _NavItem(
+          route: AppRoutes.backofficeSync,
+          label: l10n.navSync,
+          icon: Icons.sync_problem_outlined,
+          selectedIcon: Icons.sync_problem,
+        ),
+      );
+    }
 
     final currentRoute = GoRouterState.of(context).matchedLocation;
     final selectedIndex = navItems.indexWhere(
@@ -172,6 +182,10 @@ class BackofficeSectionPlaceholder extends StatelessWidget {
           title = l10n.navDevices;
         } else if (route == AppRoutes.backofficeAudit) {
           title = l10n.navAudit;
+        } else if (route == AppRoutes.backofficeCatalog) {
+          title = l10n.navCatalog;
+        } else if (route == AppRoutes.backofficeSync) {
+          title = l10n.navSync;
         } else {
           title = l10n.placeholderSectionTitle;
         }
