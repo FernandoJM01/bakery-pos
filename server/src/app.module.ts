@@ -17,6 +17,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { BranchesModule } from './branches/branches.module';
 import { StaffModule } from './staff/staff.module';
 import { CatalogModule } from './catalog/catalog.module';
+import { PhotosModule } from './photos/photos.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { CatalogModule } from './catalog/catalog.module';
     BranchesModule,
     StaffModule,
     CatalogModule,
+    PhotosModule,
     HealthModule,
   ],
   providers: [

@@ -26,6 +26,12 @@ export class EnvironmentVariables {
   @IsString()
   DEVICE_TOKEN_PEPPER!: string;
 
+  // Folder for product photos (a Docker volume in deploy/). Created at start
+  // if missing; the server refuses to start if it cannot write there.
+  @IsNotEmpty({ message: 'PHOTO_DIR is required' })
+  @IsString()
+  PHOTO_DIR!: string;
+
   @IsOptional()
   @IsString()
   NODE_ENV?: string = 'development';

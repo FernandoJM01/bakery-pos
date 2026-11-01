@@ -126,7 +126,11 @@ jobs:
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
       - name: Build for arm64 (Raspberry Pi 5 / ARM mini PC)
-        run: docker buildx build --platform linux/arm64 --target runtime server
+        run: |
+          docker buildx build --platform linux/arm64 --target runtime --load -t pos-server-arm64 server
+          # sharp ships native code per platform; prove the arm64 build loads it.
+          docker run --rm --platform linux/arm64 pos-server-arm64 \
+            node -e "require('sharp')({create:{width:2,height:2,channels:3,background:'red'}}).webp().toBuffer().then(() => console.log('sharp ok'))"
       - name: Start the stack (amd64)
         working-directory: deploy
         run: |
@@ -146,16 +150,37 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/v1/branches)" = 403
           printf 'CI Owner\nOwner\nci-owner@bakery.local\nCiOwnerPass123!\n4321\n' |
             docker compose exec -T server node dist/cli/create-owner.js
-          curl -fsS -H 'X-Forwarded-Proto: https' -H 'Content-Type: application/json' \
+          token=$(curl -fsS -H 'X-Forwarded-Proto: https' -H 'Content-Type: application/json' \
             -d '{"email":"ci-owner@bakery.local","password":"CiOwnerPass123!"}' \
-            http://127.0.0.1:8080/v1/auth/password-login | grep -q accessToken
+            http://127.0.0.1:8080/v1/auth/password-login | jq -r .accessToken)
+          test -n "$token" && test "$token" != null
           ! docker compose logs server | grep -q 'CiOwnerPass123'
+          # C15: a product photo goes through nginx, is stored on the volume
+          # and comes back as WebP.
+          # A 1000 x 1000 noise PNG (about 3 MB, over nginx's default 1 MB).
+          python3 - <<'PY' > photo.png
+          import os, struct, sys, zlib
+          w = h = 1000
+          rows = b"".join(b"\0" + os.urandom(w * 3) for _ in range(h))
+          def chunk(t, d):
+              return struct.pack(">I", len(d)) + t + d + struct.pack(">I", zlib.crc32(t + d))
+          sys.stdout.buffer.write(b"\x89PNG\r\n\x1a\n"
+              + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0))
+              + chunk(b"IDAT", zlib.compress(rows, 1)) + chunk(b"IEND", b""))
+          PY
+          photo_id=$(curl -fsS -H 'X-Forwarded-Proto: https' -H "Authorization: Bearer $token" \
+            -F file=@photo.png http://127.0.0.1:8080/v1/photos | jq -r .id)
+          curl -fsS -o got.webp -H 'X-Forwarded-Proto: https' "http://127.0.0.1:8080/v1/photos/$photo_id"
+          test "$(head -c 4 got.webp)" = RIFF
+          echo "$photo_id" > photo-id.txt
       - name: Backup and restore test
         working-directory: deploy
         run: |
           docker compose up -d backup
           docker compose exec -T backup sh /backup.sh now
-          ./restore-test.sh
+          ./restore-test.sh | tee restore-test.log
+          grep -q '^photo|[1-9]' restore-test.log
+          sudo tar -tzf backups/photos-*.tar.gz | grep -qx "./$(cat photo-id.txt).webp"
       - if: failure()
         working-directory: deploy
         run: docker compose logs

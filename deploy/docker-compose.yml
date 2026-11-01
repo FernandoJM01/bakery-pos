@@ -44,7 +44,10 @@ services:
       REQUIRE_HTTPS: ${REQUIRE_HTTPS:-true}
       BACKOFFICE_ORIGIN: ${BACKOFFICE_ORIGIN:-}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      PHOTO_DIR: /data/photos
       TZ: ${TZ:-America/Mexico_City}
+    volumes:
+      - pos-photos:/data/photos
     depends_on:
       db: { condition: service_healthy }
       migrate: { condition: service_completed_successfully }
@@ -76,9 +79,11 @@ services:
     volumes:
       - ./backup.sh:/backup.sh:ro
       - ${BACKUP_DIR:-./backups}:/backups
+      - pos-photos:/photos:ro
     entrypoint: ["sh", "/backup.sh"]
     depends_on:
       db: { condition: service_healthy }
 
 volumes:
   pos-db:
+  pos-photos:
