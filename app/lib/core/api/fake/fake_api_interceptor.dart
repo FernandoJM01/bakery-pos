@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 
+import 'fake_catalog.dart';
+
 class FakeApiInterceptor extends Interceptor {
   FakeApiInterceptor({this.latency = Duration.zero});
 
@@ -19,6 +21,11 @@ class FakeApiInterceptor extends Interceptor {
   List<String>? currentStaffPermissions;
   bool rejectRefresh = false;
   bool expireAccessToken = false;
+
+  /// Catalog and sync routes (M2), sharing this fake's branches.
+  late final FakeCatalog catalog = FakeCatalog(
+    branchIds: [branchId1, branchId2],
+  );
 
   late final List<Map<String, dynamic>> branches = [
     {
@@ -1091,6 +1098,29 @@ class FakeApiInterceptor extends Interceptor {
         'items': filtered.sublist(start, end),
         if (end < filtered.length) 'nextCursor': '$end',
       });
+    }
+
+    // 11. Catalog and sync (M2)
+    final reply = catalog.handle(
+      method,
+      path,
+      options.queryParameters,
+      options.data,
+    );
+    if (reply != null) {
+      if (reply.status >= 400) {
+        return handler.reject(
+          DioException(
+            requestOptions: options,
+            response: Response(
+              requestOptions: options,
+              statusCode: reply.status,
+              data: reply.body,
+            ),
+          ),
+        );
+      }
+      return ok(reply.body, status: reply.status);
     }
 
     // Default passthrough

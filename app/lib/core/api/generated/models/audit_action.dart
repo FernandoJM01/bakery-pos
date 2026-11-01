@@ -66,6 +66,50 @@ enum AuditAction {
   @JsonValue('branch.updated')
   undefined14('branch.updated'),
 
+  /// Incorrect name has been replaced. Original name: `catalog.category_created`.
+  @JsonValue('catalog.category_created')
+  undefined15('catalog.category_created'),
+
+  /// Incorrect name has been replaced. Original name: `catalog.category_updated`.
+  @JsonValue('catalog.category_updated')
+  undefined16('catalog.category_updated'),
+
+  /// Incorrect name has been replaced. Original name: `catalog.product_created`.
+  @JsonValue('catalog.product_created')
+  undefined17('catalog.product_created'),
+
+  /// Incorrect name has been replaced. Original name: `catalog.product_updated`.
+  @JsonValue('catalog.product_updated')
+  undefined18('catalog.product_updated'),
+
+  /// Incorrect name has been replaced. Original name: `catalog.variant_created`.
+  @JsonValue('catalog.variant_created')
+  undefined19('catalog.variant_created'),
+
+  /// Incorrect name has been replaced. Original name: `catalog.variant_updated`.
+  @JsonValue('catalog.variant_updated')
+  undefined20('catalog.variant_updated'),
+
+  /// Incorrect name has been replaced. Original name: `catalog.price_changed`.
+  @JsonValue('catalog.price_changed')
+  undefined21('catalog.price_changed'),
+
+  /// Incorrect name has been replaced. Original name: `catalog.branch_price_changed`.
+  @JsonValue('catalog.branch_price_changed')
+  undefined22('catalog.branch_price_changed'),
+
+  /// Incorrect name has been replaced. Original name: `catalog.tax_rate_created`.
+  @JsonValue('catalog.tax_rate_created')
+  undefined23('catalog.tax_rate_created'),
+
+  /// Incorrect name has been replaced. Original name: `catalog.tax_rate_updated`.
+  @JsonValue('catalog.tax_rate_updated')
+  undefined24('catalog.tax_rate_updated'),
+
+  /// Incorrect name has been replaced. Original name: `sync.quarantine_resolved`.
+  @JsonValue('sync.quarantine_resolved')
+  undefined25('sync.quarantine_resolved'),
+
   /// Default value for all unparsed values, allows backward compatibility when adding new values on the backend.
   $unknown(null);
 

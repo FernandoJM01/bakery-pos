@@ -10,10 +10,12 @@ import 'auth/auth_api_client.dart';
 import 'branches/branches_api_client.dart';
 import 'staff/staff_api_client.dart';
 import 'audit/audit_api_client.dart';
+import 'catalog/catalog_api_client.dart';
+import 'sync/sync_api_client.dart';
 
-/// Bakery POS API `v0.1.0-m1`.
+/// Bakery POS API `v0.2.0-m2`.
 ///
-/// Contract for Milestone 1 (foundation, access, roles, devices).
+/// Contract for Milestones 1 (foundation, access, roles, devices) and 2 (catalog and sync).
 /// Owned by the architect. Developers must not edit this file; open an issue labelled `contract` instead.
 ///
 /// Conventions:.
@@ -22,6 +24,7 @@ import 'audit/audit_api_client.dart';
 /// - Every operation declares `x-permission` (a permission key) or `x-public: true`.
 ///   Operations that need an enrolled till also declare `x-device: required`.
 /// - Errors always use the `Error` schema with a stable `code`.
+/// - Money is integer centavos with tax included, in fields ending in `Cents`; rates are basis points (`Bp`).
 ///
 class RestClient {
   RestClient(Dio dio, {String? baseUrl}) : _dio = dio, _baseUrl = baseUrl;
@@ -29,7 +32,7 @@ class RestClient {
   final Dio _dio;
   final String? _baseUrl;
 
-  static String get version => '0.1.0-m1';
+  static String get version => '0.2.0-m2';
 
   SystemApiClient? _system;
   DevicesApiClient? _devices;
@@ -37,6 +40,8 @@ class RestClient {
   BranchesApiClient? _branches;
   StaffApiClient? _staff;
   AuditApiClient? _audit;
+  CatalogApiClient? _catalog;
+  SyncApiClient? _sync;
 
   SystemApiClient get system =>
       _system ??= SystemApiClient(_dio, baseUrl: _baseUrl);
@@ -54,4 +59,9 @@ class RestClient {
 
   AuditApiClient get audit =>
       _audit ??= AuditApiClient(_dio, baseUrl: _baseUrl);
+
+  CatalogApiClient get catalog =>
+      _catalog ??= CatalogApiClient(_dio, baseUrl: _baseUrl);
+
+  SyncApiClient get sync => _sync ??= SyncApiClient(_dio, baseUrl: _baseUrl);
 }
