@@ -62,7 +62,7 @@ void main() {
       expect(find.byKey(const Key('backoffice-email-input')), findsOneWidget);
     });
 
-    testWidgets('owner sees all 4 navigation sections', (tester) async {
+    testWidgets('owner sees every navigation section', (tester) async {
       await tester.runAsync(
         () => authService.login('owner@panaderia.com', 'Admin123456!'),
       );
@@ -90,6 +90,10 @@ void main() {
       );
       expect(
         find.descendant(of: navRail, matching: find.text('Auditoría')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: navRail, matching: find.text('Sincronización')),
         findsOneWidget,
       );
     });
@@ -124,6 +128,10 @@ void main() {
       );
       expect(
         find.descendant(of: navRail, matching: find.text('Auditoría')),
+        findsNothing,
+      );
+      expect(
+        find.descendant(of: navRail, matching: find.text('Sincronización')),
         findsNothing,
       );
     });

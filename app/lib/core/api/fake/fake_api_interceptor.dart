@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 
+import 'fake_catalog.dart';
+
 class FakeApiInterceptor extends Interceptor {
   FakeApiInterceptor({this.latency = Duration.zero});
 
@@ -19,6 +21,16 @@ class FakeApiInterceptor extends Interceptor {
   List<String>? currentStaffPermissions;
   bool rejectRefresh = false;
   bool expireAccessToken = false;
+
+  /// Simulates a server that cannot be reached: every call fails with a
+  /// connection error, as when the till has no network.
+  bool offline = false;
+
+  /// Catalog and sync routes (M2), sharing this fake's branches.
+  late final FakeCatalog catalog = FakeCatalog(
+    branchIds: [branchId1, branchId2],
+    deviceId: deviceId,
+  );
 
   late final List<Map<String, dynamic>> branches = [
     {
@@ -50,6 +62,8 @@ class FakeApiInterceptor extends Interceptor {
       'name': 'Caja 1',
       'type': 'TILL',
       'status': 'ACTIVE',
+      'tillNumber': 1,
+      'folioPrefix': 'SUC1-01',
       'lastSeenAt': '2026-10-25T13:05:00.000Z',
       'createdAt': '2026-10-01T00:00:00.000Z',
     },
@@ -117,6 +131,21 @@ class FakeApiInterceptor extends Interceptor {
   Map<String, dynamic> _publicStaff(Map<String, dynamic> s) =>
       Map<String, dynamic>.from(s);
 
+  /// The next till number of a branch and its folio prefix, like the
+  /// server's trigger: `SUC1-02` for the second till of SUC1.
+  Map<String, dynamic> _nextTill(Object? branchId) {
+    final n =
+        devices
+            .where((d) => d['branchId'] == branchId && d['type'] == 'TILL')
+            .length +
+        1;
+    final code = branches.firstWhere((b) => b['id'] == branchId)['code'];
+    return {
+      'tillNumber': n,
+      'folioPrefix': '$code-${n.toString().padLeft(2, '0')}',
+    };
+  }
+
   Map<String, dynamic> _enrollment(Map<String, dynamic> device) => {
     'device': device,
     'enrollmentCode': 'K7M2XQ9P',
@@ -137,6 +166,15 @@ class FakeApiInterceptor extends Interceptor {
 
     final path = options.path;
     final method = options.method.toUpperCase();
+
+    if (offline) {
+      return handler.reject(
+        DioException.connectionError(
+          requestOptions: options,
+          reason: 'fake server is offline',
+        ),
+      );
+    }
 
     void ok(Object? data, {int status = 200}) => handler.resolve(
       Response(requestOptions: options, statusCode: status, data: data),
@@ -283,6 +321,8 @@ class FakeApiInterceptor extends Interceptor {
               'name': 'Caja 1',
               'type': 'TILL',
               'status': 'ACTIVE',
+              'tillNumber': 1,
+              'folioPrefix': 'SUC1-01',
               'createdAt': DateTime.now().toUtc().toIso8601String(),
             },
             'deviceToken': 'fake-device-token-secret-32-bytes',
@@ -308,6 +348,8 @@ class FakeApiInterceptor extends Interceptor {
           statusCode: 200,
           data: {
             'branchId': branchId1,
+            'folioPrefix': 'SUC1-01',
+            'saleSettings': {'discountLimitBp': 1000},
             'generatedAt': DateTime.now().toUtc().toIso8601String(),
             'staff': [
               {
@@ -652,6 +694,8 @@ class FakeApiInterceptor extends Interceptor {
         'branches.manage',
         'audit.view',
         'sale.create',
+        'catalog.manage',
+        'settings.manage',
       ];
 
       if (email == 'manager@panaderia.com') {
@@ -802,6 +846,8 @@ class FakeApiInterceptor extends Interceptor {
               'branches.manage',
               'audit.view',
               'sale.create',
+              'catalog.manage',
+              'settings.manage',
             ];
       final isOwner = role == 'OWNER';
 
@@ -950,6 +996,7 @@ class FakeApiInterceptor extends Interceptor {
         'name': body['name'],
         'type': body['type'] ?? 'TILL',
         'status': 'PENDING',
+        if ((body['type'] ?? 'TILL') == 'TILL') ..._nextTill(body['branchId']),
         'createdAt': now.toIso8601String(),
       };
       devices.add(device);
@@ -1091,6 +1138,29 @@ class FakeApiInterceptor extends Interceptor {
         'items': filtered.sublist(start, end),
         if (end < filtered.length) 'nextCursor': '$end',
       });
+    }
+
+    // 11. Catalog and sync (M2)
+    final reply = catalog.handle(
+      method,
+      path,
+      options.queryParameters,
+      options.data,
+    );
+    if (reply != null) {
+      if (reply.status >= 400) {
+        return handler.reject(
+          DioException(
+            requestOptions: options,
+            response: Response(
+              requestOptions: options,
+              statusCode: reply.status,
+              data: reply.body,
+            ),
+          ),
+        );
+      }
+      return ok(reply.body, status: reply.status);
     }
 
     // Default passthrough

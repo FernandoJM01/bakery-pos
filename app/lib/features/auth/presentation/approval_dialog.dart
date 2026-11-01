@@ -244,7 +244,11 @@ class _ManagerApprovalDialogState extends ConsumerState<ManagerApprovalDialog> {
     final isValid = await verifier.verify(_pin, approver.offlinePinVerifier);
 
     if (!isValid) {
-      final lockedUntil = await db.recordFailedPinAttempt(approver.id, now);
+      final lockedUntil = await db.recordOfflinePinFailure(
+        approver.id,
+        now,
+        isLogin: false,
+      );
       if (mounted) {
         setState(() {
           _isLoading = false;

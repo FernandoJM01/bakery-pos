@@ -1569,6 +1569,1562 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ajustes guardados'**
   String get settingsSaved;
+
+  /// No description provided for @catalogTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Catálogo'**
+  String get catalogTitle;
+
+  /// No description provided for @catalogTabProducts.
+  ///
+  /// In es, this message translates to:
+  /// **'Productos'**
+  String get catalogTabProducts;
+
+  /// No description provided for @catalogTabCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías'**
+  String get catalogTabCategories;
+
+  /// No description provided for @catalogTabTaxes.
+  ///
+  /// In es, this message translates to:
+  /// **'Impuestos'**
+  String get catalogTabTaxes;
+
+  /// No description provided for @catalogSearchHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar por nombre, SKU o código de barras'**
+  String get catalogSearchHint;
+
+  /// No description provided for @catalogAllCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las categorías'**
+  String get catalogAllCategories;
+
+  /// No description provided for @catalogShowInactive.
+  ///
+  /// In es, this message translates to:
+  /// **'Mostrar inactivos'**
+  String get catalogShowInactive;
+
+  /// No description provided for @catalogNewProduct.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo producto'**
+  String get catalogNewProduct;
+
+  /// No description provided for @catalogEditProduct.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar producto'**
+  String get catalogEditProduct;
+
+  /// No description provided for @catalogNoProducts.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay productos con estos filtros'**
+  String get catalogNoProducts;
+
+  /// No description provided for @catalogErrorLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo cargar el catálogo'**
+  String get catalogErrorLoading;
+
+  /// No description provided for @catalogInactive.
+  ///
+  /// In es, this message translates to:
+  /// **'Inactivo'**
+  String get catalogInactive;
+
+  /// No description provided for @catalogVariantCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 variante} other{{count} variantes}}'**
+  String catalogVariantCount(int count);
+
+  /// No description provided for @catalogNewCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva categoría'**
+  String get catalogNewCategory;
+
+  /// No description provided for @catalogEditCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar categoría'**
+  String get catalogEditCategory;
+
+  /// No description provided for @catalogNoCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay categorías'**
+  String get catalogNoCategories;
+
+  /// No description provided for @catalogCategoryName.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre de la categoría'**
+  String get catalogCategoryName;
+
+  /// No description provided for @catalogCategoryColor.
+  ///
+  /// In es, this message translates to:
+  /// **'Color'**
+  String get catalogCategoryColor;
+
+  /// No description provided for @catalogCategoryNoColor.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin color'**
+  String get catalogCategoryNoColor;
+
+  /// No description provided for @catalogMoveUp.
+  ///
+  /// In es, this message translates to:
+  /// **'Subir'**
+  String get catalogMoveUp;
+
+  /// No description provided for @catalogMoveDown.
+  ///
+  /// In es, this message translates to:
+  /// **'Bajar'**
+  String get catalogMoveDown;
+
+  /// No description provided for @catalogActive.
+  ///
+  /// In es, this message translates to:
+  /// **'Activo'**
+  String get catalogActive;
+
+  /// No description provided for @catalogNewTaxRate.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo impuesto'**
+  String get catalogNewTaxRate;
+
+  /// No description provided for @catalogEditTaxRate.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar impuesto'**
+  String get catalogEditTaxRate;
+
+  /// No description provided for @catalogTaxKind.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo'**
+  String get catalogTaxKind;
+
+  /// No description provided for @catalogTaxName.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre'**
+  String get catalogTaxName;
+
+  /// No description provided for @catalogTaxRatePercent.
+  ///
+  /// In es, this message translates to:
+  /// **'Tasa (%)'**
+  String get catalogTaxRatePercent;
+
+  /// No description provided for @catalogTaxRateInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe una tasa entre 0 y 100'**
+  String get catalogTaxRateInvalid;
+
+  /// No description provided for @catalogTaxInUse.
+  ///
+  /// In es, this message translates to:
+  /// **'Este impuesto lo usan productos; cámbialos antes de desactivarlo'**
+  String get catalogTaxInUse;
+
+  /// No description provided for @catalogTaxPlaceholderNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Las tasas son provisionales hasta que el contador las confirme.'**
+  String get catalogTaxPlaceholderNote;
+
+  /// No description provided for @catalogProductName.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre del producto'**
+  String get catalogProductName;
+
+  /// No description provided for @catalogProductCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría'**
+  String get catalogProductCategory;
+
+  /// No description provided for @catalogProductUnit.
+  ///
+  /// In es, this message translates to:
+  /// **'Unidad'**
+  String get catalogProductUnit;
+
+  /// No description provided for @catalogUnitPiece.
+  ///
+  /// In es, this message translates to:
+  /// **'Pieza'**
+  String get catalogUnitPiece;
+
+  /// No description provided for @catalogUnitKg.
+  ///
+  /// In es, this message translates to:
+  /// **'Kilo'**
+  String get catalogUnitKg;
+
+  /// No description provided for @catalogUnitPackage.
+  ///
+  /// In es, this message translates to:
+  /// **'Paquete'**
+  String get catalogUnitPackage;
+
+  /// No description provided for @catalogProductDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Descripción (opcional)'**
+  String get catalogProductDescription;
+
+  /// No description provided for @catalogIva.
+  ///
+  /// In es, this message translates to:
+  /// **'IVA'**
+  String get catalogIva;
+
+  /// No description provided for @catalogIeps.
+  ///
+  /// In es, this message translates to:
+  /// **'IEPS'**
+  String get catalogIeps;
+
+  /// No description provided for @catalogNoIeps.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin IEPS'**
+  String get catalogNoIeps;
+
+  /// No description provided for @catalogPhoto.
+  ///
+  /// In es, this message translates to:
+  /// **'Foto'**
+  String get catalogPhoto;
+
+  /// No description provided for @catalogPhotoChoose.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir foto'**
+  String get catalogPhotoChoose;
+
+  /// No description provided for @catalogPhotoRemove.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar foto'**
+  String get catalogPhotoRemove;
+
+  /// No description provided for @catalogPhotoNone.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin foto'**
+  String get catalogPhotoNone;
+
+  /// No description provided for @catalogDayOld.
+  ///
+  /// In es, this message translates to:
+  /// **'Pan del día anterior'**
+  String get catalogDayOld;
+
+  /// No description provided for @catalogDayOldDiscountDays.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuento después de (días)'**
+  String get catalogDayOldDiscountDays;
+
+  /// No description provided for @catalogDayOldDiscountPercent.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuento (%)'**
+  String get catalogDayOldDiscountPercent;
+
+  /// No description provided for @catalogDayOldWasteDays.
+  ///
+  /// In es, this message translates to:
+  /// **'Merma después de (días)'**
+  String get catalogDayOldWasteDays;
+
+  /// No description provided for @catalogDayOldPair.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe los días y el porcentaje de descuento juntos, o deja ambos vacíos'**
+  String get catalogDayOldPair;
+
+  /// No description provided for @catalogDayOldWasteAfter.
+  ///
+  /// In es, this message translates to:
+  /// **'Los días de merma deben ser más que los días de descuento'**
+  String get catalogDayOldWasteAfter;
+
+  /// No description provided for @catalogDayOldInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe un número entero'**
+  String get catalogDayOldInvalid;
+
+  /// No description provided for @catalogVariants.
+  ///
+  /// In es, this message translates to:
+  /// **'Variantes'**
+  String get catalogVariants;
+
+  /// No description provided for @catalogAddVariant.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar variante'**
+  String get catalogAddVariant;
+
+  /// No description provided for @catalogRemoveVariant.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar variante'**
+  String get catalogRemoveVariant;
+
+  /// No description provided for @catalogVariantName.
+  ///
+  /// In es, this message translates to:
+  /// **'Variante'**
+  String get catalogVariantName;
+
+  /// No description provided for @catalogVariantPrice.
+  ///
+  /// In es, this message translates to:
+  /// **'Precio'**
+  String get catalogVariantPrice;
+
+  /// No description provided for @catalogVariantSku.
+  ///
+  /// In es, this message translates to:
+  /// **'SKU'**
+  String get catalogVariantSku;
+
+  /// No description provided for @catalogVariantBarcode.
+  ///
+  /// In es, this message translates to:
+  /// **'Código de barras'**
+  String get catalogVariantBarcode;
+
+  /// No description provided for @catalogBranchPrice.
+  ///
+  /// In es, this message translates to:
+  /// **'Precio en {branch}'**
+  String catalogBranchPrice(String branch);
+
+  /// No description provided for @catalogBranchPriceHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Igual que el precio base'**
+  String get catalogBranchPriceHint;
+
+  /// No description provided for @catalogNeedsVariant.
+  ///
+  /// In es, this message translates to:
+  /// **'El producto necesita al menos una variante'**
+  String get catalogNeedsVariant;
+
+  /// No description provided for @catalogRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Obligatorio'**
+  String get catalogRequired;
+
+  /// No description provided for @catalogPriceInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe un precio como 12.50'**
+  String get catalogPriceInvalid;
+
+  /// No description provided for @catalogTaxSplit.
+  ///
+  /// In es, this message translates to:
+  /// **'Base {base} · IEPS {ieps} · IVA {iva}'**
+  String catalogTaxSplit(String base, String ieps, String iva);
+
+  /// No description provided for @catalogSkuInUse.
+  ///
+  /// In es, this message translates to:
+  /// **'Ese SKU ya lo usa otra variante'**
+  String get catalogSkuInUse;
+
+  /// No description provided for @catalogBarcodeInUse.
+  ///
+  /// In es, this message translates to:
+  /// **'Ese código de barras ya lo usa otra variante'**
+  String get catalogBarcodeInUse;
+
+  /// No description provided for @catalogNameInUse.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya existe una categoría activa con ese nombre'**
+  String get catalogNameInUse;
+
+  /// No description provided for @catalogNeedsActiveVariant.
+  ///
+  /// In es, this message translates to:
+  /// **'Un producto activo necesita al menos una variante activa'**
+  String get catalogNeedsActiveVariant;
+
+  /// No description provided for @catalogSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Producto guardado'**
+  String get catalogSaved;
+
+  /// No description provided for @catalogCategorySaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría guardada'**
+  String get catalogCategorySaved;
+
+  /// No description provided for @catalogTaxSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Impuesto guardado'**
+  String get catalogTaxSaved;
+
+  /// No description provided for @catalogPhotoUploadFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo subir la foto. Usa una imagen JPG, PNG o WebP de hasta 5 MB.'**
+  String get catalogPhotoUploadFailed;
+
+  /// No description provided for @catalogProductSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{category} · {variants}'**
+  String catalogProductSubtitle(String category, String variants);
+
+  /// No description provided for @catalogTaxSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{kind} · {rate}%'**
+  String catalogTaxSubtitle(String kind, String rate);
+
+  /// No description provided for @navSync.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronización'**
+  String get navSync;
+
+  /// No description provided for @syncAdminDevicesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Dispositivos y última sincronización'**
+  String get syncAdminDevicesTitle;
+
+  /// No description provided for @syncAdminDeviceLastSync.
+  ///
+  /// In es, this message translates to:
+  /// **'Última sincronización: {when}'**
+  String syncAdminDeviceLastSync(String when);
+
+  /// No description provided for @syncAdminDeviceNever.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no se ha sincronizado'**
+  String get syncAdminDeviceNever;
+
+  /// No description provided for @syncAdminQuarantineTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Registros en cuarentena'**
+  String get syncAdminQuarantineTitle;
+
+  /// No description provided for @syncAdminQuarantineHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Registros que una caja envió y el servidor no pudo aplicar. Marcarlos como resueltos no los vuelve a aplicar.'**
+  String get syncAdminQuarantineHelp;
+
+  /// No description provided for @syncAdminFilterOpen.
+  ///
+  /// In es, this message translates to:
+  /// **'Abiertos'**
+  String get syncAdminFilterOpen;
+
+  /// No description provided for @syncAdminFilterResolved.
+  ///
+  /// In es, this message translates to:
+  /// **'Resueltos'**
+  String get syncAdminFilterResolved;
+
+  /// No description provided for @syncAdminFilterAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos'**
+  String get syncAdminFilterAll;
+
+  /// No description provided for @syncAdminEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay registros en cuarentena'**
+  String get syncAdminEmpty;
+
+  /// No description provided for @syncAdminEntrySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{device} · ocurrió {occurred} · recibido {received}'**
+  String syncAdminEntrySubtitle(
+    String device,
+    String occurred,
+    String received,
+  );
+
+  /// No description provided for @syncAdminUnknownDevice.
+  ///
+  /// In es, this message translates to:
+  /// **'Dispositivo desconocido'**
+  String get syncAdminUnknownDevice;
+
+  /// No description provided for @syncAdminErrorLine.
+  ///
+  /// In es, this message translates to:
+  /// **'{code}: {message}'**
+  String syncAdminErrorLine(String code, String message);
+
+  /// No description provided for @syncAdminResolvedLine.
+  ///
+  /// In es, this message translates to:
+  /// **'Resuelto el {when}: {note}'**
+  String syncAdminResolvedLine(String when, String note);
+
+  /// No description provided for @syncAdminResolve.
+  ///
+  /// In es, this message translates to:
+  /// **'Marcar resuelto'**
+  String get syncAdminResolve;
+
+  /// No description provided for @syncAdminResolveTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Marcar registro como resuelto'**
+  String get syncAdminResolveTitle;
+
+  /// No description provided for @syncAdminResolveHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'El registro no se vuelve a aplicar. Anota qué se hizo con él.'**
+  String get syncAdminResolveHelp;
+
+  /// No description provided for @syncAdminNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get syncAdminNote;
+
+  /// No description provided for @syncAdminNoteRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe una nota'**
+  String get syncAdminNoteRequired;
+
+  /// No description provided for @syncAdminResolved.
+  ///
+  /// In es, this message translates to:
+  /// **'Registro marcado como resuelto'**
+  String get syncAdminResolved;
+
+  /// No description provided for @syncAdminAlreadyResolved.
+  ///
+  /// In es, this message translates to:
+  /// **'Este registro ya estaba resuelto'**
+  String get syncAdminAlreadyResolved;
+
+  /// No description provided for @syncAdminLoadMore.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargar más'**
+  String get syncAdminLoadMore;
+
+  /// No description provided for @gridAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo'**
+  String get gridAll;
+
+  /// No description provided for @gridSearchHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar por nombre, SKU o código'**
+  String get gridSearchHint;
+
+  /// No description provided for @gridEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay productos en esta caja'**
+  String get gridEmpty;
+
+  /// No description provided for @gridRefresh.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronizar'**
+  String get gridRefresh;
+
+  /// No description provided for @gridNoMatches.
+  ///
+  /// In es, this message translates to:
+  /// **'Ningún producto coincide'**
+  String get gridNoMatches;
+
+  /// No description provided for @gridPriceFrom.
+  ///
+  /// In es, this message translates to:
+  /// **'Desde {price}'**
+  String gridPriceFrom(String price);
+
+  /// No description provided for @syncOnline.
+  ///
+  /// In es, this message translates to:
+  /// **'En línea'**
+  String get syncOnline;
+
+  /// No description provided for @syncOffline.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conexión'**
+  String get syncOffline;
+
+  /// No description provided for @syncWaiting.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} en espera'**
+  String syncWaiting(int count);
+
+  /// No description provided for @syncTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronización'**
+  String get syncTitle;
+
+  /// No description provided for @syncWaitingCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =0{Nada en espera} =1{1 registro en espera} other{{count} registros en espera}}'**
+  String syncWaitingCount(int count);
+
+  /// No description provided for @syncQuarantinedCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =0{Ningún registro en cuarentena} =1{1 registro en cuarentena} other{{count} registros en cuarentena}}'**
+  String syncQuarantinedCount(int count);
+
+  /// No description provided for @syncQuarantinedHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'El servidor no pudo aplicar estos registros. El dueño los revisa en el panel, en Sincronización.'**
+  String get syncQuarantinedHelp;
+
+  /// No description provided for @syncNow.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronizar ahora'**
+  String get syncNow;
+
+  /// No description provided for @syncDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronizado'**
+  String get syncDone;
+
+  /// No description provided for @syncFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo conectar con el servidor; se reintentará solo'**
+  String get syncFailed;
+
+  /// No description provided for @saleTicketTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ticket'**
+  String get saleTicketTitle;
+
+  /// No description provided for @saleTicketEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Toca un producto para agregarlo'**
+  String get saleTicketEmpty;
+
+  /// No description provided for @saleClear.
+  ///
+  /// In es, this message translates to:
+  /// **'Vaciar ticket'**
+  String get saleClear;
+
+  /// No description provided for @saleClearTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Vaciar el ticket?'**
+  String get saleClearTitle;
+
+  /// No description provided for @saleClearBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Se quitarán {count} productos sin cobrar. Queda registrado.'**
+  String saleClearBody(int count);
+
+  /// No description provided for @saleClearConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Vaciar'**
+  String get saleClearConfirm;
+
+  /// No description provided for @saleLineQuantityPrice.
+  ///
+  /// In es, this message translates to:
+  /// **'{quantity} × {price}'**
+  String saleLineQuantityPrice(int quantity, String price);
+
+  /// No description provided for @saleSubtotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Subtotal'**
+  String get saleSubtotal;
+
+  /// No description provided for @saleDiscounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuentos'**
+  String get saleDiscounts;
+
+  /// No description provided for @saleTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Total'**
+  String get saleTotal;
+
+  /// No description provided for @saleDiscountButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuento'**
+  String get saleDiscountButton;
+
+  /// No description provided for @salePay.
+  ///
+  /// In es, this message translates to:
+  /// **'Cobrar'**
+  String get salePay;
+
+  /// No description provided for @saleLineTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{product} · {variant}'**
+  String saleLineTitle(String product, String variant);
+
+  /// No description provided for @saleLineRemove.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar'**
+  String get saleLineRemove;
+
+  /// No description provided for @saleLineDiscount.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuento a esta línea'**
+  String get saleLineDiscount;
+
+  /// No description provided for @saleLineDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Listo'**
+  String get saleLineDone;
+
+  /// No description provided for @saleNoFolio.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta caja aún no tiene folio. Sincronízala con el servidor una vez para poder cobrar.'**
+  String get saleNoFolio;
+
+  /// No description provided for @saleDiscountLineTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuento: {name}'**
+  String saleDiscountLineTitle(String name);
+
+  /// No description provided for @saleDiscountTicketTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuento al ticket'**
+  String get saleDiscountTicketTitle;
+
+  /// No description provided for @saleDiscountPercent.
+  ///
+  /// In es, this message translates to:
+  /// **'%'**
+  String get saleDiscountPercent;
+
+  /// No description provided for @saleDiscountAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'\$'**
+  String get saleDiscountAmount;
+
+  /// No description provided for @saleDiscountValuePercent.
+  ///
+  /// In es, this message translates to:
+  /// **'Porcentaje'**
+  String get saleDiscountValuePercent;
+
+  /// No description provided for @saleDiscountValueAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto en pesos'**
+  String get saleDiscountValueAmount;
+
+  /// No description provided for @saleDiscountPreview.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuenta {amount}'**
+  String saleDiscountPreview(String amount);
+
+  /// No description provided for @saleDiscountReason.
+  ///
+  /// In es, this message translates to:
+  /// **'Motivo'**
+  String get saleDiscountReason;
+
+  /// No description provided for @saleReasonFrequent.
+  ///
+  /// In es, this message translates to:
+  /// **'Cliente frecuente'**
+  String get saleReasonFrequent;
+
+  /// No description provided for @saleReasonDamaged.
+  ///
+  /// In es, this message translates to:
+  /// **'Producto dañado'**
+  String get saleReasonDamaged;
+
+  /// No description provided for @saleReasonPromotion.
+  ///
+  /// In es, this message translates to:
+  /// **'Promoción'**
+  String get saleReasonPromotion;
+
+  /// No description provided for @saleReasonOther.
+  ///
+  /// In es, this message translates to:
+  /// **'Otro'**
+  String get saleReasonOther;
+
+  /// No description provided for @saleDiscountNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get saleDiscountNote;
+
+  /// No description provided for @saleDiscountNoteRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe una nota para el motivo Otro'**
+  String get saleDiscountNoteRequired;
+
+  /// No description provided for @saleDiscountInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe un descuento válido que no pase del importe'**
+  String get saleDiscountInvalid;
+
+  /// No description provided for @saleDiscountOverLimit.
+  ///
+  /// In es, this message translates to:
+  /// **'Más de {limit} necesita la autorización de un gerente'**
+  String saleDiscountOverLimit(String limit);
+
+  /// No description provided for @saleDiscountApprovalNeeded.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin la autorización de un gerente no se puede aplicar este descuento'**
+  String get saleDiscountApprovalNeeded;
+
+  /// No description provided for @saleDiscountApply.
+  ///
+  /// In es, this message translates to:
+  /// **'Aplicar'**
+  String get saleDiscountApply;
+
+  /// No description provided for @saleDiscountRemove.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar descuento'**
+  String get saleDiscountRemove;
+
+  /// No description provided for @saleDiscountTicketLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuento al ticket'**
+  String get saleDiscountTicketLabel;
+
+  /// No description provided for @salePaymentTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cobrar en efectivo'**
+  String get salePaymentTitle;
+
+  /// No description provided for @salePaymentTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Total a cobrar'**
+  String get salePaymentTotal;
+
+  /// No description provided for @salePaymentReceived.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibido'**
+  String get salePaymentReceived;
+
+  /// No description provided for @salePaymentExact.
+  ///
+  /// In es, this message translates to:
+  /// **'Exacto'**
+  String get salePaymentExact;
+
+  /// No description provided for @salePaymentChange.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambio'**
+  String get salePaymentChange;
+
+  /// No description provided for @salePaymentMissing.
+  ///
+  /// In es, this message translates to:
+  /// **'Faltan {amount}'**
+  String salePaymentMissing(String amount);
+
+  /// No description provided for @salePaymentFinish.
+  ///
+  /// In es, this message translates to:
+  /// **'Finalizar'**
+  String get salePaymentFinish;
+
+  /// No description provided for @salePaymentFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo guardar la venta. Inténtalo de nuevo.'**
+  String get salePaymentFailed;
+
+  /// No description provided for @receiptTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Venta registrada'**
+  String get receiptTitle;
+
+  /// No description provided for @receiptFolio.
+  ///
+  /// In es, this message translates to:
+  /// **'Folio {folio}'**
+  String receiptFolio(String folio);
+
+  /// No description provided for @receiptCashier.
+  ///
+  /// In es, this message translates to:
+  /// **'Atendió: {name}'**
+  String receiptCashier(String name);
+
+  /// No description provided for @receiptTaxIncluded.
+  ///
+  /// In es, this message translates to:
+  /// **'IVA incluido'**
+  String get receiptTaxIncluded;
+
+  /// No description provided for @receiptTaxLine.
+  ///
+  /// In es, this message translates to:
+  /// **'{kind} {rate}: base {base}, impuesto {tax}'**
+  String receiptTaxLine(String kind, String rate, String base, String tax);
+
+  /// No description provided for @receiptReceived.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibido'**
+  String get receiptReceived;
+
+  /// No description provided for @receiptChange.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambio'**
+  String get receiptChange;
+
+  /// No description provided for @receiptNewSale.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva venta'**
+  String get receiptNewSale;
+
+  /// No description provided for @saleDiscountReasonRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige un motivo'**
+  String get saleDiscountReasonRequired;
+
+  /// No description provided for @receiptLineDiscountPercent.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuento {percent}'**
+  String receiptLineDiscountPercent(String percent);
+
+  /// No description provided for @saleChooseVariantTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{product}: elige la presentación'**
+  String saleChooseVariantTitle(String product);
+
+  /// No description provided for @saleHold.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar'**
+  String get saleHold;
+
+  /// No description provided for @saleHoldTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar ticket'**
+  String get saleHoldTitle;
+
+  /// No description provided for @saleHoldName.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre (opcional)'**
+  String get saleHoldName;
+
+  /// No description provided for @saleHoldNameHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Por ejemplo: Señora del rebozo'**
+  String get saleHoldNameHint;
+
+  /// No description provided for @saleHeldOpen.
+  ///
+  /// In es, this message translates to:
+  /// **'En espera ({count})'**
+  String saleHeldOpen(int count);
+
+  /// No description provided for @saleHeldTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tickets en espera'**
+  String get saleHeldTitle;
+
+  /// No description provided for @saleHeldEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay tickets en espera'**
+  String get saleHeldEmpty;
+
+  /// No description provided for @saleHeldUnnamed.
+  ///
+  /// In es, this message translates to:
+  /// **'Ticket sin nombre'**
+  String get saleHeldUnnamed;
+
+  /// No description provided for @saleHeldSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{time} · {count} productos · {total}'**
+  String saleHeldSubtitle(String time, int count, String total);
+
+  /// No description provided for @saleHeldResume.
+  ///
+  /// In es, this message translates to:
+  /// **'Retomar'**
+  String get saleHeldResume;
+
+  /// No description provided for @saleHeldDiscard.
+  ///
+  /// In es, this message translates to:
+  /// **'Descartar'**
+  String get saleHeldDiscard;
+
+  /// No description provided for @saleHeldBusy.
+  ///
+  /// In es, this message translates to:
+  /// **'Cobra o guarda el ticket actual antes de retomar otro'**
+  String get saleHeldBusy;
+
+  /// No description provided for @saleMenu.
+  ///
+  /// In es, this message translates to:
+  /// **'Más opciones'**
+  String get saleMenu;
+
+  /// No description provided for @saleMenuRefund.
+  ///
+  /// In es, this message translates to:
+  /// **'Devolución'**
+  String get saleMenuRefund;
+
+  /// No description provided for @saleMenuVoid.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar venta'**
+  String get saleMenuVoid;
+
+  /// No description provided for @refundFolio.
+  ///
+  /// In es, this message translates to:
+  /// **'Folio del ticket'**
+  String get refundFolio;
+
+  /// No description provided for @refundFolioHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Por ejemplo: SUC1-02-000153'**
+  String get refundFolioHint;
+
+  /// No description provided for @refundSearch.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar'**
+  String get refundSearch;
+
+  /// No description provided for @refundNotFound.
+  ///
+  /// In es, this message translates to:
+  /// **'No se encontró esa venta. Sin conexión solo se encuentran las ventas de esta caja.'**
+  String get refundNotFound;
+
+  /// No description provided for @refundSaleTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Venta {folio}'**
+  String refundSaleTitle(String folio);
+
+  /// No description provided for @refundLineUnits.
+  ///
+  /// In es, this message translates to:
+  /// **'{left} de {quantity} por devolver'**
+  String refundLineUnits(int left, int quantity);
+
+  /// No description provided for @refundRestock.
+  ///
+  /// In es, this message translates to:
+  /// **'Vuelve al inventario'**
+  String get refundRestock;
+
+  /// No description provided for @refundReason.
+  ///
+  /// In es, this message translates to:
+  /// **'Motivo'**
+  String get refundReason;
+
+  /// No description provided for @refundReasonCustomerReturn.
+  ///
+  /// In es, this message translates to:
+  /// **'El cliente lo devolvió'**
+  String get refundReasonCustomerReturn;
+
+  /// No description provided for @refundReasonWrongItem.
+  ///
+  /// In es, this message translates to:
+  /// **'Producto equivocado'**
+  String get refundReasonWrongItem;
+
+  /// No description provided for @refundReasonQuality.
+  ///
+  /// In es, this message translates to:
+  /// **'Calidad'**
+  String get refundReasonQuality;
+
+  /// No description provided for @refundReasonCashierError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error de cobro'**
+  String get refundReasonCashierError;
+
+  /// No description provided for @refundReasonOther.
+  ///
+  /// In es, this message translates to:
+  /// **'Otro'**
+  String get refundReasonOther;
+
+  /// No description provided for @refundNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get refundNote;
+
+  /// No description provided for @refundNoteRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe una nota para el motivo Otro'**
+  String get refundNoteRequired;
+
+  /// No description provided for @refundReasonRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige un motivo'**
+  String get refundReasonRequired;
+
+  /// No description provided for @refundNothing.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige al menos una pieza'**
+  String get refundNothing;
+
+  /// No description provided for @refundGiveBack.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregar {amount} al cliente'**
+  String refundGiveBack(String amount);
+
+  /// No description provided for @refundConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Devolver'**
+  String get refundConfirm;
+
+  /// No description provided for @voidConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar venta'**
+  String get voidConfirm;
+
+  /// No description provided for @refundApprovalNeeded.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin la autorización de un gerente no se puede hacer'**
+  String get refundApprovalNeeded;
+
+  /// No description provided for @refundTooMany.
+  ///
+  /// In es, this message translates to:
+  /// **'En la línea {lineNo} solo quedan {left} piezas'**
+  String refundTooMany(int lineNo, int left);
+
+  /// No description provided for @voidOtherTill.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo se puede cancelar en la caja que hizo la venta'**
+  String get voidOtherTill;
+
+  /// No description provided for @voidOtherDay.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo se puede cancelar el mismo día de la venta'**
+  String get voidOtherDay;
+
+  /// No description provided for @voidAlreadyReturned.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta venta ya no tiene piezas por devolver'**
+  String get voidAlreadyReturned;
+
+  /// No description provided for @refundAlreadyReturned.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta venta ya se devolvió completa'**
+  String get refundAlreadyReturned;
+
+  /// No description provided for @refundDoneTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Devolución registrada'**
+  String get refundDoneTitle;
+
+  /// No description provided for @voidDoneTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Venta cancelada'**
+  String get voidDoneTitle;
+
+  /// No description provided for @salesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ventas'**
+  String get salesTitle;
+
+  /// No description provided for @salesFolioSearch.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar folio'**
+  String get salesFolioSearch;
+
+  /// No description provided for @salesEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay ventas con estos filtros'**
+  String get salesEmpty;
+
+  /// No description provided for @salesLoadMore.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargar más'**
+  String get salesLoadMore;
+
+  /// No description provided for @salesShownSummary.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} ventas mostradas · cobrado {total} · devuelto {refunded}'**
+  String salesShownSummary(int count, String total, String refunded);
+
+  /// No description provided for @salesForbidden.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes acceso a las ventas de esa sucursal'**
+  String get salesForbidden;
+
+  /// No description provided for @salesColFolio.
+  ///
+  /// In es, this message translates to:
+  /// **'Folio'**
+  String get salesColFolio;
+
+  /// No description provided for @salesColDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get salesColDate;
+
+  /// No description provided for @salesColCashier.
+  ///
+  /// In es, this message translates to:
+  /// **'Atendió'**
+  String get salesColCashier;
+
+  /// No description provided for @salesColStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'Estado'**
+  String get salesColStatus;
+
+  /// No description provided for @salesColItems.
+  ///
+  /// In es, this message translates to:
+  /// **'Renglones'**
+  String get salesColItems;
+
+  /// No description provided for @salesColTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Total'**
+  String get salesColTotal;
+
+  /// No description provided for @salesColRefunded.
+  ///
+  /// In es, this message translates to:
+  /// **'Devuelto'**
+  String get salesColRefunded;
+
+  /// No description provided for @salesStatusCompleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Completada'**
+  String get salesStatusCompleted;
+
+  /// No description provided for @salesStatusPartiallyRefunded.
+  ///
+  /// In es, this message translates to:
+  /// **'Devolución parcial'**
+  String get salesStatusPartiallyRefunded;
+
+  /// No description provided for @salesStatusRefunded.
+  ///
+  /// In es, this message translates to:
+  /// **'Devuelta'**
+  String get salesStatusRefunded;
+
+  /// No description provided for @salesStatusVoided.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelada'**
+  String get salesStatusVoided;
+
+  /// No description provided for @salesDetailTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Venta {folio}'**
+  String salesDetailTitle(String folio);
+
+  /// No description provided for @salesDetailMeta.
+  ///
+  /// In es, this message translates to:
+  /// **'{date} · {branch} · {device} · atendió {cashier}'**
+  String salesDetailMeta(
+    String date,
+    String branch,
+    String device,
+    String cashier,
+  );
+
+  /// No description provided for @salesDetailLines.
+  ///
+  /// In es, this message translates to:
+  /// **'Productos'**
+  String get salesDetailLines;
+
+  /// No description provided for @salesLineName.
+  ///
+  /// In es, this message translates to:
+  /// **'{product} · {variant}'**
+  String salesLineName(String product, String variant);
+
+  /// No description provided for @salesLineQty.
+  ///
+  /// In es, this message translates to:
+  /// **'{quantity} × {price}'**
+  String salesLineQty(int quantity, String price);
+
+  /// No description provided for @salesLineDiscount.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuento {amount}'**
+  String salesLineDiscount(String amount);
+
+  /// No description provided for @salesLineRefunded.
+  ///
+  /// In es, this message translates to:
+  /// **'Devueltas: {quantity}'**
+  String salesLineRefunded(int quantity);
+
+  /// No description provided for @salesDetailDiscounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuentos'**
+  String get salesDetailDiscounts;
+
+  /// No description provided for @salesDiscountOrder.
+  ///
+  /// In es, this message translates to:
+  /// **'A toda la venta'**
+  String get salesDiscountOrder;
+
+  /// No description provided for @salesDiscountLine.
+  ///
+  /// In es, this message translates to:
+  /// **'Al renglón {lineNo}'**
+  String salesDiscountLine(int lineNo);
+
+  /// No description provided for @salesDiscountRow.
+  ///
+  /// In es, this message translates to:
+  /// **'{scope}: {value} = {amount} · {reason}'**
+  String salesDiscountRow(
+    String scope,
+    String value,
+    String amount,
+    String reason,
+  );
+
+  /// No description provided for @salesDiscountApproved.
+  ///
+  /// In es, this message translates to:
+  /// **'Autorizó: {name}'**
+  String salesDiscountApproved(String name);
+
+  /// No description provided for @salesDetailTaxes.
+  ///
+  /// In es, this message translates to:
+  /// **'Impuestos por tasa'**
+  String get salesDetailTaxes;
+
+  /// No description provided for @salesDetailPayment.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago'**
+  String get salesDetailPayment;
+
+  /// No description provided for @salesPaymentCash.
+  ///
+  /// In es, this message translates to:
+  /// **'Efectivo {amount} · recibido {tendered} · cambio {change}'**
+  String salesPaymentCash(String amount, String tendered, String change);
+
+  /// No description provided for @salesDetailVoided.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitados del ticket antes de cobrar'**
+  String get salesDetailVoided;
+
+  /// No description provided for @salesVoidedRow.
+  ///
+  /// In es, this message translates to:
+  /// **'{quantity} × {price} · {time} · {staff}'**
+  String salesVoidedRow(int quantity, String price, String time, String staff);
+
+  /// No description provided for @salesDetailRefunds.
+  ///
+  /// In es, this message translates to:
+  /// **'Devoluciones y cancelaciones'**
+  String get salesDetailRefunds;
+
+  /// No description provided for @salesRefundKindRefund.
+  ///
+  /// In es, this message translates to:
+  /// **'Devolución'**
+  String get salesRefundKindRefund;
+
+  /// No description provided for @salesRefundKindVoid.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelación'**
+  String get salesRefundKindVoid;
+
+  /// No description provided for @salesRefundRow.
+  ///
+  /// In es, this message translates to:
+  /// **'{kind} · {date} · {amount} · {reason}'**
+  String salesRefundRow(String kind, String date, String amount, String reason);
+
+  /// No description provided for @salesRefundLineRow.
+  ///
+  /// In es, this message translates to:
+  /// **'Renglón {lineNo}: {quantity} pza · {amount}'**
+  String salesRefundLineRow(int lineNo, int quantity, String amount);
+
+  /// No description provided for @salesNone.
+  ///
+  /// In es, this message translates to:
+  /// **'Ninguno'**
+  String get salesNone;
+
+  /// No description provided for @salesGross.
+  ///
+  /// In es, this message translates to:
+  /// **'Subtotal'**
+  String get salesGross;
+
+  /// No description provided for @salesDiscountTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuentos'**
+  String get salesDiscountTotal;
+
+  /// No description provided for @salesTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Total'**
+  String get salesTotal;
+
+  /// No description provided for @salesRefundedTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Devuelto'**
+  String get salesRefundedTotal;
+
+  /// No description provided for @deviceFolioPrefix.
+  ///
+  /// In es, this message translates to:
+  /// **'Prefijo de folio'**
+  String get deviceFolioPrefix;
+
+  /// No description provided for @salesDateRange.
+  ///
+  /// In es, this message translates to:
+  /// **'{from} – {to}'**
+  String salesDateRange(String from, String to);
 }
 
 class _AppLocalizationsDelegate
