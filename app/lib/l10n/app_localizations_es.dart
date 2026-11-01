@@ -705,4 +705,91 @@ class AppLocalizationsEs extends AppLocalizations {
   String auditApprovedBy(String name) {
     return 'autorizó $name';
   }
+
+  @override
+  String get settingsAppearance => 'Apariencia';
+
+  @override
+  String get settingsAppearanceBreadcrumb => 'Ajustes · Apariencia';
+
+  @override
+  String get settingsTheme => 'Tema';
+
+  @override
+  String get settingsThemeEspresso => 'Espresso';
+
+  @override
+  String get settingsThemeEspressoDesc => 'Oscuro cálido';
+
+  @override
+  String get settingsThemeCrema => 'Crema';
+
+  @override
+  String get settingsThemeCremaDesc => 'Claro suave';
+
+  @override
+  String get settingsThemeHighContrast => 'Alto contraste';
+
+  @override
+  String get settingsThemeHighContrastDesc => 'Máxima legibilidad';
+
+  @override
+  String get settingsThemeSystem => 'Automático';
+
+  @override
+  String get settingsThemeSystemDesc => 'Sigue al sistema';
+
+  @override
+  String get settingsAccentColor => 'Color de acento';
+
+  @override
+  String get settingsAccentAmber => 'Ámbar';
+
+  @override
+  String get settingsAccentWheat => 'Trigo';
+
+  @override
+  String get settingsAccentTerracotta => 'Terracota';
+
+  @override
+  String get settingsAccentMint => 'Menta';
+
+  @override
+  String get settingsAccentBerry => 'Mora';
+
+  @override
+  String get settingsTextSize => 'Tamaño de texto';
+
+  @override
+  String get settingsTextSizeNormal => 'Normal';
+
+  @override
+  String get settingsTextSizeLarge => 'Grande';
+
+  @override
+  String get settingsTextSizeExtraLarge => 'Muy grande';
+
+  @override
+  String get settingsButtonStyle => 'Estilo de botón de producto';
+
+  @override
+  String get settingsButtonStylePhotoAndName => 'Foto y nombre';
+
+  @override
+  String get settingsButtonStyleNameOnly => 'Solo nombre';
+
+  @override
+  String get settingsPreview => 'Vista previa';
+
+  @override
+  String get settingsPreviewProductName => 'Concha de vainilla';
+
+  @override
+  String get settingsPreviewProductPrice => '\$15.00';
+
+  @override
+  String get settingsPreviewSampleButton => 'Botón de muestra';
+
+  @override
+  String get settingsSaved => 'Ajustes guardados';
 }

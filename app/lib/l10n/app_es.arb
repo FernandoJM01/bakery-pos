@@ -284,5 +284,34 @@
         "type": "String"
       }
     }
-  }
+  },
+  "settingsAppearance": "Apariencia",
+  "settingsAppearanceBreadcrumb": "Ajustes · Apariencia",
+  "settingsTheme": "Tema",
+  "settingsThemeEspresso": "Espresso",
+  "settingsThemeEspressoDesc": "Oscuro cálido",
+  "settingsThemeCrema": "Crema",
+  "settingsThemeCremaDesc": "Claro suave",
+  "settingsThemeHighContrast": "Alto contraste",
+  "settingsThemeHighContrastDesc": "Máxima legibilidad",
+  "settingsThemeSystem": "Automático",
+  "settingsThemeSystemDesc": "Sigue al sistema",
+  "settingsAccentColor": "Color de acento",
+  "settingsAccentAmber": "Ámbar",
+  "settingsAccentWheat": "Trigo",
+  "settingsAccentTerracotta": "Terracota",
+  "settingsAccentMint": "Menta",
+  "settingsAccentBerry": "Mora",
+  "settingsTextSize": "Tamaño de texto",
+  "settingsTextSizeNormal": "Normal",
+  "settingsTextSizeLarge": "Grande",
+  "settingsTextSizeExtraLarge": "Muy grande",
+  "settingsButtonStyle": "Estilo de botón de producto",
+  "settingsButtonStylePhotoAndName": "Foto y nombre",
+  "settingsButtonStyleNameOnly": "Solo nombre",
+  "settingsPreview": "Vista previa",
+  "settingsPreviewProductName": "Concha de vainilla",
+  "settingsPreviewProductPrice": "$15.00",
+  "settingsPreviewSampleButton": "Botón de muestra",
+  "settingsSaved": "Ajustes guardados"
 }
