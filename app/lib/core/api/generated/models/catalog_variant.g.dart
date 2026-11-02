@@ -14,6 +14,7 @@ CatalogVariant _$CatalogVariantFromJson(Map<String, dynamic> json) =>
       sku: json['sku'] as String?,
       barcode: json['barcode'] as String?,
       priceCents: (json['priceCents'] as num).toInt(),
+      unitsPerTray: (json['unitsPerTray'] as num?)?.toInt(),
       sortOrder: (json['sortOrder'] as num).toInt(),
       isActive: json['isActive'] as bool,
     );
@@ -26,6 +27,7 @@ Map<String, dynamic> _$CatalogVariantToJson(CatalogVariant instance) =>
       'sku': ?instance.sku,
       'barcode': ?instance.barcode,
       'priceCents': instance.priceCents,
+      'unitsPerTray': ?instance.unitsPerTray,
       'sortOrder': instance.sortOrder,
       'isActive': instance.isActive,
     };

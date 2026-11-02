@@ -15,6 +15,8 @@ class VariantUpdate {
     this.sku,
     this.barcode,
     this.priceCents,
+    this.costCents,
+    this.unitsPerTray,
     this.sortOrder,
     this.isActive,
   });
@@ -26,6 +28,8 @@ class VariantUpdate {
   final String? sku;
   final String? barcode;
   final Cents? priceCents;
+  final Cents? costCents;
+  final int? unitsPerTray;
   final int? sortOrder;
   final bool? isActive;
 

@@ -150,6 +150,38 @@ enum AuditAction {
   @JsonValue('cash.note_added')
   undefined35('cash.note_added'),
 
+  /// Incorrect name has been replaced. Original name: `catalog.cost_changed`.
+  @JsonValue('catalog.cost_changed')
+  undefined36('catalog.cost_changed'),
+
+  /// Incorrect name has been replaced. Original name: `stock.production_entered`.
+  @JsonValue('stock.production_entered')
+  undefined37('stock.production_entered'),
+
+  /// Incorrect name has been replaced. Original name: `stock.waste_recorded`.
+  @JsonValue('stock.waste_recorded')
+  undefined38('stock.waste_recorded'),
+
+  /// Incorrect name has been replaced. Original name: `stock.transfer_sent`.
+  @JsonValue('stock.transfer_sent')
+  undefined39('stock.transfer_sent'),
+
+  /// Incorrect name has been replaced. Original name: `stock.transfer_received`.
+  @JsonValue('stock.transfer_received')
+  undefined40('stock.transfer_received'),
+
+  /// Incorrect name has been replaced. Original name: `stock.transfer_mismatch`.
+  @JsonValue('stock.transfer_mismatch')
+  undefined41('stock.transfer_mismatch'),
+
+  /// Incorrect name has been replaced. Original name: `stock.count_adjusted`.
+  @JsonValue('stock.count_adjusted')
+  undefined42('stock.count_adjusted'),
+
+  /// Incorrect name has been replaced. Original name: `stock.ledger_mismatch`.
+  @JsonValue('stock.ledger_mismatch')
+  undefined43('stock.ledger_mismatch'),
+
   /// Default value for all unparsed values, allows backward compatibility when adding new values on the backend.
   $unknown(null);
 

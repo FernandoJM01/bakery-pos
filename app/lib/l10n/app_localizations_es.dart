@@ -2000,4 +2000,210 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get auditCashNoteAdded => 'Nota en turno';
+
+  @override
+  String get stockInventory => 'Inventario';
+
+  @override
+  String stockHowMany(String name) {
+    return '¿Cuánto salió de $name?';
+  }
+
+  @override
+  String stockTrays(int count) {
+    return '$count charolas';
+  }
+
+  @override
+  String stockProduced(String name, int count) {
+    return '$count de $name registrados';
+  }
+
+  @override
+  String stockOnHand(int count) {
+    return 'En existencia: $count';
+  }
+
+  @override
+  String get stockRecordWaste => 'Registrar merma';
+
+  @override
+  String get stockCount => 'Contar inventario';
+
+  @override
+  String get stockCountHint =>
+      'Escribe las piezas que hay. Lo que dejes vacío no se cuenta.';
+
+  @override
+  String get stockWasteList => 'Para merma hoy';
+
+  @override
+  String stockLotLine(String date, int count) {
+    return '$count piezas, hechas el $date';
+  }
+
+  @override
+  String get stockConfirmWaste => 'Confirmar';
+
+  @override
+  String get stockByAge => 'Existencias';
+
+  @override
+  String stockAges(int fresh, int dayOld) {
+    return 'Frescos: $fresh · Día anterior: $dayOld';
+  }
+
+  @override
+  String get stockWasteIncomplete => 'Elige producto, piezas y motivo';
+
+  @override
+  String get stockProduct => 'Producto';
+
+  @override
+  String get stockUnits => 'Piezas';
+
+  @override
+  String get wasteReasonBurnt => 'Quemado';
+
+  @override
+  String get wasteReasonExpired => 'Caducado';
+
+  @override
+  String get wasteReasonDamaged => 'Dañado';
+
+  @override
+  String get wasteReasonUnsold => 'Sin vender';
+
+  @override
+  String saleDayOldOption(String name, int count) {
+    return '$name día anterior ($count)';
+  }
+
+  @override
+  String get saleDayOldTag => ' (día anterior)';
+
+  @override
+  String saleStockLow(String name) {
+    return 'Quedan pocas piezas de $name según el sistema';
+  }
+
+  @override
+  String get stockTransfers => 'Transferencias';
+
+  @override
+  String get stockWaste => 'Merma';
+
+  @override
+  String get stockEventProduction => 'Producción';
+
+  @override
+  String get stockEventSale => 'Venta';
+
+  @override
+  String get stockEventRefund => 'Devolución';
+
+  @override
+  String get stockEventWaste => 'Merma';
+
+  @override
+  String get stockEventTransferOut => 'Enviado a otra sucursal';
+
+  @override
+  String get stockEventTransferIn => 'Recibido de otra sucursal';
+
+  @override
+  String get stockEventCount => 'Ajuste por conteo';
+
+  @override
+  String stockCheckOk(String date) {
+    return 'Revisión nocturna correcta: $date';
+  }
+
+  @override
+  String stockCheckBad(int count) {
+    return 'La revisión nocturna encontró $count diferencias';
+  }
+
+  @override
+  String get stockEmpty => 'Todavía no hay movimientos de inventario';
+
+  @override
+  String get stockFresh => 'Frescos';
+
+  @override
+  String get stockDayOld => 'Día anterior';
+
+  @override
+  String get stockWasteDue => 'Para merma';
+
+  @override
+  String get stockTotal => 'Total';
+
+  @override
+  String get stockSendTransfer => 'Enviar a otra sucursal';
+
+  @override
+  String get stockNoTransfers => 'No hay transferencias';
+
+  @override
+  String get stockTransferFlagged => 'Lo recibido no coincide con lo enviado';
+
+  @override
+  String stockTransferLine(String from, String to) {
+    return 'De $from a $to';
+  }
+
+  @override
+  String stockTransferUnits(String name, String received, int sent) {
+    return '$name: enviadas $sent, recibidas $received';
+  }
+
+  @override
+  String get stockReceive => 'Recibir';
+
+  @override
+  String get stockReceiveHint =>
+      'Escribe lo que llegó. Si no coincide, queda marcado.';
+
+  @override
+  String stockReceiveField(String name, int sent) {
+    return '$name (enviadas $sent)';
+  }
+
+  @override
+  String get stockTransferIncomplete =>
+      'Elige dos sucursales y al menos un producto';
+
+  @override
+  String get stockNotEnough => 'No hay suficiente existencia para enviar';
+
+  @override
+  String get stockFromBranch => 'Sucursal que envía';
+
+  @override
+  String get stockToBranch => 'Sucursal que recibe';
+
+  @override
+  String stockTransferField(String name, int count) {
+    return '$name (hay $count)';
+  }
+
+  @override
+  String stockWasteTotal(String amount) {
+    return 'Costo de la merma: $amount';
+  }
+
+  @override
+  String get stockNoWaste => 'No hay merma registrada';
+
+  @override
+  String stockWasteLine(String reason, String date, int count) {
+    return '$count piezas · $reason · $date';
+  }
+
+  @override
+  String get catalogVariantCost => 'Costo (opcional)';
+
+  @override
+  String get catalogVariantTray => 'Piezas por charola (opcional)';
 }

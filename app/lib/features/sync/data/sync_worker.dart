@@ -11,6 +11,7 @@ import '../../../core/api/generated/models/sync_record.dart';
 import '../../../core/api/generated/models/sync_result_status.dart';
 import '../../../core/api/generated/sync/sync_api_client.dart';
 import '../../../core/storage/local_database.dart';
+import '../../stock/data/stock_repository.dart';
 import '../../till_catalog/data/till_catalog_repository.dart';
 
 /// Delivers the outbox and refreshes the catalog (M2 brief 4.3).
@@ -24,8 +25,10 @@ class SyncWorker extends ChangeNotifier {
     required this.db,
     required this.api,
     required this.catalog,
+    this.stock,
     DateTime Function()? clock,
     this.onCatalogUpdated,
+    this.onStockUpdated,
   }) : _clock = clock ?? DateTime.now;
 
   final AppDatabase db;
@@ -33,6 +36,8 @@ class SyncWorker extends ChangeNotifier {
   final TillCatalogRepository catalog;
   final DateTime Function() _clock;
   final VoidCallback? onCatalogUpdated;
+  final StockRepository? stock;
+  final VoidCallback? onStockUpdated;
 
   static const interval = Duration(seconds: 15);
   static const _backoff = [
@@ -97,6 +102,8 @@ class SyncWorker extends ChangeNotifier {
       await _pushAll();
       final applied = await catalog.pull();
       if (applied > 0) onCatalogUpdated?.call();
+      await stock?.pull();
+      onStockUpdated?.call();
       _failures = 0;
       _lastSuccessAt = _clock();
       return true;
@@ -180,7 +187,9 @@ final syncWorkerProvider = Provider<SyncWorker>((ref) {
     db: ref.watch(tillDatabaseProvider),
     api: ref.watch(restClientProvider).sync,
     catalog: ref.watch(tillCatalogRepositoryProvider),
+    stock: ref.watch(stockRepositoryProvider),
     onCatalogUpdated: () => ref.invalidate(tillCatalogProvider),
+    onStockUpdated: () => ref.invalidate(stockViewProvider),
   );
   ref.onDispose(worker.dispose);
   return worker;

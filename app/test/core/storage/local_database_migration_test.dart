@@ -69,7 +69,7 @@ void main() {
           .first
           .values
           .first;
-      expect(userVerAfter, 8);
+      expect(userVerAfter, 9);
 
       await appDb.close();
     });
@@ -123,7 +123,7 @@ void main() {
           .first
           .values
           .first;
-      expect(userVer, 8);
+      expect(userVer, 9);
 
       await appDb.close();
     });
@@ -201,11 +201,21 @@ void main() {
           reason: table,
         );
       }
-      expect(sqliteDb.select('PRAGMA user_version;').first.values.first, 8);
+      expect(sqliteDb.select('PRAGMA user_version;').first.values.first, 9);
       await appDb.close();
     });
 
     const salesV7 = '''
+      CREATE TABLE catalog_variants (
+        id TEXT NOT NULL PRIMARY KEY,
+        product_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        sku TEXT,
+        barcode TEXT,
+        price_cents INTEGER NOT NULL,
+        sort_order INTEGER NOT NULL,
+        is_active INTEGER NOT NULL
+      );
       CREATE TABLE local_sales (
         id TEXT NOT NULL PRIMARY KEY,
         folio TEXT NOT NULL UNIQUE,
@@ -228,11 +238,9 @@ void main() {
       VALUES ('s1', 'SUC1-01-000001', 1, 'c1', 'Ana', 0, 100, 0, 100, 100, 0);
     ''';
 
-    test(
-      'upgrades v7 to v8 and keeps the sales and refunds already stored',
-      () async {
-        final sqliteDb = sqlite3.openInMemory();
-        sqliteDb.execute('''
+    test('upgrades v7 to the current version and keeps the sales and refunds already stored', () async {
+      final sqliteDb = sqlite3.openInMemory();
+      sqliteDb.execute('''
         $salesV7
         CREATE TABLE local_refunds (
           id TEXT NOT NULL PRIMARY KEY,
@@ -252,19 +260,18 @@ void main() {
         VALUES ('r1', 's1', 'SUC1-01-000001', 'REFUND', 'OTHER', 'c1', 0, 100, '[]');
         PRAGMA user_version = 7;
       ''');
-        final appDb = AppDatabase(NativeDatabase.opened(sqliteDb));
-        final sale = (await appDb.select(appDb.localSales).get()).single;
-        expect(sale.folio, 'SUC1-01-000001');
-        expect(sale.shiftId, isNull);
-        final refund = (await appDb.select(appDb.localRefunds).get()).single;
-        expect(refund.shiftId, isNull);
-        expect(refund.ratesJson, '[]');
-        expect(await appDb.select(appDb.localShifts).get(), isEmpty);
-        await appDb.close();
-      },
-    );
+      final appDb = AppDatabase(NativeDatabase.opened(sqliteDb));
+      final sale = (await appDb.select(appDb.localSales).get()).single;
+      expect(sale.folio, 'SUC1-01-000001');
+      expect(sale.shiftId, isNull);
+      final refund = (await appDb.select(appDb.localRefunds).get()).single;
+      expect(refund.shiftId, isNull);
+      expect(refund.ratesJson, '[]');
+      expect(await appDb.select(appDb.localShifts).get(), isEmpty);
+      await appDb.close();
+    });
 
-    test('upgrades v6 to v8: refunds are new, sales gain the shift', () async {
+    test('upgrades v6 to the current version: refunds are new, sales gain the shift', () async {
       final sqliteDb = sqlite3.openInMemory();
       sqliteDb.execute('$salesV7 PRAGMA user_version = 6;');
       final appDb = AppDatabase(NativeDatabase.opened(sqliteDb));

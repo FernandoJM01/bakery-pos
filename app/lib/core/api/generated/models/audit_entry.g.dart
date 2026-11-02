@@ -70,5 +70,13 @@ const _$AuditActionEnumMap = {
   AuditAction.undefined33: 'cash.variance_flagged',
   AuditAction.undefined34: 'cash.drawer_opened',
   AuditAction.undefined35: 'cash.note_added',
+  AuditAction.undefined36: 'catalog.cost_changed',
+  AuditAction.undefined37: 'stock.production_entered',
+  AuditAction.undefined38: 'stock.waste_recorded',
+  AuditAction.undefined39: 'stock.transfer_sent',
+  AuditAction.undefined40: 'stock.transfer_received',
+  AuditAction.undefined41: 'stock.transfer_mismatch',
+  AuditAction.undefined42: 'stock.count_adjusted',
+  AuditAction.undefined43: 'stock.ledger_mismatch',
   AuditAction.$unknown: r'$unknown',
 };

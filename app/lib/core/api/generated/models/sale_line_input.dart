@@ -20,6 +20,8 @@ class SaleLineInput {
     required this.variantName,
     required this.quantity,
     required this.unitPriceCents,
+    required this.dayOld,
+    required this.fullPriceCents,
     required this.ivaRateId,
     required this.ivaBp,
     required this.iepsBp,
@@ -43,6 +45,12 @@ class SaleLineInput {
   final String variantName;
   final int quantity;
   final Cents unitPriceCents;
+
+  /// Sold from aged stock at the day-old price (M6.2)
+  final bool dayOld;
+
+  /// The price without the day-old reduction; equals `unitPriceCents` when not `dayOld`
+  final Cents fullPriceCents;
   final String ivaRateId;
   final BasisPoints ivaBp;
   final String? iepsRateId;

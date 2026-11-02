@@ -22,6 +22,8 @@ class Variant {
     required this.isActive,
     required this.updatedAt,
     required this.branchPrices,
+    this.costCents,
+    this.unitsPerTray,
   });
 
   factory Variant.fromJson(Map<String, Object?> json) =>
@@ -33,6 +35,8 @@ class Variant {
   final String? sku;
   final String? barcode;
   final Cents priceCents;
+  final Cents? costCents;
+  final int? unitsPerTray;
   final int sortOrder;
   final bool isActive;
   final DateTime updatedAt;

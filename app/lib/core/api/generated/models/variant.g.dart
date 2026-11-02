@@ -19,6 +19,8 @@ Variant _$VariantFromJson(Map<String, dynamic> json) => Variant(
   branchPrices: (json['branchPrices'] as List<dynamic>)
       .map((e) => BranchPrice.fromJson(e as Map<String, dynamic>))
       .toList(),
+  costCents: (json['costCents'] as num?)?.toInt(),
+  unitsPerTray: (json['unitsPerTray'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$VariantToJson(Variant instance) => <String, dynamic>{
@@ -28,6 +30,8 @@ Map<String, dynamic> _$VariantToJson(Variant instance) => <String, dynamic>{
   'sku': ?instance.sku,
   'barcode': ?instance.barcode,
   'priceCents': instance.priceCents,
+  'costCents': ?instance.costCents,
+  'unitsPerTray': ?instance.unitsPerTray,
   'sortOrder': instance.sortOrder,
   'isActive': instance.isActive,
   'updatedAt': instance.updatedAt.toIso8601String(),

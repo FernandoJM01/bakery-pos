@@ -30,13 +30,21 @@ class _VariantRow {
         text: original == null ? '' : centsToInput(original.priceCents),
       ),
       sku = TextEditingController(text: original?.sku),
-      barcode = TextEditingController(text: original?.barcode);
+      barcode = TextEditingController(text: original?.barcode),
+      cost = TextEditingController(
+        text: original?.costCents == null
+            ? ''
+            : centsToInput(original!.costCents!),
+      ),
+      tray = TextEditingController(text: original?.unitsPerTray?.toString());
 
   final Variant? original;
   final TextEditingController name;
   final TextEditingController price;
   final TextEditingController sku;
   final TextEditingController barcode;
+  final TextEditingController cost;
+  final TextEditingController tray;
   final branchPrices = <String, TextEditingController>{};
 
   TextEditingController branchPrice(String branchId) =>
@@ -50,7 +58,15 @@ class _VariantRow {
       });
 
   void dispose() {
-    for (final c in [name, price, sku, barcode, ...branchPrices.values]) {
+    for (final c in [
+      name,
+      price,
+      sku,
+      barcode,
+      cost,
+      tray,
+      ...branchPrices.values,
+    ]) {
       c.dispose();
     }
   }
@@ -251,7 +267,11 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
             );
             saved.add((r, v.id));
           } else {
-            await writes.patchVariant(original.id, body);
+            await writes.patchVariant(original.id, {
+              ...body,
+              'costCents': parseCents(r.cost.text),
+              'unitsPerTray': int.tryParse(r.tray.text),
+            });
             saved.add((r, original.id));
           }
         }
@@ -409,6 +429,16 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
                 ),
                 field(r.sku, l10n.catalogVariantSku, 'variant-sku'),
                 field(r.barcode, l10n.catalogVariantBarcode, 'variant-barcode'),
+                if (r.original != null) ...[
+                  field(
+                    r.cost,
+                    l10n.catalogVariantCost,
+                    'variant-cost',
+                    money: true,
+                    validator: (v) => _priceValidator(v, l10n, optional: true),
+                  ),
+                  field(r.tray, l10n.catalogVariantTray, 'variant-tray'),
+                ],
                 for (final b in branches)
                   field(
                     r.branchPrice(b.id),

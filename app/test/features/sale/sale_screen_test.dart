@@ -17,6 +17,7 @@ import 'package:bakery_pos/features/till_catalog/data/till_catalog_repository.da
 import 'package:bakery_pos/l10n/app_localizations.dart';
 import 'package:dio/dio.dart';
 import 'package:drift/native.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -352,6 +353,60 @@ void main() {
         await tester.runAsync(() => db.select(db.localSales).get()),
         isEmpty,
       );
+    },
+  );
+
+  testWidgets(
+    'F11: fresh and day-old are two buttons, each with its stock and price',
+    (tester) async {
+      await tester.runAsync(() async {
+        await seedTill(db);
+        await db
+            .update(db.catalogProducts)
+            .write(
+              const CatalogProductsCompanion(
+                dayOldDiscountAfterDays: Value(1),
+                dayOldDiscountBp: Value(3000),
+              ),
+            );
+        await db
+            .into(db.localLots)
+            .insert(
+              LocalLotsCompanion.insert(
+                id: 'old',
+                variantId: concha.variantId,
+                producedOn: '2020-01-01',
+                quantityLeft: 4,
+              ),
+            );
+      });
+      await pumpSale(
+        tester,
+        sessionOf(cashier, cashierPermissions),
+        seed: false,
+      );
+      await tester.tap(find.text('Concha'));
+      await settle(tester);
+      expect(find.byKey(Key('variant-${concha.variantId}')), findsOneWidget);
+      expect(find.text('Pieza día anterior (4)'), findsOneWidget);
+      expect(find.text(r'$10.50'), findsOneWidget);
+
+      await tester.tap(find.byKey(Key('dayold-${concha.variantId}')));
+      await settle(tester);
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(SaleScreen)),
+      );
+      final line = container.read(ticketProvider).lines.single;
+      expect(line.item.dayOld, isTrue);
+      expect(line.item.unitPriceCents, 1050);
+      expect(line.item.fullPriceCents, 1500);
+
+      // Tapping again without a fresh choice keeps two separate lines apart.
+      await tester.tap(find.text('Concha').first);
+      await settle(tester);
+      await tester.tap(find.byKey(Key('variant-${concha.variantId}')));
+      await settle(tester);
+      expect(container.read(ticketProvider).lines, hasLength(2));
     },
   );
 

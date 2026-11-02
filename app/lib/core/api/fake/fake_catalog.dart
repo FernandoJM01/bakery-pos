@@ -70,7 +70,24 @@ class FakeCatalog {
     'shift.opened',
     'cash.movement',
     'shift.closed',
+    'stock.produced',
+    'stock.wasted',
+    'stock.counted',
   };
+
+  /// Back office stock rows, as tests seed them.
+  final List<Map<String, dynamic>> stockLevels = [];
+  final List<Map<String, dynamic>> stockEvents = [];
+  final List<Map<String, dynamic>> waste = [];
+  final List<Map<String, dynamic>> transfers = [];
+  Map<String, dynamic> stockCheck = {
+    'checkedAt': null,
+    'rowsChecked': 0,
+    'mismatches': 0,
+  };
+
+  /// `BranchLot` rows, as tests seed them.
+  final List<Map<String, dynamic>> lots = [];
 
   /// `ShiftDetail` rows, as tests seed them.
   final List<Map<String, dynamic>> shifts = [];
@@ -394,6 +411,44 @@ class FakeCatalog {
         photoIds.add(id);
         return _ok({'id': id, 'width': 800, 'height': 800, 'bytes': 1024}, 201);
 
+      case ('GET', ['stock', 'levels']):
+        return _ok({'items': stockLevels});
+      case ('GET', ['stock', 'checks', 'latest']):
+        return _ok(stockCheck);
+      case ('GET', ['stock', 'events']):
+        return _ok({'items': stockEvents, 'nextCursor': null});
+      case ('GET', ['stock', 'waste']):
+        return _ok({
+          'items': waste,
+          'nextCursor': null,
+          'totalCostCents': waste.fold<int>(
+            0,
+            (a, w) =>
+                a + (w['quantity'] as int) * ((w['costCents'] as int?) ?? 0),
+          ),
+        });
+      case ('GET', ['stock', 'transfers']):
+        return _ok({'items': transfers, 'nextCursor': null});
+      case ('POST', ['stock', 'transfers', final id, 'receive']):
+        final t = transfers.firstWhere((x) => x['id'] == id);
+        final given = ((body as Map)['lines'] as List).cast<Map>();
+        var flagged = false;
+        for (final (i, l) in (t['lines'] as List).cast<Map>().indexed) {
+          l['quantityReceived'] = given[i]['quantityReceived'];
+          if (l['quantityReceived'] != l['quantitySent']) flagged = true;
+        }
+        t
+          ..['status'] = 'RECEIVED'
+          ..['receivedAt'] = DateTime.now().toUtc().toIso8601String()
+          ..['receivedByStaffId'] = t['sentByStaffId']
+          ..['flagged'] = flagged;
+        return _ok(t);
+      case ('GET', ['stock', 'lots']):
+        return _ok({
+          'generatedAt': DateTime.now().toUtc().toIso8601String(),
+          'lots': lots,
+          'shortages': <Object>[],
+        });
       case ('GET', ['shifts']):
         final flagged = query['flagged']?.toString() == 'true';
         return _ok({
@@ -556,6 +611,8 @@ class FakeCatalog {
       for (final l in (p['lines'] as List).cast<Map>())
         {
           ...Map<String, dynamic>.from(l)..remove('discount'),
+          'dayOld': l['dayOld'] ?? false,
+          'fullPriceCents': l['fullPriceCents'] ?? l['unitPriceCents'],
           'refundedQuantity': l['refundedQuantity'] ?? 0,
           'refundedCents': l['refundedCents'] ?? 0,
         },

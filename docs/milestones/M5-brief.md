@@ -68,16 +68,16 @@ The Producción section shows products as large buttons. Tap a product, tap a qu
 Each morning the manager's Inventario on the till lists lots at or past `dayOldWasteAfterDays`. Confirm writes waste with reason `EXPIRED`; a lot can be skipped, and it stays on the list.
 
 ### 4.5 Transfers
-Send: pick the other branch, products and units. Receive: the other branch sees it as pending and enters what arrived. These two need the server, so they are online-only in this milestone; the till says so when offline.
+Send: pick the two branches, products and units. Receive: the other branch sees it as pending and enters what arrived. Both need the server, so they live in the back office in this milestone.
 
 ### 4.6 Counts
 A manager opens a count, enters units per variant, and confirms. Differences are applied to the oldest lots when lowering, and to a new lot dated today when raising.
 
 ## 5. Screens
 
-Till: **Producción** (buttons, today's entries). **Ventas** gains the day-old button with its price and a warning when stock looks out. **Inventario** for managers (stock by age, waste list, count, transfers).
+Till: **Producción** (buttons with on-hand). **Ventas** gains the day-old button with its price and a warning when stock looks out. **Inventario** beside Producción for managers (stock by age, waste list, waste, count).
 
-Back office: **Inventario** (stock by branch, ledger for a product, transfers, last nightly check), **Merma** (waste by date, product, reason and cost). Product form gains cost and units per tray.
+Back office: **Inventario**, with tabs for stock (by branch, each product's ledger, last nightly check), transfers (send and receive) and waste (with cost). The product form gains cost and units per tray for existing variants.
 
 ## 6. Acceptance
 

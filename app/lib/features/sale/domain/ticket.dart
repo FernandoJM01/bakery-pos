@@ -28,7 +28,9 @@ class SaleItem {
     required this.ivaBp,
     this.iepsRateId,
     this.iepsBp = 0,
-  });
+    this.dayOld = false,
+    int? fullPriceCents,
+  }) : fullPriceCents = fullPriceCents ?? unitPriceCents;
 
   final String variantId;
   final String productName;
@@ -39,7 +41,15 @@ class SaleItem {
   final String? iepsRateId;
   final int iepsBp;
 
+  /// Sold from aged stock at the day-old price (M6.2).
+  final bool dayOld;
+
+  /// The price before the day-old reduction.
+  final int fullPriceCents;
+
   Map<String, Object?> toJson() => {
+    'dayOld': dayOld,
+    'fullPriceCents': fullPriceCents,
     'variantId': variantId,
     'productName': productName,
     'variantName': variantName,
@@ -59,6 +69,8 @@ class SaleItem {
     ivaBp: j['ivaBp'] as int,
     iepsRateId: j['iepsRateId'] as String?,
     iepsBp: j['iepsBp'] as int? ?? 0,
+    dayOld: j['dayOld'] as bool? ?? false,
+    fullPriceCents: j['fullPriceCents'] as int?,
   );
 }
 
@@ -329,7 +341,9 @@ class TicketNotifier extends Notifier<Ticket> {
   /// One more unit of [item]: a new line, or the same line again when the
   /// variant is already on the ticket.
   void add(SaleItem item) {
-    final i = state.lines.indexWhere((l) => l.item.variantId == item.variantId);
+    final i = state.lines.indexWhere(
+      (l) => l.item.variantId == item.variantId && l.item.dayOld == item.dayOld,
+    );
     if (i < 0) {
       state = state.copyWith(
         lines: [
