@@ -4,6 +4,7 @@ import { v7 as uuidv7 } from 'uuid';
 import { ClockService } from '../common/clock.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { SaleSyncService } from '../sales/sale-sync.service';
+import { ShiftSyncService } from '../shifts/shift-sync.service';
 import { OfflineAuditPayloadDto, SyncRecordDto } from './dto/sync.dto';
 import {
   checkApprover,
@@ -40,6 +41,7 @@ export class SyncPushService {
     private readonly prisma: PrismaService,
     private readonly clock: ClockService,
     private readonly sales: SaleSyncService,
+    private readonly shifts: ShiftSyncService,
   ) {}
 
   async push(device: Device, records: SyncRecordDto[]) {
@@ -140,6 +142,12 @@ export class SyncPushService {
         return this.sales.planCompleted(device, record);
       case 'sale.refunded':
         return this.sales.planRefunded(device, record);
+      case 'shift.opened':
+        return this.shifts.planOpened(device, record);
+      case 'cash.movement':
+        return this.shifts.planMovement(device, record);
+      case 'shift.closed':
+        return this.shifts.planClosed(device, record);
       default:
         return {
           ok: false,

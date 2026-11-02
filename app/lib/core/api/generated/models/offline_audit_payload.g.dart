@@ -35,5 +35,6 @@ const _$OfflineAuditPayloadActionEnumMap = {
   OfflineAuditPayloadAction.undefined2: 'auth.locked',
   OfflineAuditPayloadAction.undefined3: 'auth.approval_granted',
   OfflineAuditPayloadAction.undefined4: 'sale.ticket_discarded',
+  OfflineAuditPayloadAction.undefined5: 'cash.drawer_opened',
   OfflineAuditPayloadAction.$unknown: r'$unknown',
 };

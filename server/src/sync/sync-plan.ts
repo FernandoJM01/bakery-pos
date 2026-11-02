@@ -1,4 +1,4 @@
-import { Prisma, Role, Staff, StaffBranch } from '@prisma/client';
+import { CashShift, Prisma, Role, Staff, StaffBranch } from '@prisma/client';
 import { ClassConstructor, plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { PERMISSION_KEYS, PermissionKey } from '../common/permissions';
@@ -129,6 +129,26 @@ export async function checkApprover(
     return rejected('Approver lacks permission for this action');
   }
   return approver;
+}
+
+/**
+ * The shift a sale, refund or movement names: this device's, and not closed
+ * before the record happened (M4 brief 4.6).
+ */
+export async function checkShift(
+  db: Pick<Prisma.TransactionClient, 'cashShift'>,
+  deviceId: string,
+  shiftId: string,
+  occurredAt: Date,
+): Promise<CashShift | Rejection> {
+  const shift = await db.cashShift.findUnique({ where: { id: shiftId } });
+  if (!shift || shift.deviceId !== deviceId) {
+    return rejected('Shift not found on this device');
+  }
+  if (shift.closedAt && occurredAt > shift.closedAt) {
+    return rejected('The shift was already closed');
+  }
+  return shift;
 }
 
 export function isRejection(x: unknown): x is Rejection {

@@ -44,6 +44,26 @@ String auditActionLabel(AuditAction action, AppLocalizations l10n) {
       return l10n.auditBranchCreated;
     case 'branch.updated':
       return l10n.auditBranchUpdated;
+    case 'sale.discount_over_limit':
+      return l10n.auditSaleDiscountOverLimit;
+    case 'sale.refunded':
+      return l10n.auditSaleRefunded;
+    case 'sale.voided':
+      return l10n.auditSaleVoided;
+    case 'sale.ticket_discarded':
+      return l10n.auditSaleTicketDiscarded;
+    case 'cash.shift_opened':
+      return l10n.auditCashShiftOpened;
+    case 'cash.movement':
+      return l10n.auditCashMovement;
+    case 'cash.shift_closed':
+      return l10n.auditCashShiftClosed;
+    case 'cash.variance_flagged':
+      return l10n.auditCashVarianceFlagged;
+    case 'cash.drawer_opened':
+      return l10n.auditCashDrawerOpened;
+    case 'cash.note_added':
+      return l10n.auditCashNoteAdded;
     default:
       return action.json ?? action.name;
   }

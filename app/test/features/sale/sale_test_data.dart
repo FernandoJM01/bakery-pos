@@ -113,4 +113,19 @@ Future<void> seedTill(
     }
   });
   if (prefix != null) await db.setSessionValue(folioPrefixKey, prefix);
+  await openTestShift(db);
 }
+
+/// An open shift, so the till may sell (M4.1).
+Future<void> openTestShift(AppDatabase db) => db
+    .into(db.localShifts)
+    .insert(
+      LocalShiftsCompanion.insert(
+        id: 'test-shift',
+        status: 'OPEN',
+        openedAt: DateTime.utc(2026),
+        openedByStaffId: cashier.id,
+        openedByName: cashier.displayName,
+        floatCents: 0,
+      ),
+    );

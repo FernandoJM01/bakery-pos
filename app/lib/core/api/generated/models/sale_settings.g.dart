@@ -6,8 +6,13 @@ part of 'sale_settings.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-SaleSettings _$SaleSettingsFromJson(Map<String, dynamic> json) =>
-    SaleSettings(discountLimitBp: (json['discountLimitBp'] as num).toInt());
+SaleSettings _$SaleSettingsFromJson(Map<String, dynamic> json) => SaleSettings(
+  discountLimitBp: (json['discountLimitBp'] as num).toInt(),
+  cashVarianceFlagCents: (json['cashVarianceFlagCents'] as num).toInt(),
+);
 
 Map<String, dynamic> _$SaleSettingsToJson(SaleSettings instance) =>
-    <String, dynamic>{'discountLimitBp': instance.discountLimitBp};
+    <String, dynamic>{
+      'discountLimitBp': instance.discountLimitBp,
+      'cashVarianceFlagCents': instance.cashVarianceFlagCents,
+    };

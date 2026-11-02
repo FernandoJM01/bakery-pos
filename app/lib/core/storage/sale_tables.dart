@@ -7,6 +7,9 @@ class LocalSales extends Table {
   TextColumn get id => text()();
   TextColumn get folio => text().unique()();
   IntColumn get folioNumber => integer().unique()();
+
+  /// Null only on sales from before shifts (M4).
+  TextColumn get shiftId => text().nullable()();
   TextColumn get cashierStaffId => text()();
   TextColumn get cashierName => text()();
   DateTimeColumn get occurredAt => dateTime()();
@@ -96,6 +99,9 @@ class LocalRefunds extends Table {
   TextColumn get saleId => text()();
   TextColumn get folio => text()();
 
+  /// The shift of this till that paid the money (M4).
+  TextColumn get shiftId => text().nullable()();
+
   /// `REFUND` or `VOID`.
   TextColumn get kind => text()();
   TextColumn get reason => text()();
@@ -107,6 +113,10 @@ class LocalRefunds extends Table {
 
   /// The refund lines, as the outbox payload's `lines`.
   TextColumn get linesJson => text()();
+
+  /// `lineNo`, `ivaBp` and `iepsBp` per line, for the Z report: a sale made
+  /// on another till has no lines here to read them from.
+  TextColumn get ratesJson => text().withDefault(const Constant('[]'))();
 
   @override
   Set<Column> get primaryKey => {id};

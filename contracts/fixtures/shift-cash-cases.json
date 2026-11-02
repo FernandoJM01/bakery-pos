@@ -1,0 +1,202 @@
+{
+  "description": "Shared cases for expected cash in M4 brief section 4.3 (acceptance test E3). Both server and app tests must reproduce every row.",
+  "cases": [
+    {
+      "name": "Balanced shift, float only",
+      "floatCents": 100000,
+      "saleAmountsCents": [],
+      "cashInCents": [],
+      "cashOutCents": [],
+      "refundsCents": [],
+      "countedCents": 100000,
+      "cashVarianceFlagCents": 5000,
+      "expected": {
+        "expectedCents": 100000,
+        "varianceCents": 0,
+        "flagged": false
+      }
+    },
+    {
+      "name": "Sales with exact count",
+      "floatCents": 100000,
+      "saleAmountsCents": [
+        4550,
+        2200,
+        12000
+      ],
+      "cashInCents": [],
+      "cashOutCents": [],
+      "refundsCents": [],
+      "countedCents": 118750,
+      "cashVarianceFlagCents": 5000,
+      "expected": {
+        "expectedCents": 118750,
+        "varianceCents": 0,
+        "flagged": false
+      }
+    },
+    {
+      "name": "Movements and a refund",
+      "floatCents": 100000,
+      "saleAmountsCents": [
+        50000,
+        25000
+      ],
+      "cashInCents": [
+        20000
+      ],
+      "cashOutCents": [
+        30000,
+        5000
+      ],
+      "refundsCents": [
+        2200
+      ],
+      "countedCents": 157800,
+      "cashVarianceFlagCents": 5000,
+      "expected": {
+        "expectedCents": 157800,
+        "varianceCents": 0,
+        "flagged": false
+      }
+    },
+    {
+      "name": "Short by exactly the limit: not flagged",
+      "floatCents": 100000,
+      "saleAmountsCents": [
+        10000
+      ],
+      "cashInCents": [],
+      "cashOutCents": [],
+      "refundsCents": [],
+      "countedCents": 105000,
+      "cashVarianceFlagCents": 5000,
+      "expected": {
+        "expectedCents": 110000,
+        "varianceCents": -5000,
+        "flagged": false
+      }
+    },
+    {
+      "name": "Short by one centavo past the limit: flagged",
+      "floatCents": 100000,
+      "saleAmountsCents": [
+        10000
+      ],
+      "cashInCents": [],
+      "cashOutCents": [],
+      "refundsCents": [],
+      "countedCents": 104999,
+      "cashVarianceFlagCents": 5000,
+      "expected": {
+        "expectedCents": 110000,
+        "varianceCents": -5001,
+        "flagged": true
+      }
+    },
+    {
+      "name": "Over by exactly the limit: not flagged",
+      "floatCents": 100000,
+      "saleAmountsCents": [
+        10000
+      ],
+      "cashInCents": [],
+      "cashOutCents": [],
+      "refundsCents": [],
+      "countedCents": 115000,
+      "cashVarianceFlagCents": 5000,
+      "expected": {
+        "expectedCents": 110000,
+        "varianceCents": 5000,
+        "flagged": false
+      }
+    },
+    {
+      "name": "Over by one centavo past the limit: flagged",
+      "floatCents": 100000,
+      "saleAmountsCents": [
+        10000
+      ],
+      "cashInCents": [],
+      "cashOutCents": [],
+      "refundsCents": [],
+      "countedCents": 115001,
+      "cashVarianceFlagCents": 5000,
+      "expected": {
+        "expectedCents": 110000,
+        "varianceCents": 5001,
+        "flagged": true
+      }
+    },
+    {
+      "name": "Refunds beyond sales from another till's sale",
+      "floatCents": 50000,
+      "saleAmountsCents": [],
+      "cashInCents": [],
+      "cashOutCents": [],
+      "refundsCents": [
+        60000
+      ],
+      "countedCents": 0,
+      "cashVarianceFlagCents": 5000,
+      "expected": {
+        "expectedCents": -10000,
+        "varianceCents": 10000,
+        "flagged": true
+      }
+    },
+    {
+      "name": "Bank drop empties the drawer, expected can reach zero",
+      "floatCents": 100000,
+      "saleAmountsCents": [
+        20000
+      ],
+      "cashInCents": [],
+      "cashOutCents": [
+        120000
+      ],
+      "refundsCents": [],
+      "countedCents": 0,
+      "cashVarianceFlagCents": 5000,
+      "expected": {
+        "expectedCents": 0,
+        "varianceCents": 0,
+        "flagged": false
+      }
+    },
+    {
+      "name": "Zero-total sale changes nothing",
+      "floatCents": 100000,
+      "saleAmountsCents": [
+        0
+      ],
+      "cashInCents": [],
+      "cashOutCents": [],
+      "refundsCents": [],
+      "countedCents": 100000,
+      "cashVarianceFlagCents": 5000,
+      "expected": {
+        "expectedCents": 100000,
+        "varianceCents": 0,
+        "flagged": false
+      }
+    },
+    {
+      "name": "Custom limit",
+      "floatCents": 0,
+      "saleAmountsCents": [
+        1000
+      ],
+      "cashInCents": [],
+      "cashOutCents": [],
+      "refundsCents": [],
+      "countedCents": 900,
+      "cashVarianceFlagCents": 50,
+      "expected": {
+        "expectedCents": 1000,
+        "varianceCents": -100,
+        "flagged": true
+      }
+    }
+  ]
+}

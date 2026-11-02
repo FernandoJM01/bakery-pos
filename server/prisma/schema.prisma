@@ -46,6 +46,7 @@ model Branch {
   devices       Device[]
   auditLogs     AuditLog[]
   sales         Sale[]
+  shifts        CashShift[]
   branchPrices  BranchPrice[]
 
   @@map("branch")
@@ -81,6 +82,10 @@ model Staff {
   resolvedQuarantine SyncQuarantine[] @relation("QuarantineResolvedBy")
   sales              Sale[]           @relation("SaleCashier")
   refunds            Refund[]         @relation("RefundStaff")
+  openedShifts       CashShift[]      @relation("ShiftOpenedBy")
+  closedShifts       CashShift[]      @relation("ShiftClosedBy")
+  cashMovements      CashMovement[]
+  cashShiftNotes     CashShiftNote[]
 
   @@map("staff")
 }
@@ -142,6 +147,7 @@ model Device {
   approvals    Approval[]
   sales        Sale[]
   refunds      Refund[]
+  shifts       CashShift[]
   syncInbox    SyncInbox[]
 
   @@unique([branchId, tillNumber])
@@ -435,6 +441,7 @@ model Sale {
   device      Device           @relation(fields: [deviceId], references: [id], onDelete: Restrict)
   branch      Branch           @relation(fields: [branchId], references: [id], onDelete: Restrict)
   cashier     Staff            @relation("SaleCashier", fields: [cashierStaffId], references: [id], onDelete: Restrict)
+  shift       CashShift?       @relation(fields: [shiftId], references: [id], onDelete: Restrict)
   lines       SaleLine[]
   discounts   SaleDiscount[]
   voidedLines SaleVoidedLine[]
@@ -444,6 +451,7 @@ model Sale {
   @@unique([deviceId, folioNumber])
   @@index([branchId, occurredAt])
   @@index([occurredAt])
+  @@index([shiftId])
   @@map("sale")
 }
 
@@ -530,6 +538,7 @@ model Refund {
   reason          String     @db.VarChar(30)
   note            String?    @db.VarChar(120)
   deviceId        String     @map("device_id") @db.Uuid
+  shiftId         String?    @map("shift_id") @db.Uuid
   staffId         String     @map("staff_id") @db.Uuid
   approverStaffId String?    @map("approver_staff_id") @db.Uuid
   occurredAt      DateTime   @map("occurred_at") @db.Timestamptz(6)
@@ -539,9 +548,11 @@ model Refund {
   sale   Sale         @relation(fields: [saleId], references: [id], onDelete: Cascade)
   device Device       @relation(fields: [deviceId], references: [id], onDelete: Restrict)
   staff  Staff        @relation("RefundStaff", fields: [staffId], references: [id], onDelete: Restrict)
+  shift  CashShift?   @relation(fields: [shiftId], references: [id], onDelete: Restrict)
   lines  RefundLine[]
 
   @@index([saleId])
+  @@index([shiftId])
   @@map("refund")
 }
 
@@ -559,4 +570,100 @@ model RefundLine {
 
   @@id([refundId, lineNo])
   @@map("refund_line")
+}
+
+enum ShiftStatus {
+  OPEN
+  CLOSED
+}
+
+enum CashMovementKind {
+  IN
+  OUT
+}
+
+enum CashCountStage {
+  OPEN
+  CLOSE
+}
+
+/// One drawer from opening float to Z report (M4). The id comes from the till.
+/// A partial unique index allows one OPEN shift per device.
+model CashShift {
+  id              String      @id @db.Uuid
+  deviceId        String      @map("device_id") @db.Uuid
+  branchId        String      @map("branch_id") @db.Uuid
+  status          ShiftStatus @default(OPEN)
+  zNumber         Int?        @map("z_number")
+  openedAt        DateTime    @map("opened_at") @db.Timestamptz(6)
+  openedByStaffId String      @map("opened_by_staff_id") @db.Uuid
+  floatCents      Int         @map("float_cents")
+  closedAt        DateTime?   @map("closed_at") @db.Timestamptz(6)
+  closedByStaffId String?     @map("closed_by_staff_id") @db.Uuid
+  expectedCents   Int?        @map("expected_cents")
+  countedCents    Int?        @map("counted_cents")
+  varianceCents   Int?        @map("variance_cents")
+  flagged         Boolean     @default(false)
+  note            String?     @db.VarChar(500)
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  device    Device          @relation(fields: [deviceId], references: [id], onDelete: Restrict)
+  branch    Branch          @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  openedBy  Staff           @relation("ShiftOpenedBy", fields: [openedByStaffId], references: [id], onDelete: Restrict)
+  closedBy  Staff?          @relation("ShiftClosedBy", fields: [closedByStaffId], references: [id], onDelete: Restrict)
+  movements CashMovement[]
+  counts    CashCount[]
+  notes     CashShiftNote[]
+  sales     Sale[]
+  refunds   Refund[]
+
+  @@unique([deviceId, zNumber])
+  @@index([branchId, openedAt])
+  @@index([openedAt])
+  @@map("cash_shift")
+}
+
+model CashMovement {
+  id              String           @id @db.Uuid
+  shiftId         String           @map("shift_id") @db.Uuid
+  kind            CashMovementKind
+  amountCents     Int              @map("amount_cents")
+  reason          String           @db.VarChar(30)
+  note            String?          @db.VarChar(120)
+  staffId         String           @map("staff_id") @db.Uuid
+  approverStaffId String?          @map("approver_staff_id") @db.Uuid
+  occurredAt      DateTime         @map("occurred_at") @db.Timestamptz(6)
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  shift CashShift @relation(fields: [shiftId], references: [id], onDelete: Restrict)
+  staff Staff     @relation(fields: [staffId], references: [id], onDelete: Restrict)
+
+  @@index([shiftId])
+  @@map("cash_movement")
+}
+
+model CashCount {
+  shiftId           String         @map("shift_id") @db.Uuid
+  stage             CashCountStage
+  denominationCents Int            @map("denomination_cents")
+  quantity          Int
+
+  shift CashShift @relation(fields: [shiftId], references: [id], onDelete: Restrict)
+
+  @@id([shiftId, stage, denominationCents])
+  @@map("cash_count")
+}
+
+model CashShiftNote {
+  id        String   @id @db.Uuid
+  shiftId   String   @map("shift_id") @db.Uuid
+  staffId   String   @map("staff_id") @db.Uuid
+  note      String   @db.VarChar(500)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  shift CashShift @relation(fields: [shiftId], references: [id], onDelete: Restrict)
+  staff Staff     @relation(fields: [staffId], references: [id], onDelete: Restrict)
+
+  @@index([shiftId])
+  @@map("cash_shift_note")
 }

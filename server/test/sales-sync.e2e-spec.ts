@@ -37,6 +37,7 @@ interface Till {
   id: string;
   prefix: string;
   next: number;
+  shiftId: string;
 }
 
 interface LineSpec {
@@ -66,6 +67,13 @@ describe('Sales sync (e2e)', () => {
   const password = 'SalesPass123!';
 
   async function push(token: string, records: unknown[]) {
+    // A refund comes out of the shift of the till that pushes it.
+    const shiftId = [tillA, tillB, tillOther].find(
+      (t) => t.token === token,
+    )?.shiftId;
+    for (const r of records as { payload?: Record<string, unknown> }[]) {
+      if (r.payload?.shiftId === 'of-this-till') r.payload.shiftId = shiftId;
+    }
     const res = await request(server)
       .post('/v1/sync/push')
       .set('X-Device-Token', token)
@@ -125,7 +133,7 @@ describe('Sales sync (e2e)', () => {
       folio: `${till.prefix}-${String(folioNumber).padStart(6, '0')}`,
       folioNumber,
       cashierStaffId: opts.cashier ?? cashierId,
-      shiftId: null,
+      shiftId: till.shiftId,
       lines: lines.map((l, i) => ({
         variantId: l.variant.id,
         productName: 'Producto',
@@ -195,6 +203,7 @@ describe('Sales sync (e2e)', () => {
     });
     const payload: Record<string, unknown> = {
       saleId,
+      shiftId: 'of-this-till',
       kind: opts.kind ?? 'REFUND',
       reason: 'CUSTOMER_RETURN',
       note: null,
@@ -248,7 +257,7 @@ describe('Sales sync (e2e)', () => {
     cashierId = (await staff(Role.CASHIER, branchId)).id;
     otherBranchCashierId = (await staff(Role.CASHIER, otherBranch)).id;
 
-    const till = async (inBranch: string): Promise<Till> => {
+    const till = async (inBranch: string, opener: string): Promise<Till> => {
       const token = randomBytes(32).toString('hex');
       const device = await prisma.device.create({
         data: {
@@ -263,11 +272,27 @@ describe('Sales sync (e2e)', () => {
           ),
         },
       });
-      return { token, id: device.id, prefix: device.folioPrefix!, next: 1 };
+      const shift = await prisma.cashShift.create({
+        data: {
+          id: uuidv7(),
+          deviceId: device.id,
+          branchId: inBranch,
+          openedAt: new Date(0),
+          openedByStaffId: opener,
+          floatCents: 0,
+        },
+      });
+      return {
+        token,
+        id: device.id,
+        prefix: device.folioPrefix!,
+        next: 1,
+        shiftId: shift.id,
+      };
     };
-    tillA = await till(branchId);
-    tillB = await till(branchId);
-    tillOther = await till(otherBranch);
+    tillA = await till(branchId, cashierId);
+    tillB = await till(branchId, cashierId);
+    tillOther = await till(otherBranch, otherBranchCashierId);
 
     const category = await prisma.category.create({
       data: { id: uuidv7(), name: `Ventas ${tag()}` },
@@ -353,7 +378,7 @@ describe('Sales sync (e2e)', () => {
     expect(bundle.status).toBe(200);
     expect(bundle.body).toMatchObject({
       folioPrefix: `${branchCode}-02`,
-      saleSettings: { discountLimitBp: 1000 },
+      saleSettings: { discountLimitBp: 1000, cashVarianceFlagCents: 5000 },
     });
     expect(
       validateResponseAgainstContract({

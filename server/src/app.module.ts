@@ -20,6 +20,7 @@ import { CatalogModule } from './catalog/catalog.module';
 import { PhotosModule } from './photos/photos.module';
 import { SyncModule } from './sync/sync.module';
 import { SalesModule } from './sales/sales.module';
+import { ShiftsModule } from './shifts/shifts.module';
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { SalesModule } from './sales/sales.module';
     PhotosModule,
     SyncModule,
     SalesModule,
+    ShiftsModule,
     HealthModule,
   ],
   providers: [

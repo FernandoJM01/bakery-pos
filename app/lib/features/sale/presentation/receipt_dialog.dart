@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/money/money.dart';
 import '../../../core/storage/secure_storage.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimensions.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/sale_repository.dart';
@@ -18,13 +19,52 @@ String formatReceiptDate(DateTime at) {
 
 /// The receipt on screen (M3 brief 4.1): exactly what the printed ticket
 /// will show in Sprint 4.
-class ReceiptDialog extends ConsumerWidget {
-  const ReceiptDialog({super.key, required this.receipt});
+class ReceiptDialog extends ConsumerStatefulWidget {
+  const ReceiptDialog({
+    super.key,
+    required this.receipt,
+    this.firstPrint,
+    this.onPrint,
+  });
 
   final SaleReceipt receipt;
 
+  /// The print started with the sale; false when it failed (E11).
+  final Future<bool>? firstPrint;
+  final Future<bool> Function()? onPrint;
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ReceiptDialog> createState() => _ReceiptDialogState();
+}
+
+class _ReceiptDialogState extends ConsumerState<ReceiptDialog> {
+  bool _printFailed = false;
+  bool _printing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.firstPrint?.then((ok) {
+      if (mounted) setState(() => _printFailed = !ok);
+    });
+  }
+
+  Future<void> _reprint() async {
+    setState(() {
+      _printing = true;
+      _printFailed = false;
+    });
+    final ok = await widget.onPrint!();
+    if (!mounted) return;
+    setState(() {
+      _printing = false;
+      _printFailed = !ok;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final receipt = widget.receipt;
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final branch = ref.watch(enrolledBranchNameProvider).value;
@@ -129,11 +169,28 @@ class ReceiptDialog extends ConsumerWidget {
                 key: const Key('receipt-change'),
                 style: theme.textTheme.titleMedium,
               ),
+              if (_printFailed)
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: AppDimensions.paddingSmall,
+                  ),
+                  child: Text(
+                    l10n.printFailed,
+                    key: const Key('receipt-print-failed'),
+                    style: const TextStyle(color: AppColors.alertRed),
+                  ),
+                ),
             ],
           ),
         ),
       ),
       actions: [
+        if (widget.onPrint != null)
+          TextButton(
+            key: const Key('receipt-reprint'),
+            onPressed: _printing ? null : _reprint,
+            child: Text(l10n.printReprint),
+          ),
         SizedBox(
           height: AppDimensions.preferredTouchTarget,
           child: FilledButton(

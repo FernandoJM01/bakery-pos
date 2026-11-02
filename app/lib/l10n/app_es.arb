@@ -1006,5 +1006,183 @@
         "type": "String"
       }
     }
-  }
+  },
+  "cashLoadFailed": "No se pudo leer el estado de la caja",
+  "cashOpenHint": "Cuenta el fondo de caja para abrir el turno",
+  "cashOpen": "Abrir turno",
+  "cashFloatDiffers": "El fondo no coincide con el último cierre ({amount})",
+  "@cashFloatDiffers": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cashShiftOpen": "Turno abierto el {date} por {name}",
+  "@cashShiftOpen": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cashFloatLine": "Fondo: {amount}",
+  "@cashFloatLine": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cashIn": "Entrada",
+  "cashOut": "Salida",
+  "cashOpenDrawer": "Abrir cajón",
+  "cashClose": "Cerrar turno",
+  "cashBlindHint": "Cuenta el efectivo del cajón. El sistema muestra lo esperado después de confirmar.",
+  "cashConfirmCount": "Confirmar conteo",
+  "cashConfirmTitle": "¿Confirmar el conteo?",
+  "cashConfirmBody": "Contaste {amount}. Después de confirmar, el conteo no se puede cambiar.",
+  "@cashConfirmBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cashExpected": "Esperado",
+  "cashCounted": "Contado",
+  "cashDifference": "Diferencia",
+  "cashFloat": "Fondo de caja",
+  "cashFlagged": "Esta diferencia queda marcada para el dueño y necesita una nota",
+  "cashSeeZ": "Ver corte Z",
+  "cashNoteForDifference": "Nota sobre la diferencia",
+  "cashFinishClose": "Terminar cierre",
+  "cashPastShifts": "Cortes anteriores",
+  "cashPastShift": "Corte Z {number}",
+  "@cashPastShift": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "cashCountTotal": "Total: {amount}",
+  "@cashCountTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cashAmount": "Monto",
+  "cashAmountInvalid": "Escribe un monto válido",
+  "cashReasonRequired": "Elige un motivo",
+  "cashNoteRequired": "Escribe una nota",
+  "cashNote": "Nota",
+  "cashApprovalNeeded": "Sin la autorización de un gerente no se puede registrar",
+  "cashReasonChangeFund": "Fondo de cambio",
+  "cashReasonSupplier": "Pago a proveedor",
+  "cashReasonBankDrop": "Depósito al banco",
+  "cashReasonOther": "Otro",
+  "zTitle": "Corte Z {label}",
+  "@zTitle": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "zOpened": "Abrió: {date}, {name}",
+  "@zOpened": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "zClosed": "Cerró: {date}, {name}",
+  "@zClosed": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "zSaleCount": "Ventas",
+  "zGross": "Bruto",
+  "zDiscounts": "Descuentos",
+  "zNet": "Neto",
+  "zTaxes": "Impuestos, netos de devoluciones",
+  "zRefunds": "Devoluciones ({count})",
+  "@zRefunds": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "zVoids": "Cancelaciones ({count})",
+  "@zVoids": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "zPrepaid": "Anticipos cobrados",
+  "zCashIn": "Entradas de efectivo",
+  "zCashOut": "Salidas de efectivo",
+  "zNote": "Nota: {note}",
+  "@zNote": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "printAction": "Imprimir",
+  "printReprint": "Reimprimir",
+  "printFailed": "No se pudo imprimir. Revisa la impresora.",
+  "printerTitle": "Impresora",
+  "printerHost": "Dirección IP",
+  "printerPort": "Puerto",
+  "printerTest": "Imprimir prueba",
+  "printerTestOk": "Prueba enviada",
+  "printerTestPage": "Prueba de impresora: Piña, café, jamón, ñ á é í ó ú $12.50",
+  "saleNoShift": "Abre un turno para vender",
+  "saleOpenShift": "Ir a Caja",
+  "navShifts": "Turnos",
+  "shiftsFlaggedOnly": "Solo diferencias",
+  "shiftsEmpty": "No hay turnos con estos filtros",
+  "shiftsForbidden": "No tienes permiso para ver los turnos de esta sucursal",
+  "shiftsColZ": "Corte",
+  "shiftsColOpened": "Abierto",
+  "shiftsColCashier": "Abrió",
+  "shiftsOpenStatus": "Abierto",
+  "shiftsFlagged": "Diferencia marcada",
+  "shiftsMovements": "Movimientos de efectivo",
+  "shiftsNotes": "Notas",
+  "shiftsAddNote": "Agregar nota",
+  "shiftsNoteHint": "Corrección o comentario. El conteo no cambia.",
+  "shiftsLoadMore": "Cargar más",
+  "shiftsAllDates": "Todas las fechas",
+  "auditSaleDiscountOverLimit": "Descuento sobre el límite",
+  "auditSaleRefunded": "Devolución",
+  "auditSaleVoided": "Venta cancelada",
+  "auditSaleTicketDiscarded": "Ticket descartado",
+  "auditCashShiftOpened": "Turno abierto",
+  "auditCashMovement": "Movimiento de efectivo",
+  "auditCashShiftClosed": "Turno cerrado",
+  "auditCashVarianceFlagged": "Diferencia de caja marcada",
+  "auditCashDrawerOpened": "Cajón abierto sin venta",
+  "auditCashNoteAdded": "Nota en turno"
 }
