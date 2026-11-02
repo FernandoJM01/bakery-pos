@@ -28,6 +28,11 @@ class InsufficientCashException implements Exception {
   const InsufficientCashException();
 }
 
+/// No shift is open on this till (M4.1).
+class NoOpenShiftException implements Exception {
+  const NoOpenShiftException();
+}
+
 /// Everything the receipt shows (M3 brief 4.1).
 class SaleReceipt {
   const SaleReceipt({
@@ -97,6 +102,8 @@ class SaleRepository {
     final at = now.toUtc();
 
     return _db.transaction(() async {
+      final shiftId = await _db.openShiftId();
+      if (shiftId == null) throw const NoOpenShiftException();
       final number = await lastFolioNumber() + 1;
       final folio = formatFolio(prefix, number);
 
@@ -107,6 +114,7 @@ class SaleRepository {
               id: saleId,
               folio: folio,
               folioNumber: number,
+              shiftId: Value(shiftId),
               cashierStaffId: cashier.id,
               cashierName: cashier.displayName,
               occurredAt: at,
@@ -194,7 +202,7 @@ class SaleRepository {
                 'folio': folio,
                 'folioNumber': number,
                 'cashierStaffId': cashier.id,
-                'shiftId': null,
+                'shiftId': shiftId,
                 'lines': lines,
                 'orderDiscount': ticket.orderDiscount?.toJson(),
                 'voidedLines': [for (final v in ticket.voided) v.toJson()],

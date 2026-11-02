@@ -22,13 +22,13 @@ class SaleCompletedPayload {
     required this.folio,
     required this.folioNumber,
     required this.cashierStaffId,
+    required this.shiftId,
     required this.lines,
     required this.voidedLines,
     required this.grossCents,
     required this.discountCents,
     required this.totalCents,
     required this.payments,
-    this.shiftId,
     this.orderDiscount,
   });
 
@@ -39,8 +39,8 @@ class SaleCompletedPayload {
   final int folioNumber;
   final String cashierStaffId;
 
-  /// Null until cash shifts (M4)
-  final String? shiftId;
+  /// The open shift of this device (M4.1)
+  final String shiftId;
   final List<SaleLineInput> lines;
   final DiscountInput? orderDiscount;
   final List<VoidedLineInput> voidedLines;

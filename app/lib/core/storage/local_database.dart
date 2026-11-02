@@ -10,11 +10,13 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart' show Database;
 import 'package:uuid/uuid.dart';
 
+import 'cash_tables.dart';
 import 'catalog_tables.dart';
 import 'sale_tables.dart';
 import 'secure_storage.dart';
 
 export 'catalog_tables.dart';
+export 'cash_tables.dart';
 export 'sale_tables.dart';
 
 part 'local_database.g.dart';
@@ -88,6 +90,9 @@ class OfflineApprovalEntries extends Table {
     LocalSaleDiscounts,
     LocalHeldTickets,
     LocalRefunds,
+    LocalShifts,
+    LocalCashMovements,
+    LocalCashCounts,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -96,7 +101,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -131,6 +136,19 @@ class AppDatabase extends _$AppDatabase {
       if (from < 7) {
         await m.createTable(localHeldTickets);
         await m.createTable(localRefunds);
+      }
+      if (from < 8) {
+        await m.createTable(localShifts);
+        await m.createTable(localCashMovements);
+        await m.createTable(localCashCounts);
+        // Tables made by the steps above already have these columns.
+        if (from == 6 || from == 7) {
+          await m.addColumn(localSales, localSales.shiftId);
+        }
+        if (from == 7) {
+          await m.addColumn(localRefunds, localRefunds.shiftId);
+          await m.addColumn(localRefunds, localRefunds.ratesJson);
+        }
       }
     },
   );
@@ -227,6 +245,18 @@ class AppDatabase extends _$AppDatabase {
     },
   );
 
+  /// The drawer opened with no sale (`cash.open_drawer_no_sale`).
+  Future<void> recordDrawerOpened({
+    required String staffId,
+    String? approverStaffId,
+    required DateTime at,
+  }) => _queueOfflineEvent(
+    action: 'cash.drawer_opened',
+    staffId: staffId,
+    at: at,
+    extra: {'approverStaffId': approverStaffId},
+  );
+
   /// Queues an `audit.offline_event` (M2 brief 4.3). The payload follows
   /// the contract's `OfflineAuditPayload` and never carries a PIN.
   Future<void> _queueOfflineEvent({
@@ -290,6 +320,15 @@ class AppDatabase extends _$AppDatabase {
     }
     return lockedUntil;
   });
+
+  /// The shift this till is selling in, or null: no sale, refund or void
+  /// without one (M4.1).
+  Future<String?> openShiftId() async {
+    final row = await (select(
+      localShifts,
+    )..where((s) => s.status.equals('OPEN'))).getSingleOrNull();
+    return row?.id;
+  }
 
   /// Pending records, oldest first.
   Future<List<OutboxEntry>> pendingOutbox({int limit = 100}) =>

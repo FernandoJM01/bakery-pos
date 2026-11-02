@@ -10,6 +10,7 @@ import '../../../core/api/generated/rest_client.dart';
 import '../../../core/money/tax_split.dart';
 import '../../../core/storage/local_database.dart';
 import '../domain/sale_totals.dart';
+import 'sale_repository.dart' show NoOpenShiftException;
 
 enum RefundKind {
   refund('REFUND'),
@@ -278,6 +279,8 @@ class RefundRepository {
 
     final refundId = _uuid.v7();
     return _db.transaction(() async {
+      final shiftId = await _db.openShiftId();
+      if (shiftId == null) throw const NoOpenShiftException();
       // Read the lines again inside the transaction for a sale made here,
       // so two refunds cannot take the same unit.
       final current = sale.madeHere ? (await _local(sale.folio)) ?? sale : sale;
@@ -286,6 +289,7 @@ class RefundRepository {
         throw const VoidNotAllowed(VoidRule.notAllUnits);
       }
       final lines = <Map<String, Object>>[];
+      final rates = <Map<String, int>>[];
       var total = 0;
       for (final l in current.lines) {
         final k = asked[l.lineNo] ?? 0;
@@ -303,6 +307,7 @@ class RefundRepository {
           'ivaCents': t.ivaCents,
           'restock': restock.contains(l.lineNo),
         });
+        rates.add({'lineNo': l.lineNo, 'ivaBp': l.ivaBp, 'iepsBp': l.iepsBp});
       }
       if (asked.keys.any((n) => current.lines.every((l) => l.lineNo != n))) {
         throw const NothingToRefund();
@@ -316,6 +321,7 @@ class RefundRepository {
               id: refundId,
               saleId: sale.id,
               folio: sale.folio,
+              shiftId: Value(shiftId),
               kind: kind.json,
               reason: reason.json,
               note: Value(note),
@@ -324,6 +330,7 @@ class RefundRepository {
               occurredAt: at,
               totalCents: total,
               linesJson: jsonEncode(lines),
+              ratesJson: Value(jsonEncode(rates)),
             ),
           );
 
@@ -372,6 +379,7 @@ class RefundRepository {
               actorStaffId: Value(staffId),
               payload: jsonEncode({
                 'saleId': sale.id,
+                'shiftId': shiftId,
                 'kind': kind.json,
                 'reason': reason.json,
                 'note': note,

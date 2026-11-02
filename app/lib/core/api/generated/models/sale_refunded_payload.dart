@@ -18,6 +18,7 @@ part 'sale_refunded_payload.g.dart';
 class SaleRefundedPayload {
   const SaleRefundedPayload({
     required this.saleId,
+    required this.shiftId,
     required this.kind,
     required this.reason,
     required this.staffId,
@@ -31,6 +32,9 @@ class SaleRefundedPayload {
       _$SaleRefundedPayloadFromJson(json);
 
   final String saleId;
+
+  /// The open shift of the device paying the money, which may differ from the sale's (M4 brief section 2)
+  final String shiftId;
   final RefundKind kind;
   final RefundReason reason;
   final String? note;

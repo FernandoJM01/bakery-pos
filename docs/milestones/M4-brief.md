@@ -77,7 +77,7 @@ flagged  = |variance| > cashVarianceFlagCents
 Change given is already out of `amountCents`, since a sale's amount is the total and not what the customer handed over.
 
 ### 4.4 Blind close
-From Caja, **Cerrar turno** first asks to hold or finish any open ticket; held tickets stay on the till and survive into the next shift. Then the cashier counts by denomination, with no expected amount on screen. **Confirmar conteo** is final. In one local transaction the till takes the next Z number, computes expected, stores the count, closes the shift and writes the `shift.closed` record. Then it shows expected, counted and the difference. A flagged difference requires a note before the Z report appears.
+From Caja, **Cerrar turno** opens the count. Held tickets stay on the till and survive into the next shift. The cashier counts by denomination, with no expected amount on screen. **Confirmar conteo** is final. In one local transaction the till takes the next Z number, computes expected, stores the count, closes the shift and writes the `shift.closed` record. Then it shows expected, counted and the difference. A flagged difference requires a note before the Z report appears.
 
 ### 4.5 Z report
 Shows branch, till, Z number, who opened and closed and when; sales count; gross, discounts and net; sales by tax rate (base, IEPS, IVA); refunds and voids; prepaid orders collected; cash in and out by reason; float, expected, counted and difference. It prints when a printer is set and is always viewable later, on the till for shifts it holds and in the back office for all. Tax by rate uses net sales minus refunds, from stored line and refund amounts, never recomputed from prices.
@@ -91,7 +91,7 @@ Shows branch, till, Z number, who opened and closed and when; sales count; gross
 
 ## 5. Screens
 
-Till: **Caja** (state, float, totals so far with no expected amount, Entrada, Salida, Abrir cajón, Cerrar turno, past Z reports). Till settings: **Impresora** (IP, port, test print). Sale screen: banner with no open shift; automatic print and drawer kick after payment; **Reimprimir** on the receipt.
+Till: **Caja** (state, float, totals so far with no expected amount, Entrada, Salida, Abrir cajón, Cerrar turno, past Z reports). **Impresora** in Caja (IP, port, test print). Sale screen: banner with no open shift; automatic print and drawer kick after payment; **Reimprimir** on the receipt.
 
 Back office: **Turnos** (owner, and managers for their branches with `reports.branch`): list by date, branch and till with expected, counted, difference and a flag, filter "solo diferencias"; shift detail with counts, movements and Z report; a note can be added. **Auditoría** gains filters by action, person, branch and date, and shows the new actions (M11.1).
 
@@ -120,7 +120,7 @@ Stock and adjustments in the audit log (Sprint 5), claim tickets, pick lists and
 
 ## 8. Open for Fernando
 
-- Which printer and cash drawer will the branches use? E14 needs one, and it must have a network port.
+- Printer and cash drawer are not chosen yet (1 Nov 2026). Any 80 mm ESC/POS printer with an Ethernet port and an RJ11 drawer port fits, with no code change. E14 stays pending until the hardware arrives; the printer's test page shows whether Spanish letters print correctly.
 - Is $50.00 the right difference to flag?
 - Are the cash-out reasons right (change fund, supplier payment, bank drop, other)?
 - Should a shift belong to the till (as written) or to one cashier at a time?

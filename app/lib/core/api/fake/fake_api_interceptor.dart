@@ -349,7 +349,10 @@ class FakeApiInterceptor extends Interceptor {
           data: {
             'branchId': branchId1,
             'folioPrefix': 'SUC1-01',
-            'saleSettings': {'discountLimitBp': 1000},
+            'saleSettings': {
+              'discountLimitBp': 1000,
+              'cashVarianceFlagCents': 5000,
+            },
             'generatedAt': DateTime.now().toUtc().toIso8601String(),
             'staff': [
               {

@@ -1,3 +1,5 @@
+import '../../cash/data/shift_repository.dart' show cashVarianceFlagKey;
+
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -71,6 +73,10 @@ class StaffSyncService {
     final limit = bundle.saleSettings?.discountLimitBp;
     if (limit != null) {
       await database.setSessionValue(discountLimitKey, '$limit');
+    }
+    final flag = bundle.saleSettings?.cashVarianceFlagCents;
+    if (flag != null) {
+      await database.setSessionValue(cashVarianceFlagKey, '$flag');
     }
 
     return staffCompanions.length;
