@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
   title: Bakery POS API
-  version: 0.4.0-m4
+  version: 0.5.0-m5
   description: |
-    Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync), 3 (sales) and 4 (cash shifts, audit and printing).
+    Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync), 3 (sales), 4 (cash shifts, audit and printing) and 5 (stock and day-old bread).
     Owned by the architect. Developers must not edit this file; open an issue labelled `contract` instead.
 
     Conventions:
@@ -33,6 +33,7 @@ tags:
     description: Till catalog feed, outbox push and quarantine (M2)
   - name: sales
   - name: shifts
+  - name: stock
     description: Sales and refunds made on tills, received through sync (M3)
 
 paths:
@@ -615,6 +616,204 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/stock/lots:
+    get:
+      tags: [stock]
+      operationId: listBranchLots
+      summary: Open lots of the device's branch, for the till's stock view
+      description: |
+        Lots with units left, plus negative on-hand per variant. The till works out fresh and day-old itself from
+        `producedOn`, so ageing at midnight needs no connection (M5 brief 4.3).
+      security:
+        - deviceToken: []
+      x-public: true
+      x-device: required
+      responses:
+        '200':
+          description: The branch's stock
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BranchStock' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /v1/stock/levels:
+    get:
+      tags: [stock]
+      operationId: listStockLevels
+      summary: On-hand per variant and branch, for the back office
+      x-permission: reports.branch
+      parameters:
+        - name: branchId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: One row per variant and branch with any event
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/StockLevel' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/stock/events:
+    get:
+      tags: [stock]
+      operationId: listStockEvents
+      summary: The ledger of a variant in a branch, newest first
+      x-permission: reports.branch
+      parameters:
+        - name: branchId
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+        - name: variantId
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+      responses:
+        '200':
+          description: Newest first
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StockEventPage' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/stock/waste:
+    get:
+      tags: [stock]
+      operationId: listWaste
+      summary: Waste by date, with its cost
+      x-permission: reports.branch
+      parameters:
+        - name: from
+          in: query
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          schema: { type: string, format: date-time }
+        - name: branchId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: reason
+          in: query
+          schema: { $ref: '#/components/schemas/WasteReason' }
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+      responses:
+        '200':
+          description: Newest first
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WastePage' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/stock/transfers:
+    get:
+      tags: [stock]
+      operationId: listTransfers
+      summary: Transfers from or to the caller's branches, newest first
+      x-permission: reports.branch
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/TransferStatus' }
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+      responses:
+        '200':
+          description: Newest first
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TransferPage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [stock]
+      operationId: sendTransfer
+      summary: Sends stock to another branch, which leaves the sender at once
+      x-permission: stock.transfer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransferCreate' }
+      responses:
+        '201':
+          description: The transfer
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transfer' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/stock/transfers/{transferId}/receive:
+    post:
+      tags: [stock]
+      operationId: receiveTransfer
+      summary: Records what arrived; a difference from what was sent is flagged
+      x-permission: stock.transfer
+      parameters:
+        - name: transferId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransferReceive' }
+      responses:
+        '200':
+          description: The received transfer
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transfer' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/stock/checks/latest:
+    get:
+      tags: [stock]
+      operationId: latestStockCheck
+      summary: The last nightly ledger check
+      x-permission: reports.branch
+      responses:
+        '200':
+          description: The last check; `checkedAt` is null before the first one
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StockCheck' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
 
   /v1/tax-rates:
     get:
@@ -1643,6 +1842,14 @@ components:
         - cash.variance_flagged
         - cash.drawer_opened
         - cash.note_added
+        - catalog.cost_changed
+        - stock.production_entered
+        - stock.waste_recorded
+        - stock.transfer_sent
+        - stock.transfer_received
+        - stock.transfer_mismatch
+        - stock.count_adjusted
+        - stock.ledger_mismatch
     AuditEntry:
       type: object
       required: [id, occurredAt, action]
@@ -1820,6 +2027,11 @@ components:
         sku: { type: [string, 'null'] }
         barcode: { type: [string, 'null'] }
         priceCents: { $ref: '#/components/schemas/Cents' }
+        costCents:
+          oneOf:
+            - { $ref: '#/components/schemas/Cents' }
+            - { type: 'null' }
+        unitsPerTray: { type: [integer, 'null'], minimum: 1, maximum: 1000 }
         sortOrder: { type: integer }
         isActive: { type: boolean }
         updatedAt: { type: string, format: date-time }
@@ -1844,6 +2056,11 @@ components:
         sku: { type: [string, 'null'], minLength: 1, maxLength: 40 }
         barcode: { type: [string, 'null'], pattern: '^[0-9A-Za-z-]{4,32}$' }
         priceCents: { $ref: '#/components/schemas/Cents' }
+        costCents:
+          oneOf:
+            - { $ref: '#/components/schemas/Cents' }
+            - { type: 'null' }
+        unitsPerTray: { type: [integer, 'null'], minimum: 1, maximum: 1000 }
         sortOrder: { type: integer, minimum: 0, maximum: 10000 }
         isActive: { type: boolean }
     BranchPrice:
@@ -1915,7 +2132,7 @@ components:
         isActive: { type: boolean }
     CatalogVariant:
       type: object
-      required: [id, productId, name, sku, barcode, priceCents, sortOrder, isActive]
+      required: [id, productId, name, sku, barcode, priceCents, unitsPerTray, sortOrder, isActive]
       properties:
         id: { type: string, format: uuid }
         productId: { type: string, format: uuid }
@@ -1923,6 +2140,7 @@ components:
         sku: { type: [string, 'null'] }
         barcode: { type: [string, 'null'] }
         priceCents: { $ref: '#/components/schemas/Cents' }
+        unitsPerTray: { type: [integer, 'null'], description: 'Production entry works in trays when set' }
         sortOrder: { type: integer }
         isActive: { type: boolean }
     CatalogBranchPrice:
@@ -1941,9 +2159,11 @@ components:
         Known types: `audit.offline_event` (payload `OfflineAuditPayload`), `sale.completed`
         (payload `SaleCompletedPayload`, record `id` = sale ID) and `sale.refunded` (payload
         `SaleRefundedPayload`, record `id` = refund ID), `shift.opened` (payload `ShiftOpenedPayload`, record `id` = shift ID),
-        `cash.movement` (payload `CashMovementPayload`) and `shift.closed` (payload `ShiftClosedPayload`). The server accepts any string and quarantines
+        `cash.movement` (payload `CashMovementPayload`), `shift.closed` (payload `ShiftClosedPayload`), `stock.produced`
+        (payload `StockProducedPayload`, record `id` = lot ID), `stock.wasted` (payload `StockWastedPayload`) and `stock.counted`
+        (payload `StockCountedPayload`). The server accepts any string and quarantines
         unknown types with `SYNC_UNKNOWN_TYPE`, so an older server never rejects a whole batch.
-      examples: [audit.offline_event, sale.completed, sale.refunded, shift.opened, cash.movement, shift.closed]
+      examples: [audit.offline_event, sale.completed, sale.refunded, shift.opened, cash.movement, shift.closed, stock.produced, stock.wasted, stock.counted]
     SyncRecord:
       type: object
       required: [id, type, occurredAt, payload]
@@ -2099,7 +2319,7 @@ components:
       enum: [CASH]
     SaleLineInput:
       type: object
-      required: [lineNo, variantId, productName, variantName, quantity, unitPriceCents, ivaRateId, ivaBp, iepsBp, grossCents, lineDiscountCents, orderDiscountCents, netCents, baseCents, iepsCents, ivaCents]
+      required: [lineNo, variantId, productName, variantName, quantity, unitPriceCents, dayOld, fullPriceCents, ivaRateId, ivaBp, iepsBp, grossCents, lineDiscountCents, orderDiscountCents, netCents, baseCents, iepsCents, ivaCents]
       additionalProperties: false
       properties:
         lineNo: { type: integer, minimum: 1, maximum: 500 }
@@ -2108,6 +2328,10 @@ components:
         variantName: { type: string, minLength: 1, maxLength: 120 }
         quantity: { type: integer, minimum: 1, maximum: 9999 }
         unitPriceCents: { $ref: '#/components/schemas/Cents' }
+        dayOld: { type: boolean, description: 'Sold from aged stock at the day-old price (M6.2)' }
+        fullPriceCents:
+          allOf: [{ $ref: '#/components/schemas/Cents' }]
+          description: The price without the day-old reduction; equals `unitPriceCents` when not `dayOld`
         ivaRateId: { type: string, format: uuid }
         ivaBp: { $ref: '#/components/schemas/BasisPoints' }
         iepsRateId: { type: [string, 'null'], format: uuid }
@@ -2386,6 +2610,216 @@ components:
               oneOf:
                 - { $ref: '#/components/schemas/ZReport' }
                 - { type: 'null' }
+    LocalDate:
+      type: string
+      pattern: '^\d{4}-\d{2}-\d{2}$'
+      description: A calendar day at the branch
+      examples: ['2026-11-02']
+    StockProducedPayload:
+      type: object
+      description: Payload of `stock.produced`. The record `id` is the lot ID. M5 brief 4.1.
+      required: [variantId, quantity, producedOn, staffId]
+      additionalProperties: false
+      properties:
+        variantId: { type: string, format: uuid }
+        quantity: { type: integer, minimum: 1, maximum: 9999 }
+        producedOn: { $ref: '#/components/schemas/LocalDate' }
+        staffId: { type: string, format: uuid }
+    WasteReason:
+      type: string
+      enum: [BURNT, EXPIRED, DAMAGED, UNSOLD]
+    StockWastedPayload:
+      type: object
+      description: Payload of `stock.wasted`. Oldest lots first unless `lotId` names one.
+      required: [variantId, quantity, reason, staffId]
+      additionalProperties: false
+      properties:
+        variantId: { type: string, format: uuid }
+        quantity: { type: integer, minimum: 1, maximum: 9999 }
+        reason: { $ref: '#/components/schemas/WasteReason' }
+        lotId: { type: [string, 'null'], format: uuid }
+        staffId: { type: string, format: uuid }
+    StockCountedPayload:
+      type: object
+      description: Payload of `stock.counted`. The server works out each difference from its own on-hand. M5 brief 4.6.
+      required: [staffId, lines]
+      additionalProperties: false
+      properties:
+        staffId: { type: string, format: uuid }
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items:
+            type: object
+            required: [variantId, counted]
+            additionalProperties: false
+            properties:
+              variantId: { type: string, format: uuid }
+              counted: { type: integer, minimum: 0, maximum: 999999 }
+    BranchLot:
+      type: object
+      required: [id, variantId, producedOn, quantityLeft]
+      properties:
+        id: { type: string, format: uuid }
+        variantId: { type: string, format: uuid }
+        producedOn: { $ref: '#/components/schemas/LocalDate' }
+        quantityLeft: { type: integer }
+    BranchStock:
+      type: object
+      required: [generatedAt, lots, shortages]
+      properties:
+        generatedAt: { type: string, format: date-time }
+        lots:
+          type: array
+          items: { $ref: '#/components/schemas/BranchLot' }
+        shortages:
+          type: array
+          description: Units sold with no lot to take from, per variant
+          items:
+            type: object
+            required: [variantId, quantity]
+            properties:
+              variantId: { type: string, format: uuid }
+              quantity: { type: integer }
+    StockLevel:
+      type: object
+      required: [branchId, variantId, productName, variantName, onHand, freshUnits, dayOldUnits, wasteDueUnits]
+      properties:
+        branchId: { type: string, format: uuid }
+        variantId: { type: string, format: uuid }
+        productName: { type: string }
+        variantName: { type: string }
+        onHand: { type: integer, description: 'Sum of the ledger; negative when more was sold than entered' }
+        freshUnits: { type: integer }
+        dayOldUnits: { type: integer }
+        wasteDueUnits: { type: integer }
+    StockEventKind:
+      type: string
+      enum: [PRODUCTION, SALE, REFUND_RETURN, WASTE, TRANSFER_OUT, TRANSFER_IN, COUNT_ADJUST]
+    StockEvent:
+      type: object
+      required: [id, kind, quantity, occurredAt]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { $ref: '#/components/schemas/StockEventKind' }
+        quantity: { type: integer, description: 'Signed' }
+        lotId: { type: [string, 'null'], format: uuid }
+        referenceType: { type: [string, 'null'] }
+        referenceId: { type: [string, 'null'], format: uuid }
+        staffId: { type: [string, 'null'], format: uuid }
+        occurredAt: { type: string, format: date-time }
+    StockEventPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/StockEvent' }
+        nextCursor: { type: [string, 'null'] }
+    WasteEntry:
+      type: object
+      required: [id, branchId, variantId, productName, variantName, quantity, reason, staffId, occurredAt]
+      properties:
+        id: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        variantId: { type: string, format: uuid }
+        productName: { type: string }
+        variantName: { type: string }
+        quantity: { type: integer }
+        reason: { $ref: '#/components/schemas/WasteReason' }
+        staffId: { type: string, format: uuid }
+        occurredAt: { type: string, format: date-time }
+        costCents: { type: [integer, 'null'], description: 'Unit cost when wasted; null when none was set' }
+    WastePage:
+      type: object
+      required: [items, nextCursor, totalCostCents]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/WasteEntry' }
+        nextCursor: { type: [string, 'null'] }
+        totalCostCents: { type: integer, description: 'Over the whole filter, not the page' }
+    TransferStatus:
+      type: string
+      enum: [SENT, RECEIVED]
+    TransferLine:
+      type: object
+      required: [variantId, productName, variantName, producedOn, quantitySent]
+      properties:
+        variantId: { type: string, format: uuid }
+        productName: { type: string }
+        variantName: { type: string }
+        producedOn: { $ref: '#/components/schemas/LocalDate' }
+        quantitySent: { type: integer }
+        quantityReceived: { type: [integer, 'null'] }
+    Transfer:
+      type: object
+      required: [id, fromBranchId, toBranchId, status, sentByStaffId, sentAt, flagged, lines]
+      properties:
+        id: { type: string, format: uuid }
+        fromBranchId: { type: string, format: uuid }
+        toBranchId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/TransferStatus' }
+        sentByStaffId: { type: string, format: uuid }
+        sentAt: { type: string, format: date-time }
+        receivedByStaffId: { type: [string, 'null'], format: uuid }
+        receivedAt: { type: [string, 'null'], format: date-time }
+        flagged: { type: boolean }
+        lines:
+          type: array
+          items: { $ref: '#/components/schemas/TransferLine' }
+    TransferPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Transfer' }
+        nextCursor: { type: [string, 'null'] }
+    TransferCreate:
+      type: object
+      required: [fromBranchId, toBranchId, lines]
+      additionalProperties: false
+      properties:
+        fromBranchId: { type: string, format: uuid }
+        toBranchId: { type: string, format: uuid }
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items:
+            type: object
+            required: [variantId, quantity]
+            additionalProperties: false
+            properties:
+              variantId: { type: string, format: uuid }
+              quantity: { type: integer, minimum: 1, maximum: 9999 }
+    TransferReceive:
+      type: object
+      required: [lines]
+      additionalProperties: false
+      properties:
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 200
+          description: One row per line of the transfer
+          items:
+            type: object
+            required: [variantId, producedOn, quantityReceived]
+            additionalProperties: false
+            properties:
+              variantId: { type: string, format: uuid }
+              producedOn: { $ref: '#/components/schemas/LocalDate' }
+              quantityReceived: { type: integer, minimum: 0, maximum: 9999 }
+    StockCheck:
+      type: object
+      required: [checkedAt, rowsChecked, mismatches]
+      properties:
+        checkedAt: { type: [string, 'null'], format: date-time }
+        rowsChecked: { type: integer }
+        mismatches: { type: integer }
     SaleStatus:
       type: string
       enum: [COMPLETED, PARTIALLY_REFUNDED, REFUNDED, VOIDED]
@@ -2402,8 +2836,10 @@ components:
         approverStaffId: { type: [string, 'null'], format: uuid }
     SaleLine:
       type: object
-      required: [lineNo, variantId, productName, variantName, quantity, unitPriceCents, grossCents, lineDiscountCents, orderDiscountCents, netCents, ivaRateId, ivaBp, iepsRateId, iepsBp, baseCents, iepsCents, ivaCents, refundedQuantity]
+      required: [dayOld, fullPriceCents, lineNo, variantId, productName, variantName, quantity, unitPriceCents, grossCents, lineDiscountCents, orderDiscountCents, netCents, ivaRateId, ivaBp, iepsRateId, iepsBp, baseCents, iepsCents, ivaCents, refundedQuantity]
       properties:
+        dayOld: { type: boolean }
+        fullPriceCents: { $ref: '#/components/schemas/Cents' }
         lineNo: { type: integer }
         variantId: { type: string, format: uuid }
         productName: { type: string }

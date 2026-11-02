@@ -21,6 +21,7 @@ import { PhotosModule } from './photos/photos.module';
 import { SyncModule } from './sync/sync.module';
 import { SalesModule } from './sales/sales.module';
 import { ShiftsModule } from './shifts/shifts.module';
+import { StockModule } from './stock/stock.module';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { ShiftsModule } from './shifts/shifts.module';
     SyncModule,
     SalesModule,
     ShiftsModule,
+    StockModule,
     HealthModule,
   ],
   providers: [

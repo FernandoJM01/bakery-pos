@@ -78,6 +78,7 @@ export class CatalogFeedService {
           name: v.name,
           sku: v.sku,
           barcode: v.barcode,
+          unitsPerTray: v.unitsPerTray,
           priceCents: v.priceCents,
           sortOrder: v.sortOrder,
           isActive: v.isActive,

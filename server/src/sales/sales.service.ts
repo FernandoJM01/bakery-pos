@@ -110,6 +110,8 @@ export function formatSale(s: DetailRow) {
       variantName: l.variantName,
       quantity: l.quantity,
       unitPriceCents: l.unitPriceCents,
+      dayOld: l.dayOld,
+      fullPriceCents: l.fullPriceCents,
       grossCents: l.grossCents,
       lineDiscountCents: l.lineDiscountCents,
       orderDiscountCents: l.orderDiscountCents,

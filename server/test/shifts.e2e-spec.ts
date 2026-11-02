@@ -112,6 +112,8 @@ describe('Cash shifts (e2e)', () => {
         {
           ...line,
           ...totals.lines[0],
+          dayOld: false,
+          fullPriceCents: priceCents,
           variantId,
           productName: 'Pan',
           variantName: 'Pieza',

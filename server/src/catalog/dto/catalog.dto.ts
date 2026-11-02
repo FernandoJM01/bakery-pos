@@ -141,6 +141,18 @@ export class UpdateVariantDto extends CreateVariantDto {
   declare priceCents: number;
 
   @Optional()
+  @IsInt()
+  @Min(1)
+  @Max(MAX_CENTS)
+  costCents?: number | null;
+
+  @Optional()
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  unitsPerTray?: number | null;
+
+  @Optional()
   @IsBoolean()
   isActive?: boolean;
 }
