@@ -429,7 +429,7 @@ describe('Auth & Session Management (e2e)', () => {
     expect(body.accessToken).toBeDefined();
     expect(body.refreshToken).toBeDefined();
     expect(body.me?.staff?.email).toBe(testEmail);
-    expect(body.me?.permissions?.length).toBe(26);
+    expect(body.me?.permissions?.length).toBe(27);
 
     // Contract validation
     const validation = validateResponseAgainstContract({

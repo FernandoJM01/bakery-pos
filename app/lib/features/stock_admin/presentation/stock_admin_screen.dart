@@ -9,10 +9,13 @@ import 'package:bakery_pos/core/api/generated/models/transfer.dart';
 import 'package:bakery_pos/core/api/generated/models/transfer_create.dart';
 import 'package:bakery_pos/core/api/generated/models/transfer_receive.dart';
 import 'package:bakery_pos/core/api/generated/models/transfer_status.dart';
+import 'package:bakery_pos/core/api/catalog_writes.dart';
+import 'package:bakery_pos/core/api/generated/models/variant_cost.dart';
 import 'package:bakery_pos/core/api/generated/models/waste_page.dart';
 import 'package:bakery_pos/core/money/money.dart';
 import 'package:bakery_pos/core/theme/app_colors.dart';
 import 'package:bakery_pos/core/theme/app_dimensions.dart';
+import 'package:bakery_pos/features/backoffice/auth/data/backoffice_auth_service.dart';
 import 'package:bakery_pos/features/backoffice/common/admin_ui.dart';
 import 'package:bakery_pos/features/branches/data/branches_service.dart';
 import 'package:bakery_pos/l10n/app_localizations.dart';
@@ -35,6 +38,13 @@ final _transfersProvider = FutureProvider.autoDispose<List<Transfer>>((
   ref,
 ) async {
   final res = await ref.read(restClientProvider).stock.listTransfers();
+  return res.items;
+});
+
+final _costsProvider = FutureProvider.autoDispose<List<VariantCost>>((
+  ref,
+) async {
+  final res = await ref.read(restClientProvider).catalog.listCosts();
   return res.items;
 });
 
@@ -69,8 +79,15 @@ class StockAdminScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final costs =
+        ref
+            .watch(backofficeAuthServiceProvider)
+            .currentSession
+            ?.permissions
+            .contains('catalog.cost') ==
+        true;
     return DefaultTabController(
-      length: 3,
+      length: costs ? 4 : 3,
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.stockInventory),
@@ -79,11 +96,18 @@ class StockAdminScreen extends ConsumerWidget {
               Tab(key: const Key('tab-levels'), text: l10n.stockByAge),
               Tab(key: const Key('tab-transfers'), text: l10n.stockTransfers),
               Tab(key: const Key('tab-waste'), text: l10n.stockWaste),
+              if (costs)
+                Tab(key: const Key('tab-costs'), text: l10n.stockCosts),
             ],
           ),
         ),
-        body: const TabBarView(
-          children: [_LevelsTab(), _TransfersTab(), _WasteTab()],
+        body: TabBarView(
+          children: [
+            const _LevelsTab(),
+            const _TransfersTab(),
+            const _WasteTab(),
+            if (costs) const _CostsTab(),
+          ],
         ),
       ),
     );
@@ -596,5 +620,114 @@ class _WasteTab extends ConsumerWidget {
             ],
           ),
         );
+  }
+}
+
+/// Branch managers enter the cost per piece for the waste report (decided
+/// 4 Nov 2026). An empty field clears it.
+class _CostsTab extends ConsumerWidget {
+  const _CostsTab();
+
+  Future<void> _edit(BuildContext context, WidgetRef ref, VariantCost v) async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final cents = await showDialog<int?>(
+      context: context,
+      builder: (_) => _CostDialog(variant: v),
+    );
+    if (cents == v.costCents || (cents != null && cents < 1)) return;
+    try {
+      await ref.read(catalogWritesProvider).setCost(v.variantId, cents);
+      ref.invalidate(_costsProvider);
+      messenger.showSnackBar(SnackBar(content: Text(l10n.stockCostSaved)));
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(commonAdminError(l10n, e))),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    return ref
+        .watch(_costsProvider)
+        .when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => AdminErrorBanner(message: commonAdminError(l10n, e)),
+          data: (rows) => ListView(
+            key: const Key('costs-list'),
+            padding: const EdgeInsets.all(AppDimensions.paddingMedium),
+            children: [
+              Text(l10n.stockCostHint),
+              for (final v in rows)
+                ListTile(
+                  key: Key('cost-${v.variantId}'),
+                  title: Text(l10n.saleLineTitle(v.productName, v.variantName)),
+                  subtitle: Text(v.categoryName),
+                  trailing: Text(
+                    v.costCents == null ? '—' : formatCents(v.costCents!),
+                  ),
+                  onTap: () => _edit(context, ref, v),
+                ),
+            ],
+          ),
+        );
+  }
+}
+
+/// Owns its field, so the closing animation never reads a disposed one.
+class _CostDialog extends StatefulWidget {
+  const _CostDialog({required this.variant});
+
+  final VariantCost variant;
+
+  @override
+  State<_CostDialog> createState() => _CostDialogState();
+}
+
+class _CostDialogState extends State<_CostDialog> {
+  late final _field = TextEditingController(
+    text: widget.variant.costCents == null
+        ? ''
+        : centsToInput(widget.variant.costCents!),
+  );
+
+  @override
+  void dispose() {
+    _field.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final v = widget.variant;
+    return AlertDialog(
+      title: Text(
+        l10n.stockCostLabel(l10n.saleLineTitle(v.productName, v.variantName)),
+      ),
+      content: TextField(
+        key: const Key('cost-field'),
+        controller: _field,
+        autofocus: true,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        decoration: InputDecoration(
+          helperText: l10n.stockCostPrice(formatCents(v.priceCents)),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(v.costCents),
+          child: Text(l10n.commonCancel),
+        ),
+        FilledButton(
+          key: const Key('cost-save'),
+          onPressed: () => Navigator.of(context)
+              .pop(_field.text.trim().isEmpty ? null : parseCents(_field.text)),
+          child: Text(l10n.commonSave),
+        ),
+      ],
+    );
   }
 }

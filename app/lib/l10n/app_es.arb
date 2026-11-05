@@ -1386,5 +1386,86 @@
     }
   },
   "catalogVariantCost": "Costo (opcional)",
-  "catalogVariantTray": "Piezas por charola (opcional)"
+  "catalogVariantTray": "Piezas por charola (opcional)",
+  "navDayOld": "Pan del día anterior",
+  "dayOldTitle": "Reglas del día anterior",
+  "dayOldIntro": "Cada producto puede bajar de precio después de unos días y pasar a merma después. Elige productos, o una categoría completa, y aplica la regla.",
+  "dayOldNoRule": "Sin regla",
+  "dayOldRuleText": "Al día {after}: {percent} menos",
+  "@dayOldRuleText": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "after": {
+        "type": "int"
+      }
+    }
+  },
+  "dayOldRuleWithWaste": "Al día {after}: {percent} menos · día {waste}: merma",
+  "@dayOldRuleWithWaste": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "after": {
+        "type": "int"
+      },
+      "waste": {
+        "type": "int"
+      }
+    }
+  },
+  "dayOldWasteOnly": "Día {waste}: merma",
+  "@dayOldWasteOnly": {
+    "placeholders": {
+      "waste": {
+        "type": "int"
+      }
+    }
+  },
+  "dayOldSelected": "{count} seleccionados",
+  "@dayOldSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayOldSelectCategory": "Toda la categoría",
+  "dayOldApply": "Aplicar regla",
+  "dayOldEditTitle": "Regla para {count} productos",
+  "@dayOldEditTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayOldAfterDays": "Días para bajar de precio",
+  "dayOldPercent": "Descuento (%)",
+  "dayOldWasteDays": "Días para mandar a merma (opcional)",
+  "dayOldRemove": "Quitar regla",
+  "dayOldInvalid": "Los días y el descuento van juntos, y la merma va después del descuento",
+  "dayOldSaved": "Regla guardada. Las cajas la reciben al sincronizar.",
+  "dayOldEmpty": "No hay productos todavía",
+  "stockCosts": "Costos",
+  "stockCostHint": "El costo por pieza aparece en la merma. Déjalo vacío si aún no lo sabes.",
+  "stockCostLabel": "Costo de {name}",
+  "@stockCostLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "stockCostPrice": "Precio {price}",
+  "@stockCostPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "stockCostSaved": "Costo guardado"
 }

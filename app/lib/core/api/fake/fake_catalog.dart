@@ -134,6 +134,35 @@ class FakeCatalog {
     ],
   };
 
+  Map<String, dynamic> _ruleView(Map<String, dynamic> p) {
+    final c = categories.firstWhere(
+      (c) => c['id'] == p['categoryId'],
+      orElse: () => {'name': ''},
+    );
+    return {
+      'productId': p['id'],
+      'categoryId': p['categoryId'],
+      'categoryName': c['name'],
+      'productName': p['name'],
+      'isActive': p['isActive'] ?? true,
+      'dayOldDiscountAfterDays': p['dayOldDiscountAfterDays'],
+      'dayOldDiscountBp': p['dayOldDiscountBp'],
+      'dayOldWasteAfterDays': p['dayOldWasteAfterDays'],
+    };
+  }
+
+  Map<String, dynamic> _costView(Map<String, dynamic> v) {
+    final p = products.firstWhere((p) => p['id'] == v['productId']);
+    return {
+      'variantId': v['id'],
+      'productName': p['name'],
+      'variantName': v['name'],
+      'categoryName': _ruleView(p)['categoryName'],
+      'priceCents': v['priceCents'],
+      'costCents': v['costCents'],
+    };
+  }
+
   /// SKU or barcode already used by another variant, as a 409.
   FakeReply? _uniqueClash(Map<String, dynamic> body, {String? exceptId}) {
     for (final field in ['sku', 'barcode']) {
@@ -338,6 +367,48 @@ class FakeCatalog {
         final p = _find(products, id);
         if (p == null) return _err(404, 'NOT_FOUND', 'Product not found');
         return _ok(_productView(p));
+      case ('GET', ['day-old-rules']):
+        return _ok({
+          'items': [for (final p in products) _ruleView(p)],
+        });
+      case ('PUT', ['day-old-rules']):
+        final b = body as Map;
+        final ids = (b['productIds'] as List).cast<String>();
+        final rule = {
+          for (final k in [
+            'dayOldDiscountAfterDays',
+            'dayOldDiscountBp',
+            'dayOldWasteAfterDays',
+          ])
+            k: b[k],
+        };
+        final error = _dayOldError(rule);
+        if (error != null) return error;
+        final touched = [
+          for (final p in products)
+            if (ids.contains(p['id'])) p,
+        ];
+        if (touched.length != ids.length) {
+          return _err(404, 'NOT_FOUND', 'Product not found');
+        }
+        for (final p in touched) {
+          _touch(p..addAll(rule));
+        }
+        return _ok({
+          'items': [for (final p in touched) _ruleView(p)],
+        });
+      case ('GET', ['costs']):
+        return _ok({
+          'items': [
+            for (final v in variants)
+              if (v['isActive'] != false) _costView(v),
+          ],
+        });
+      case ('PUT', ['costs', final id]):
+        final v = _find(variants, id);
+        if (v == null) return _err(404, 'NOT_FOUND', 'Variant not found');
+        v['costCents'] = (body as Map)['costCents'];
+        return _ok(_costView(v));
       case ('PATCH', ['products', final id]):
         final p = _find(products, id);
         if (p == null) return _err(404, 'NOT_FOUND', 'Product not found');

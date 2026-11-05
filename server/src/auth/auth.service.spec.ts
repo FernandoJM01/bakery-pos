@@ -251,7 +251,7 @@ describe('AuthService', () => {
       expect(response.me.staff.email).toBe('owner@bakery.local');
       expect(response.me.staff).not.toHaveProperty('passwordHash');
       expect(response.me.staff).not.toHaveProperty('pinHash');
-      expect(response.me.permissions.length).toBe(26);
+      expect(response.me.permissions.length).toBe(27);
 
       expect(updateStaffSpy).toHaveBeenCalledWith({
         where: { id: 'staff-uuid' },

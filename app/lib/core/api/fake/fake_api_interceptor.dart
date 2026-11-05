@@ -698,6 +698,8 @@ class FakeApiInterceptor extends Interceptor {
         'audit.view',
         'sale.create',
         'catalog.manage',
+        'catalog.cost',
+        'reports.branch',
         'settings.manage',
       ];
 
