@@ -93,6 +93,7 @@ class OfflineApprovalEntries extends Table {
     LocalShifts,
     LocalCashMovements,
     LocalCashCounts,
+    LocalLots,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -101,7 +102,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -148,6 +149,13 @@ class AppDatabase extends _$AppDatabase {
         if (from == 7) {
           await m.addColumn(localRefunds, localRefunds.shiftId);
           await m.addColumn(localRefunds, localRefunds.ratesJson);
+        }
+      }
+      if (from < 9) {
+        await m.createTable(localLots);
+        // Made by step 4 with the column when coming from before it.
+        if (from >= 4) {
+          await m.addColumn(catalogVariants, catalogVariants.unitsPerTray);
         }
       }
     },

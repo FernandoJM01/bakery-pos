@@ -21,6 +21,8 @@ class GridProduct {
     this.ivaBp = 0,
     this.iepsRateId,
     this.iepsBp = 0,
+    this.dayOldAfterDays,
+    this.dayOldBp,
   });
 
   final String id;
@@ -36,6 +38,10 @@ class GridProduct {
   final String? iepsRateId;
   final int iepsBp;
 
+  /// The product's day-old rule (M6.1); null when it has none.
+  final int? dayOldAfterDays;
+  final int? dayOldBp;
+
   int get lowestPriceCents =>
       variants.map((v) => v.priceCents).reduce((a, b) => a < b ? a : b);
   bool get hasPriceRange =>
@@ -49,6 +55,7 @@ class GridVariant {
     required this.sku,
     required this.barcode,
     required this.priceCents,
+    this.unitsPerTray,
   });
 
   final String id;
@@ -56,6 +63,7 @@ class GridVariant {
   final String? sku;
   final String? barcode;
   final int priceCents;
+  final int? unitsPerTray;
 }
 
 class GridCategory {
@@ -167,6 +175,7 @@ class TillCatalogRepository {
             sku: Value(v.sku),
             barcode: Value(v.barcode),
             priceCents: v.priceCents,
+            unitsPerTray: Value(v.unitsPerTray),
             sortOrder: v.sortOrder,
             isActive: v.isActive,
           ),
@@ -242,6 +251,7 @@ class TillCatalogRepository {
               sku: v.sku,
               barcode: v.barcode,
               priceCents: prices[v.id] ?? v.priceCents,
+              unitsPerTray: v.unitsPerTray,
             ),
           );
     }
@@ -263,6 +273,8 @@ class TillCatalogRepository {
               ivaBp: rates[p.ivaRateId] ?? 0,
               iepsRateId: p.iepsRateId,
               iepsBp: p.iepsRateId == null ? 0 : rates[p.iepsRateId] ?? 0,
+              dayOldAfterDays: p.dayOldDiscountAfterDays,
+              dayOldBp: p.dayOldDiscountBp,
             ),
       ],
     );

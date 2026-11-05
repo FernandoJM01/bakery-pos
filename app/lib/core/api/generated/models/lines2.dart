@@ -1,0 +1,19 @@
+// coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, unused_import, invalid_annotation_target, unnecessary_import
+
+import 'package:json_annotation/json_annotation.dart';
+
+part 'lines2.g.dart';
+
+@JsonSerializable()
+class Lines2 {
+  const Lines2({required this.variantId, required this.quantity});
+
+  factory Lines2.fromJson(Map<String, Object?> json) => _$Lines2FromJson(json);
+
+  final String variantId;
+  final int quantity;
+
+  Map<String, Object?> toJson() => _$Lines2ToJson(this);
+}

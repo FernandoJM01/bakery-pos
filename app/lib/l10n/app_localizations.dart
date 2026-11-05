@@ -3635,6 +3635,348 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Nota en turno'**
   String get auditCashNoteAdded;
+
+  /// No description provided for @stockInventory.
+  ///
+  /// In es, this message translates to:
+  /// **'Inventario'**
+  String get stockInventory;
+
+  /// No description provided for @stockHowMany.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cuánto salió de {name}?'**
+  String stockHowMany(String name);
+
+  /// No description provided for @stockTrays.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} charolas'**
+  String stockTrays(int count);
+
+  /// No description provided for @stockProduced.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} de {name} registrados'**
+  String stockProduced(String name, int count);
+
+  /// No description provided for @stockOnHand.
+  ///
+  /// In es, this message translates to:
+  /// **'En existencia: {count}'**
+  String stockOnHand(int count);
+
+  /// No description provided for @stockRecordWaste.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrar merma'**
+  String get stockRecordWaste;
+
+  /// No description provided for @stockCount.
+  ///
+  /// In es, this message translates to:
+  /// **'Contar inventario'**
+  String get stockCount;
+
+  /// No description provided for @stockCountHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe las piezas que hay. Lo que dejes vacío no se cuenta.'**
+  String get stockCountHint;
+
+  /// No description provided for @stockWasteList.
+  ///
+  /// In es, this message translates to:
+  /// **'Para merma hoy'**
+  String get stockWasteList;
+
+  /// No description provided for @stockLotLine.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} piezas, hechas el {date}'**
+  String stockLotLine(String date, int count);
+
+  /// No description provided for @stockConfirmWaste.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar'**
+  String get stockConfirmWaste;
+
+  /// No description provided for @stockByAge.
+  ///
+  /// In es, this message translates to:
+  /// **'Existencias'**
+  String get stockByAge;
+
+  /// No description provided for @stockAges.
+  ///
+  /// In es, this message translates to:
+  /// **'Frescos: {fresh} · Día anterior: {dayOld}'**
+  String stockAges(int fresh, int dayOld);
+
+  /// No description provided for @stockWasteIncomplete.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige producto, piezas y motivo'**
+  String get stockWasteIncomplete;
+
+  /// No description provided for @stockProduct.
+  ///
+  /// In es, this message translates to:
+  /// **'Producto'**
+  String get stockProduct;
+
+  /// No description provided for @stockUnits.
+  ///
+  /// In es, this message translates to:
+  /// **'Piezas'**
+  String get stockUnits;
+
+  /// No description provided for @wasteReasonBurnt.
+  ///
+  /// In es, this message translates to:
+  /// **'Quemado'**
+  String get wasteReasonBurnt;
+
+  /// No description provided for @wasteReasonExpired.
+  ///
+  /// In es, this message translates to:
+  /// **'Caducado'**
+  String get wasteReasonExpired;
+
+  /// No description provided for @wasteReasonDamaged.
+  ///
+  /// In es, this message translates to:
+  /// **'Dañado'**
+  String get wasteReasonDamaged;
+
+  /// No description provided for @wasteReasonUnsold.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin vender'**
+  String get wasteReasonUnsold;
+
+  /// No description provided for @saleDayOldOption.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} día anterior ({count})'**
+  String saleDayOldOption(String name, int count);
+
+  /// No description provided for @saleDayOldTag.
+  ///
+  /// In es, this message translates to:
+  /// **' (día anterior)'**
+  String get saleDayOldTag;
+
+  /// No description provided for @saleStockLow.
+  ///
+  /// In es, this message translates to:
+  /// **'Quedan pocas piezas de {name} según el sistema'**
+  String saleStockLow(String name);
+
+  /// No description provided for @stockTransfers.
+  ///
+  /// In es, this message translates to:
+  /// **'Transferencias'**
+  String get stockTransfers;
+
+  /// No description provided for @stockWaste.
+  ///
+  /// In es, this message translates to:
+  /// **'Merma'**
+  String get stockWaste;
+
+  /// No description provided for @stockEventProduction.
+  ///
+  /// In es, this message translates to:
+  /// **'Producción'**
+  String get stockEventProduction;
+
+  /// No description provided for @stockEventSale.
+  ///
+  /// In es, this message translates to:
+  /// **'Venta'**
+  String get stockEventSale;
+
+  /// No description provided for @stockEventRefund.
+  ///
+  /// In es, this message translates to:
+  /// **'Devolución'**
+  String get stockEventRefund;
+
+  /// No description provided for @stockEventWaste.
+  ///
+  /// In es, this message translates to:
+  /// **'Merma'**
+  String get stockEventWaste;
+
+  /// No description provided for @stockEventTransferOut.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviado a otra sucursal'**
+  String get stockEventTransferOut;
+
+  /// No description provided for @stockEventTransferIn.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibido de otra sucursal'**
+  String get stockEventTransferIn;
+
+  /// No description provided for @stockEventCount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajuste por conteo'**
+  String get stockEventCount;
+
+  /// No description provided for @stockCheckOk.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisión nocturna correcta: {date}'**
+  String stockCheckOk(String date);
+
+  /// No description provided for @stockCheckBad.
+  ///
+  /// In es, this message translates to:
+  /// **'La revisión nocturna encontró {count} diferencias'**
+  String stockCheckBad(int count);
+
+  /// No description provided for @stockEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay movimientos de inventario'**
+  String get stockEmpty;
+
+  /// No description provided for @stockFresh.
+  ///
+  /// In es, this message translates to:
+  /// **'Frescos'**
+  String get stockFresh;
+
+  /// No description provided for @stockDayOld.
+  ///
+  /// In es, this message translates to:
+  /// **'Día anterior'**
+  String get stockDayOld;
+
+  /// No description provided for @stockWasteDue.
+  ///
+  /// In es, this message translates to:
+  /// **'Para merma'**
+  String get stockWasteDue;
+
+  /// No description provided for @stockTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Total'**
+  String get stockTotal;
+
+  /// No description provided for @stockSendTransfer.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar a otra sucursal'**
+  String get stockSendTransfer;
+
+  /// No description provided for @stockNoTransfers.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay transferencias'**
+  String get stockNoTransfers;
+
+  /// No description provided for @stockTransferFlagged.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo recibido no coincide con lo enviado'**
+  String get stockTransferFlagged;
+
+  /// No description provided for @stockTransferLine.
+  ///
+  /// In es, this message translates to:
+  /// **'De {from} a {to}'**
+  String stockTransferLine(String from, String to);
+
+  /// No description provided for @stockTransferUnits.
+  ///
+  /// In es, this message translates to:
+  /// **'{name}: enviadas {sent}, recibidas {received}'**
+  String stockTransferUnits(String name, String received, int sent);
+
+  /// No description provided for @stockReceive.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibir'**
+  String get stockReceive;
+
+  /// No description provided for @stockReceiveHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe lo que llegó. Si no coincide, queda marcado.'**
+  String get stockReceiveHint;
+
+  /// No description provided for @stockReceiveField.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} (enviadas {sent})'**
+  String stockReceiveField(String name, int sent);
+
+  /// No description provided for @stockTransferIncomplete.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige dos sucursales y al menos un producto'**
+  String get stockTransferIncomplete;
+
+  /// No description provided for @stockNotEnough.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay suficiente existencia para enviar'**
+  String get stockNotEnough;
+
+  /// No description provided for @stockFromBranch.
+  ///
+  /// In es, this message translates to:
+  /// **'Sucursal que envía'**
+  String get stockFromBranch;
+
+  /// No description provided for @stockToBranch.
+  ///
+  /// In es, this message translates to:
+  /// **'Sucursal que recibe'**
+  String get stockToBranch;
+
+  /// No description provided for @stockTransferField.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} (hay {count})'**
+  String stockTransferField(String name, int count);
+
+  /// No description provided for @stockWasteTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Costo de la merma: {amount}'**
+  String stockWasteTotal(String amount);
+
+  /// No description provided for @stockNoWaste.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay merma registrada'**
+  String get stockNoWaste;
+
+  /// No description provided for @stockWasteLine.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} piezas · {reason} · {date}'**
+  String stockWasteLine(String reason, String date, int count);
+
+  /// No description provided for @catalogVariantCost.
+  ///
+  /// In es, this message translates to:
+  /// **'Costo (opcional)'**
+  String get catalogVariantCost;
+
+  /// No description provided for @catalogVariantTray.
+  ///
+  /// In es, this message translates to:
+  /// **'Piezas por charola (opcional)'**
+  String get catalogVariantTray;
 }
 
 class _AppLocalizationsDelegate

@@ -102,6 +102,12 @@ export class SaleLineInputDto {
   @Cents(1)
   unitPriceCents!: number;
 
+  @IsBoolean()
+  dayOld!: boolean;
+
+  @Cents(1)
+  fullPriceCents!: number;
+
   @IsUUID()
   ivaRateId!: string;
 

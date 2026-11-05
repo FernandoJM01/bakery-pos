@@ -462,7 +462,13 @@ export class CatalogService {
         if (Object.keys(changes).length > 0) {
           await tx.productVariant.update({ where: { id }, data: { ...dto } });
         }
-        const { priceCents, ...rest } = changes;
+        const { priceCents, costCents, ...rest } = changes;
+        if (costCents) {
+          await this.audit(tx, user, 'catalog.cost_changed', 'variant', id, {
+            old: costCents.old,
+            new: costCents.new,
+          });
+        }
         if (priceCents) {
           await this.audit(tx, user, 'catalog.price_changed', 'variant', id, {
             old: priceCents.old,

@@ -1,0 +1,185 @@
+{
+  "description": "Shared cases for oldest-first stock in M5 brief section 4.2 (acceptance test F2). Lots order by producedOn, then id. With dayOld, only lots produced on or before agedOnOrBefore count.",
+  "cases": [
+    {
+      "name": "Oldest lot first",
+      "lots": [
+        {
+          "id": "b",
+          "producedOn": "2026-11-02",
+          "left": 10
+        },
+        {
+          "id": "a",
+          "producedOn": "2026-11-01",
+          "left": 3
+        }
+      ],
+      "quantity": 5,
+      "dayOld": false,
+      "agedOnOrBefore": "2026-11-01",
+      "expected": {
+        "takes": [
+          {
+            "lotId": "a",
+            "quantity": 3
+          },
+          {
+            "lotId": "b",
+            "quantity": 2
+          }
+        ],
+        "unassigned": 0
+      }
+    },
+    {
+      "name": "Same day: first made goes first by id",
+      "lots": [
+        {
+          "id": "b",
+          "producedOn": "2026-11-02",
+          "left": 2
+        },
+        {
+          "id": "a",
+          "producedOn": "2026-11-02",
+          "left": 2
+        }
+      ],
+      "quantity": 3,
+      "dayOld": false,
+      "agedOnOrBefore": "2026-11-01",
+      "expected": {
+        "takes": [
+          {
+            "lotId": "a",
+            "quantity": 2
+          },
+          {
+            "lotId": "b",
+            "quantity": 1
+          }
+        ],
+        "unassigned": 0
+      }
+    },
+    {
+      "name": "Day-old takes only aged lots, the rest has no lot",
+      "lots": [
+        {
+          "id": "a",
+          "producedOn": "2026-11-01",
+          "left": 2
+        },
+        {
+          "id": "b",
+          "producedOn": "2026-11-02",
+          "left": 10
+        }
+      ],
+      "quantity": 5,
+      "dayOld": true,
+      "agedOnOrBefore": "2026-11-01",
+      "expected": {
+        "takes": [
+          {
+            "lotId": "a",
+            "quantity": 2
+          }
+        ],
+        "unassigned": 3
+      }
+    },
+    {
+      "name": "Past all stock: the sale stands",
+      "lots": [
+        {
+          "id": "a",
+          "producedOn": "2026-11-02",
+          "left": 1
+        }
+      ],
+      "quantity": 4,
+      "dayOld": false,
+      "agedOnOrBefore": "2026-11-01",
+      "expected": {
+        "takes": [
+          {
+            "lotId": "a",
+            "quantity": 1
+          }
+        ],
+        "unassigned": 3
+      }
+    },
+    {
+      "name": "No lots at all",
+      "lots": [],
+      "quantity": 2,
+      "dayOld": false,
+      "agedOnOrBefore": "2026-11-01",
+      "expected": {
+        "takes": [],
+        "unassigned": 2
+      }
+    },
+    {
+      "name": "Empty lots are skipped",
+      "lots": [
+        {
+          "id": "a",
+          "producedOn": "2026-10-30",
+          "left": 0
+        },
+        {
+          "id": "b",
+          "producedOn": "2026-11-01",
+          "left": 2
+        }
+      ],
+      "quantity": 1,
+      "dayOld": false,
+      "agedOnOrBefore": "2026-11-01",
+      "expected": {
+        "takes": [
+          {
+            "lotId": "b",
+            "quantity": 1
+          }
+        ],
+        "unassigned": 0
+      }
+    },
+    {
+      "name": "Fresh sale still takes aged stock first",
+      "lots": [
+        {
+          "id": "a",
+          "producedOn": "2026-10-31",
+          "left": 1
+        },
+        {
+          "id": "b",
+          "producedOn": "2026-11-02",
+          "left": 5
+        }
+      ],
+      "quantity": 2,
+      "dayOld": false,
+      "agedOnOrBefore": "2026-11-01",
+      "expected": {
+        "takes": [
+          {
+            "lotId": "a",
+            "quantity": 1
+          },
+          {
+            "lotId": "b",
+            "quantity": 1
+          }
+        ],
+        "unassigned": 0
+      }
+    }
+  ]
+}

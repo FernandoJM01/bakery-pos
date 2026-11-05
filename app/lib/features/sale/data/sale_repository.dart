@@ -169,6 +169,8 @@ class SaleRepository {
             'variantName': l.item.variantName,
             'quantity': l.quantity,
             'unitPriceCents': l.item.unitPriceCents,
+            'dayOld': l.item.dayOld,
+            'fullPriceCents': l.item.fullPriceCents,
             'ivaRateId': l.item.ivaRateId,
             'ivaBp': l.item.ivaBp,
             'iepsRateId': l.item.iepsRateId,

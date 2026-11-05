@@ -140,6 +140,8 @@ describe('Sales sync (e2e)', () => {
         variantName: 'Pieza',
         quantity: l.quantity,
         unitPriceCents: l.variant.priceCents,
+        dayOld: false,
+        fullPriceCents: l.variant.priceCents,
         ivaRateId: l.variant.ivaBp ? IVA16 : IVA0,
         ivaBp: l.variant.ivaBp,
         iepsRateId: l.variant.iepsBp ? IEPS8 : null,

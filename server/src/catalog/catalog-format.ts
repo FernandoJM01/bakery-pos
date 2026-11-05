@@ -62,6 +62,8 @@ export function formatVariant(v: VariantWithPrices) {
     sku: v.sku,
     barcode: v.barcode,
     priceCents: v.priceCents,
+    costCents: v.costCents,
+    unitsPerTray: v.unitsPerTray,
     sortOrder: v.sortOrder,
     isActive: v.isActive,
     updatedAt: v.updatedAt.toISOString(),

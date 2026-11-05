@@ -7,6 +7,8 @@ part of 'sale_line.dart';
 // **************************************************************************
 
 SaleLine _$SaleLineFromJson(Map<String, dynamic> json) => SaleLine(
+  dayOld: json['dayOld'] as bool,
+  fullPriceCents: (json['fullPriceCents'] as num).toInt(),
   lineNo: (json['lineNo'] as num).toInt(),
   variantId: json['variantId'] as String,
   productName: json['productName'] as String,
@@ -29,6 +31,8 @@ SaleLine _$SaleLineFromJson(Map<String, dynamic> json) => SaleLine(
 );
 
 Map<String, dynamic> _$SaleLineToJson(SaleLine instance) => <String, dynamic>{
+  'dayOld': instance.dayOld,
+  'fullPriceCents': instance.fullPriceCents,
   'lineNo': instance.lineNo,
   'variantId': instance.variantId,
   'productName': instance.productName,

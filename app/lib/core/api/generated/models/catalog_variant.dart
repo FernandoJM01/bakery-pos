@@ -17,6 +17,7 @@ class CatalogVariant {
     required this.sku,
     required this.barcode,
     required this.priceCents,
+    required this.unitsPerTray,
     required this.sortOrder,
     required this.isActive,
   });
@@ -30,6 +31,9 @@ class CatalogVariant {
   final String? sku;
   final String? barcode;
   final Cents priceCents;
+
+  /// Production entry works in trays when set
+  final int? unitsPerTray;
   final int sortOrder;
   final bool isActive;
 

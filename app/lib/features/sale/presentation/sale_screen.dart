@@ -14,6 +14,8 @@ import '../../auth/domain/approval_models.dart';
 import '../../cash/data/shift_repository.dart';
 import '../../printing/data/printer_service.dart';
 import '../../printing/domain/documents.dart';
+import '../../stock/data/stock_repository.dart';
+import '../../stock/domain/stock_math.dart';
 import '../../till_catalog/data/till_catalog_repository.dart';
 import '../../till_catalog/presentation/product_grid_screen.dart';
 import '../data/held_ticket_repository.dart';
@@ -26,16 +28,21 @@ import 'payment_dialog.dart';
 import 'receipt_dialog.dart';
 import 'refund_dialog.dart';
 
-SaleItem saleItemOf(GridProduct p, GridVariant v) => SaleItem(
-  variantId: v.id,
-  productName: p.name,
-  variantName: v.name,
-  unitPriceCents: v.priceCents,
-  ivaRateId: p.ivaRateId,
-  ivaBp: p.ivaBp,
-  iepsRateId: p.iepsRateId,
-  iepsBp: p.iepsBp,
-);
+SaleItem saleItemOf(GridProduct p, GridVariant v, {bool dayOld = false}) =>
+    SaleItem(
+      variantId: v.id,
+      productName: p.name,
+      variantName: v.name,
+      unitPriceCents: dayOld
+          ? dayOldPrice(v.priceCents, p.dayOldBp!)
+          : v.priceCents,
+      dayOld: dayOld,
+      fullPriceCents: v.priceCents,
+      ivaRateId: p.ivaRateId,
+      ivaBp: p.ivaBp,
+      iepsRateId: p.iepsRateId,
+      iepsBp: p.iepsBp,
+    );
 
 /// Asks before throwing away a ticket with lines, and records it
 /// (`sale.ticket_discarded`). True when the ticket is now empty.
@@ -84,26 +91,46 @@ class SaleScreen extends ConsumerWidget {
     GridProduct p,
   ) async {
     final notifier = ref.read(ticketProvider.notifier);
-    if (p.variants.length == 1) {
-      notifier.add(saleItemOf(p, p.variants.single));
-      return;
-    }
     final l10n = AppLocalizations.of(context)!;
-    final v = await showDialog<GridVariant>(
+    final messenger = ScaffoldMessenger.of(context);
+    // Read at once: a tap adds to the ticket with no wait.
+    final stock = ref.read(stockViewProvider).value ?? const {};
+
+    // A button per variant, and a day-old one when aged stock exists (M6.2).
+    final options = [
+      for (final v in p.variants) ...[
+        saleItemOf(p, v),
+        if (p.dayOldBp != null && (stock[v.id]?.dayOld ?? 0) > 0)
+          saleItemOf(p, v, dayOld: true),
+      ],
+    ];
+    SaleItem? item = options.length == 1 ? options.single : null;
+    item ??= await showDialog<SaleItem>(
       context: context,
       builder: (context) => SimpleDialog(
         title: Text(l10n.saleChooseVariantTitle(p.name)),
         children: [
-          for (final v in p.variants)
+          for (final o in options)
             SimpleDialogOption(
-              key: Key('variant-${v.id}'),
-              onPressed: () => Navigator.of(context).pop(v),
+              key: Key(
+                o.dayOld ? 'dayold-${o.variantId}' : 'variant-${o.variantId}',
+              ),
+              onPressed: () => Navigator.of(context).pop(o),
               child: SizedBox(
                 height: AppDimensions.preferredTouchTarget,
                 child: Row(
                   children: [
-                    Expanded(child: Text(v.name)),
-                    Text(formatCents(v.priceCents)),
+                    Expanded(
+                      child: Text(
+                        o.dayOld
+                            ? l10n.saleDayOldOption(
+                                o.variantName,
+                                stock[o.variantId]?.dayOld ?? 0,
+                              )
+                            : o.variantName,
+                      ),
+                    ),
+                    Text(formatCents(o.unitPriceCents)),
                   ],
                 ),
               ),
@@ -111,11 +138,29 @@ class SaleScreen extends ConsumerWidget {
         ],
       ),
     );
-    if (v != null) notifier.add(saleItemOf(p, v));
+    if (item == null) return;
+    notifier.add(item);
+
+    // A warning only: the bread in front of the cashier is more real than
+    // any number, so the sale goes on (M5 brief 2).
+    final known = stock[item.variantId];
+    if (known != null) {
+      final onTicket = ref
+          .read(ticketProvider)
+          .lines
+          .where((l) => l.item.variantId == item!.variantId)
+          .fold(0, (a, l) => a + l.quantity);
+      if (onTicket > known.onHand) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.saleStockLow(item.productName))),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(stockViewProvider);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -189,6 +234,7 @@ class TicketPanel extends ConsumerWidget {
     );
     if (receipt == null || !context.mounted) return;
     ref.read(ticketProvider.notifier).clear();
+    ref.invalidate(stockViewProvider);
     final branch = ref.read(enrolledBranchNameProvider).value;
     final doc = receiptDocument(l10n, receipt, branch);
     final printer = ref.read(printerServiceProvider);
@@ -452,9 +498,13 @@ class _LineTile extends ConsumerWidget {
       contentPadding: EdgeInsets.zero,
       minVerticalPadding: AppDimensions.paddingSmall,
       title: Text(
-        line.item.variantName.isEmpty
-            ? line.item.productName
-            : l10n.saleLineTitle(line.item.productName, line.item.variantName),
+        (line.item.variantName.isEmpty
+                ? line.item.productName
+                : l10n.saleLineTitle(
+                    line.item.productName,
+                    line.item.variantName,
+                  )) +
+            (line.item.dayOld ? l10n.saleDayOldTag : ''),
       ),
       subtitle: Text(
         [

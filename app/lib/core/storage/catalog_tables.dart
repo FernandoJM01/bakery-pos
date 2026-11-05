@@ -50,6 +50,7 @@ class CatalogVariants extends Table {
   TextColumn get sku => text().nullable()();
   TextColumn get barcode => text().nullable()();
   IntColumn get priceCents => integer()();
+  IntColumn get unitsPerTray => integer().nullable()();
   IntColumn get sortOrder => integer()();
   BoolColumn get isActive => boolean()();
 
@@ -91,6 +92,20 @@ class OutboxEntries extends Table {
   /// `PENDING` or `QUARANTINED`; delivered records are deleted.
   TextColumn get status => text().withDefault(const Constant('PENDING'))();
   TextColumn get lastErrorCode => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// This branch's open lots from the server (M5 brief 4.3). The till works out
+/// their age itself, so ageing at midnight needs no connection.
+class LocalLots extends Table {
+  TextColumn get id => text()();
+  TextColumn get variantId => text()();
+
+  /// YYYY-MM-DD at the branch.
+  TextColumn get producedOn => text()();
+  IntColumn get quantityLeft => integer()();
 
   @override
   Set<Column> get primaryKey => {id};

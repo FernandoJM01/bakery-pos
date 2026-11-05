@@ -10,6 +10,7 @@ import {
 import { v7 as uuidv7 } from 'uuid';
 import { splitTax } from '../catalog/tax-split';
 import { ClockService } from '../common/clock.service';
+import { localDay } from '../common/local-day';
 import { PrismaService } from '../prisma/prisma.service';
 import { SyncRecordDto } from '../sync/dto/sync.dto';
 import {
@@ -29,6 +30,8 @@ import {
   SaleCompletedPayloadDto,
   SaleRefundedPayloadDto,
 } from './dto/sale-sync.dto';
+import { dayOldPrice } from '../stock/fifo';
+import { StockLedgerService } from '../stock/stock-ledger.service';
 import { SALE_SETTINGS } from './sale-settings';
 import {
   computeSaleTotals,
@@ -44,16 +47,6 @@ export function folioFor(prefix: string, folioNumber: number): string {
   return `${prefix}-${String(folioNumber).padStart(6, '0')}`;
 }
 
-/** Calendar day (YYYY-MM-DD) of an instant in a time zone. */
-export function localDay(at: Date, timeZone: string): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(at);
-}
-
 /**
  * Sync handlers for sales made on a till (M3 brief 4.5). The till is the
  * source of the sale; the server checks every rule again and stores it.
@@ -63,7 +56,16 @@ export class SaleSyncService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly clock: ClockService,
+    private readonly stock: StockLedgerService,
   ) {}
+
+  private async branchTimeZone(tx: Prisma.TransactionClient, id: string) {
+    const b = await tx.branch.findUniqueOrThrow({
+      where: { id },
+      select: { timezone: true },
+    });
+    return b.timezone;
+  }
 
   async planCompleted(device: Device, record: SyncRecordDto): Promise<Plan> {
     const parsed = parsePayload(SaleCompletedPayloadDto, record.payload);
@@ -153,6 +155,31 @@ export class SaleSyncService {
         }
       } else if (l.iepsBp !== 0) {
         return rejected(`Line ${l.lineNo}: iepsBp without iepsRateId`);
+      }
+    }
+
+    // Day-old lines cost what the product's rule says (M6.2).
+    const products = new Map(
+      (
+        await this.prisma.productVariant.findMany({
+          where: { id: { in: p.lines.map((l) => l.variantId) } },
+          select: {
+            id: true,
+            product: { select: { dayOldDiscountBp: true } },
+          },
+        })
+      ).map((v) => [v.id, v.product]),
+    );
+    for (const l of p.lines) {
+      const bp = products.get(l.variantId)?.dayOldDiscountBp;
+      if (!l.dayOld) {
+        if (l.unitPriceCents !== l.fullPriceCents) {
+          return rejected(`Line ${l.lineNo}: price differs from full price`);
+        }
+      } else if (bp == null) {
+        return rejected(`Line ${l.lineNo}: this product has no day-old price`);
+      } else if (l.unitPriceCents !== dayOldPrice(l.fullPriceCents, bp)) {
+        return rejected(`Line ${l.lineNo}: day-old price does not match`);
       }
     }
 
@@ -277,6 +304,8 @@ export class SaleSyncService {
       variantName: l.variantName,
       quantity: l.quantity,
       unitPriceCents: l.unitPriceCents,
+      dayOld: l.dayOld,
+      fullPriceCents: l.fullPriceCents,
       ivaRateId: l.ivaRateId,
       ivaBp: l.ivaBp,
       iepsRateId: l.iepsRateId ?? null,
@@ -349,6 +378,14 @@ export class SaleSyncService {
           },
         });
         if (audits.length) await tx.auditLog.createMany({ data: audits });
+        await this.stock.takeForSale(tx, {
+          saleId,
+          branchId: device.branchId,
+          timeZone: await this.branchTimeZone(tx, device.branchId),
+          staffId: cashier.id,
+          occurredAt,
+          lines: p.lines,
+        });
       },
     };
   }
@@ -520,6 +557,18 @@ export class SaleSyncService {
         },
       });
     }
+    await this.stock.returnForRefund(tx, {
+      saleId: sale.id,
+      refundId,
+      branchId: sale.branchId,
+      staffId: p.staffId,
+      occurredAt,
+      lines: p.lines.flatMap((r) =>
+        r.restock
+          ? [{ variantId: byNo.get(r.lineNo)!.variantId, quantity: r.quantity }]
+          : [],
+      ),
+    });
     const status =
       p.kind === RefundKind.VOID
         ? SaleStatus.VOIDED

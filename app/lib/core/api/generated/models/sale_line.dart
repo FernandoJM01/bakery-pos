@@ -13,6 +13,8 @@ part 'sale_line.g.dart';
 @JsonSerializable()
 class SaleLine {
   const SaleLine({
+    required this.dayOld,
+    required this.fullPriceCents,
     required this.lineNo,
     required this.variantId,
     required this.productName,
@@ -37,6 +39,8 @@ class SaleLine {
   factory SaleLine.fromJson(Map<String, Object?> json) =>
       _$SaleLineFromJson(json);
 
+  final bool dayOld;
+  final Cents fullPriceCents;
   final int lineNo;
   final String variantId;
   final String productName;

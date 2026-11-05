@@ -1184,5 +1184,207 @@
   "auditCashShiftClosed": "Turno cerrado",
   "auditCashVarianceFlagged": "Diferencia de caja marcada",
   "auditCashDrawerOpened": "Cajón abierto sin venta",
-  "auditCashNoteAdded": "Nota en turno"
+  "auditCashNoteAdded": "Nota en turno",
+  "stockInventory": "Inventario",
+  "stockHowMany": "¿Cuánto salió de {name}?",
+  "@stockHowMany": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "stockTrays": "{count} charolas",
+  "@stockTrays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stockProduced": "{count} de {name} registrados",
+  "@stockProduced": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stockOnHand": "En existencia: {count}",
+  "@stockOnHand": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stockRecordWaste": "Registrar merma",
+  "stockCount": "Contar inventario",
+  "stockCountHint": "Escribe las piezas que hay. Lo que dejes vacío no se cuenta.",
+  "stockWasteList": "Para merma hoy",
+  "stockLotLine": "{count} piezas, hechas el {date}",
+  "@stockLotLine": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stockConfirmWaste": "Confirmar",
+  "stockByAge": "Existencias",
+  "stockAges": "Frescos: {fresh} · Día anterior: {dayOld}",
+  "@stockAges": {
+    "placeholders": {
+      "fresh": {
+        "type": "int"
+      },
+      "dayOld": {
+        "type": "int"
+      }
+    }
+  },
+  "stockWasteIncomplete": "Elige producto, piezas y motivo",
+  "stockProduct": "Producto",
+  "stockUnits": "Piezas",
+  "wasteReasonBurnt": "Quemado",
+  "wasteReasonExpired": "Caducado",
+  "wasteReasonDamaged": "Dañado",
+  "wasteReasonUnsold": "Sin vender",
+  "saleDayOldOption": "{name} día anterior ({count})",
+  "@saleDayOldOption": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "saleDayOldTag": " (día anterior)",
+  "saleStockLow": "Quedan pocas piezas de {name} según el sistema",
+  "@saleStockLow": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "stockTransfers": "Transferencias",
+  "stockWaste": "Merma",
+  "stockEventProduction": "Producción",
+  "stockEventSale": "Venta",
+  "stockEventRefund": "Devolución",
+  "stockEventWaste": "Merma",
+  "stockEventTransferOut": "Enviado a otra sucursal",
+  "stockEventTransferIn": "Recibido de otra sucursal",
+  "stockEventCount": "Ajuste por conteo",
+  "stockCheckOk": "Revisión nocturna correcta: {date}",
+  "@stockCheckOk": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "stockCheckBad": "La revisión nocturna encontró {count} diferencias",
+  "@stockCheckBad": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stockEmpty": "Todavía no hay movimientos de inventario",
+  "stockFresh": "Frescos",
+  "stockDayOld": "Día anterior",
+  "stockWasteDue": "Para merma",
+  "stockTotal": "Total",
+  "stockSendTransfer": "Enviar a otra sucursal",
+  "stockNoTransfers": "No hay transferencias",
+  "stockTransferFlagged": "Lo recibido no coincide con lo enviado",
+  "stockTransferLine": "De {from} a {to}",
+  "@stockTransferLine": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "stockTransferUnits": "{name}: enviadas {sent}, recibidas {received}",
+  "@stockTransferUnits": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "received": {
+        "type": "String"
+      },
+      "sent": {
+        "type": "int"
+      }
+    }
+  },
+  "stockReceive": "Recibir",
+  "stockReceiveHint": "Escribe lo que llegó. Si no coincide, queda marcado.",
+  "stockReceiveField": "{name} (enviadas {sent})",
+  "@stockReceiveField": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "sent": {
+        "type": "int"
+      }
+    }
+  },
+  "stockTransferIncomplete": "Elige dos sucursales y al menos un producto",
+  "stockNotEnough": "No hay suficiente existencia para enviar",
+  "stockFromBranch": "Sucursal que envía",
+  "stockToBranch": "Sucursal que recibe",
+  "stockTransferField": "{name} (hay {count})",
+  "@stockTransferField": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stockWasteTotal": "Costo de la merma: {amount}",
+  "@stockWasteTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "stockNoWaste": "No hay merma registrada",
+  "stockWasteLine": "{count} piezas · {reason} · {date}",
+  "@stockWasteLine": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "catalogVariantCost": "Costo (opcional)",
+  "catalogVariantTray": "Piezas por charola (opcional)"
 }

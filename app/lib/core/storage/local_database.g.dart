@@ -3092,6 +3092,17 @@ class $CatalogVariantsTable extends CatalogVariants
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _unitsPerTrayMeta = const VerificationMeta(
+    'unitsPerTray',
+  );
+  @override
+  late final GeneratedColumn<int> unitsPerTray = GeneratedColumn<int>(
+    'units_per_tray',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _sortOrderMeta = const VerificationMeta(
     'sortOrder',
   );
@@ -3125,6 +3136,7 @@ class $CatalogVariantsTable extends CatalogVariants
     sku,
     barcode,
     priceCents,
+    unitsPerTray,
     sortOrder,
     isActive,
   ];
@@ -3181,6 +3193,15 @@ class $CatalogVariantsTable extends CatalogVariants
     } else if (isInserting) {
       context.missing(_priceCentsMeta);
     }
+    if (data.containsKey('units_per_tray')) {
+      context.handle(
+        _unitsPerTrayMeta,
+        unitsPerTray.isAcceptableOrUnknown(
+          data['units_per_tray']!,
+          _unitsPerTrayMeta,
+        ),
+      );
+    }
     if (data.containsKey('sort_order')) {
       context.handle(
         _sortOrderMeta,
@@ -3230,6 +3251,10 @@ class $CatalogVariantsTable extends CatalogVariants
         DriftSqlType.int,
         data['${effectivePrefix}price_cents'],
       )!,
+      unitsPerTray: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}units_per_tray'],
+      ),
       sortOrder: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}sort_order'],
@@ -3254,6 +3279,7 @@ class CatalogVariant extends DataClass implements Insertable<CatalogVariant> {
   final String? sku;
   final String? barcode;
   final int priceCents;
+  final int? unitsPerTray;
   final int sortOrder;
   final bool isActive;
   const CatalogVariant({
@@ -3263,6 +3289,7 @@ class CatalogVariant extends DataClass implements Insertable<CatalogVariant> {
     this.sku,
     this.barcode,
     required this.priceCents,
+    this.unitsPerTray,
     required this.sortOrder,
     required this.isActive,
   });
@@ -3279,6 +3306,9 @@ class CatalogVariant extends DataClass implements Insertable<CatalogVariant> {
       map['barcode'] = Variable<String>(barcode);
     }
     map['price_cents'] = Variable<int>(priceCents);
+    if (!nullToAbsent || unitsPerTray != null) {
+      map['units_per_tray'] = Variable<int>(unitsPerTray);
+    }
     map['sort_order'] = Variable<int>(sortOrder);
     map['is_active'] = Variable<bool>(isActive);
     return map;
@@ -3294,6 +3324,9 @@ class CatalogVariant extends DataClass implements Insertable<CatalogVariant> {
           ? const Value.absent()
           : Value(barcode),
       priceCents: Value(priceCents),
+      unitsPerTray: unitsPerTray == null && nullToAbsent
+          ? const Value.absent()
+          : Value(unitsPerTray),
       sortOrder: Value(sortOrder),
       isActive: Value(isActive),
     );
@@ -3311,6 +3344,7 @@ class CatalogVariant extends DataClass implements Insertable<CatalogVariant> {
       sku: serializer.fromJson<String?>(json['sku']),
       barcode: serializer.fromJson<String?>(json['barcode']),
       priceCents: serializer.fromJson<int>(json['priceCents']),
+      unitsPerTray: serializer.fromJson<int?>(json['unitsPerTray']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
       isActive: serializer.fromJson<bool>(json['isActive']),
     );
@@ -3325,6 +3359,7 @@ class CatalogVariant extends DataClass implements Insertable<CatalogVariant> {
       'sku': serializer.toJson<String?>(sku),
       'barcode': serializer.toJson<String?>(barcode),
       'priceCents': serializer.toJson<int>(priceCents),
+      'unitsPerTray': serializer.toJson<int?>(unitsPerTray),
       'sortOrder': serializer.toJson<int>(sortOrder),
       'isActive': serializer.toJson<bool>(isActive),
     };
@@ -3337,6 +3372,7 @@ class CatalogVariant extends DataClass implements Insertable<CatalogVariant> {
     Value<String?> sku = const Value.absent(),
     Value<String?> barcode = const Value.absent(),
     int? priceCents,
+    Value<int?> unitsPerTray = const Value.absent(),
     int? sortOrder,
     bool? isActive,
   }) => CatalogVariant(
@@ -3346,6 +3382,7 @@ class CatalogVariant extends DataClass implements Insertable<CatalogVariant> {
     sku: sku.present ? sku.value : this.sku,
     barcode: barcode.present ? barcode.value : this.barcode,
     priceCents: priceCents ?? this.priceCents,
+    unitsPerTray: unitsPerTray.present ? unitsPerTray.value : this.unitsPerTray,
     sortOrder: sortOrder ?? this.sortOrder,
     isActive: isActive ?? this.isActive,
   );
@@ -3359,6 +3396,9 @@ class CatalogVariant extends DataClass implements Insertable<CatalogVariant> {
       priceCents: data.priceCents.present
           ? data.priceCents.value
           : this.priceCents,
+      unitsPerTray: data.unitsPerTray.present
+          ? data.unitsPerTray.value
+          : this.unitsPerTray,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
     );
@@ -3373,6 +3413,7 @@ class CatalogVariant extends DataClass implements Insertable<CatalogVariant> {
           ..write('sku: $sku, ')
           ..write('barcode: $barcode, ')
           ..write('priceCents: $priceCents, ')
+          ..write('unitsPerTray: $unitsPerTray, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('isActive: $isActive')
           ..write(')'))
@@ -3387,6 +3428,7 @@ class CatalogVariant extends DataClass implements Insertable<CatalogVariant> {
     sku,
     barcode,
     priceCents,
+    unitsPerTray,
     sortOrder,
     isActive,
   );
@@ -3400,6 +3442,7 @@ class CatalogVariant extends DataClass implements Insertable<CatalogVariant> {
           other.sku == this.sku &&
           other.barcode == this.barcode &&
           other.priceCents == this.priceCents &&
+          other.unitsPerTray == this.unitsPerTray &&
           other.sortOrder == this.sortOrder &&
           other.isActive == this.isActive);
 }
@@ -3411,6 +3454,7 @@ class CatalogVariantsCompanion extends UpdateCompanion<CatalogVariant> {
   final Value<String?> sku;
   final Value<String?> barcode;
   final Value<int> priceCents;
+  final Value<int?> unitsPerTray;
   final Value<int> sortOrder;
   final Value<bool> isActive;
   final Value<int> rowid;
@@ -3421,6 +3465,7 @@ class CatalogVariantsCompanion extends UpdateCompanion<CatalogVariant> {
     this.sku = const Value.absent(),
     this.barcode = const Value.absent(),
     this.priceCents = const Value.absent(),
+    this.unitsPerTray = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.isActive = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -3432,6 +3477,7 @@ class CatalogVariantsCompanion extends UpdateCompanion<CatalogVariant> {
     this.sku = const Value.absent(),
     this.barcode = const Value.absent(),
     required int priceCents,
+    this.unitsPerTray = const Value.absent(),
     required int sortOrder,
     required bool isActive,
     this.rowid = const Value.absent(),
@@ -3448,6 +3494,7 @@ class CatalogVariantsCompanion extends UpdateCompanion<CatalogVariant> {
     Expression<String>? sku,
     Expression<String>? barcode,
     Expression<int>? priceCents,
+    Expression<int>? unitsPerTray,
     Expression<int>? sortOrder,
     Expression<bool>? isActive,
     Expression<int>? rowid,
@@ -3459,6 +3506,7 @@ class CatalogVariantsCompanion extends UpdateCompanion<CatalogVariant> {
       if (sku != null) 'sku': sku,
       if (barcode != null) 'barcode': barcode,
       if (priceCents != null) 'price_cents': priceCents,
+      if (unitsPerTray != null) 'units_per_tray': unitsPerTray,
       if (sortOrder != null) 'sort_order': sortOrder,
       if (isActive != null) 'is_active': isActive,
       if (rowid != null) 'rowid': rowid,
@@ -3472,6 +3520,7 @@ class CatalogVariantsCompanion extends UpdateCompanion<CatalogVariant> {
     Value<String?>? sku,
     Value<String?>? barcode,
     Value<int>? priceCents,
+    Value<int?>? unitsPerTray,
     Value<int>? sortOrder,
     Value<bool>? isActive,
     Value<int>? rowid,
@@ -3483,6 +3532,7 @@ class CatalogVariantsCompanion extends UpdateCompanion<CatalogVariant> {
       sku: sku ?? this.sku,
       barcode: barcode ?? this.barcode,
       priceCents: priceCents ?? this.priceCents,
+      unitsPerTray: unitsPerTray ?? this.unitsPerTray,
       sortOrder: sortOrder ?? this.sortOrder,
       isActive: isActive ?? this.isActive,
       rowid: rowid ?? this.rowid,
@@ -3510,6 +3560,9 @@ class CatalogVariantsCompanion extends UpdateCompanion<CatalogVariant> {
     if (priceCents.present) {
       map['price_cents'] = Variable<int>(priceCents.value);
     }
+    if (unitsPerTray.present) {
+      map['units_per_tray'] = Variable<int>(unitsPerTray.value);
+    }
     if (sortOrder.present) {
       map['sort_order'] = Variable<int>(sortOrder.value);
     }
@@ -3531,6 +3584,7 @@ class CatalogVariantsCompanion extends UpdateCompanion<CatalogVariant> {
           ..write('sku: $sku, ')
           ..write('barcode: $barcode, ')
           ..write('priceCents: $priceCents, ')
+          ..write('unitsPerTray: $unitsPerTray, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('isActive: $isActive, ')
           ..write('rowid: $rowid')
@@ -10094,6 +10148,330 @@ class LocalCashCountsCompanion extends UpdateCompanion<LocalCashCount> {
   }
 }
 
+class $LocalLotsTable extends LocalLots
+    with TableInfo<$LocalLotsTable, LocalLot> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalLotsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _variantIdMeta = const VerificationMeta(
+    'variantId',
+  );
+  @override
+  late final GeneratedColumn<String> variantId = GeneratedColumn<String>(
+    'variant_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _producedOnMeta = const VerificationMeta(
+    'producedOn',
+  );
+  @override
+  late final GeneratedColumn<String> producedOn = GeneratedColumn<String>(
+    'produced_on',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _quantityLeftMeta = const VerificationMeta(
+    'quantityLeft',
+  );
+  @override
+  late final GeneratedColumn<int> quantityLeft = GeneratedColumn<int>(
+    'quantity_left',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    variantId,
+    producedOn,
+    quantityLeft,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_lots';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalLot> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('variant_id')) {
+      context.handle(
+        _variantIdMeta,
+        variantId.isAcceptableOrUnknown(data['variant_id']!, _variantIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_variantIdMeta);
+    }
+    if (data.containsKey('produced_on')) {
+      context.handle(
+        _producedOnMeta,
+        producedOn.isAcceptableOrUnknown(data['produced_on']!, _producedOnMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_producedOnMeta);
+    }
+    if (data.containsKey('quantity_left')) {
+      context.handle(
+        _quantityLeftMeta,
+        quantityLeft.isAcceptableOrUnknown(
+          data['quantity_left']!,
+          _quantityLeftMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_quantityLeftMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalLot map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalLot(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      variantId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}variant_id'],
+      )!,
+      producedOn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}produced_on'],
+      )!,
+      quantityLeft: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}quantity_left'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalLotsTable createAlias(String alias) {
+    return $LocalLotsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalLot extends DataClass implements Insertable<LocalLot> {
+  final String id;
+  final String variantId;
+
+  /// YYYY-MM-DD at the branch.
+  final String producedOn;
+  final int quantityLeft;
+  const LocalLot({
+    required this.id,
+    required this.variantId,
+    required this.producedOn,
+    required this.quantityLeft,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['variant_id'] = Variable<String>(variantId);
+    map['produced_on'] = Variable<String>(producedOn);
+    map['quantity_left'] = Variable<int>(quantityLeft);
+    return map;
+  }
+
+  LocalLotsCompanion toCompanion(bool nullToAbsent) {
+    return LocalLotsCompanion(
+      id: Value(id),
+      variantId: Value(variantId),
+      producedOn: Value(producedOn),
+      quantityLeft: Value(quantityLeft),
+    );
+  }
+
+  factory LocalLot.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalLot(
+      id: serializer.fromJson<String>(json['id']),
+      variantId: serializer.fromJson<String>(json['variantId']),
+      producedOn: serializer.fromJson<String>(json['producedOn']),
+      quantityLeft: serializer.fromJson<int>(json['quantityLeft']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'variantId': serializer.toJson<String>(variantId),
+      'producedOn': serializer.toJson<String>(producedOn),
+      'quantityLeft': serializer.toJson<int>(quantityLeft),
+    };
+  }
+
+  LocalLot copyWith({
+    String? id,
+    String? variantId,
+    String? producedOn,
+    int? quantityLeft,
+  }) => LocalLot(
+    id: id ?? this.id,
+    variantId: variantId ?? this.variantId,
+    producedOn: producedOn ?? this.producedOn,
+    quantityLeft: quantityLeft ?? this.quantityLeft,
+  );
+  LocalLot copyWithCompanion(LocalLotsCompanion data) {
+    return LocalLot(
+      id: data.id.present ? data.id.value : this.id,
+      variantId: data.variantId.present ? data.variantId.value : this.variantId,
+      producedOn: data.producedOn.present
+          ? data.producedOn.value
+          : this.producedOn,
+      quantityLeft: data.quantityLeft.present
+          ? data.quantityLeft.value
+          : this.quantityLeft,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalLot(')
+          ..write('id: $id, ')
+          ..write('variantId: $variantId, ')
+          ..write('producedOn: $producedOn, ')
+          ..write('quantityLeft: $quantityLeft')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, variantId, producedOn, quantityLeft);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalLot &&
+          other.id == this.id &&
+          other.variantId == this.variantId &&
+          other.producedOn == this.producedOn &&
+          other.quantityLeft == this.quantityLeft);
+}
+
+class LocalLotsCompanion extends UpdateCompanion<LocalLot> {
+  final Value<String> id;
+  final Value<String> variantId;
+  final Value<String> producedOn;
+  final Value<int> quantityLeft;
+  final Value<int> rowid;
+  const LocalLotsCompanion({
+    this.id = const Value.absent(),
+    this.variantId = const Value.absent(),
+    this.producedOn = const Value.absent(),
+    this.quantityLeft = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalLotsCompanion.insert({
+    required String id,
+    required String variantId,
+    required String producedOn,
+    required int quantityLeft,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       variantId = Value(variantId),
+       producedOn = Value(producedOn),
+       quantityLeft = Value(quantityLeft);
+  static Insertable<LocalLot> custom({
+    Expression<String>? id,
+    Expression<String>? variantId,
+    Expression<String>? producedOn,
+    Expression<int>? quantityLeft,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (variantId != null) 'variant_id': variantId,
+      if (producedOn != null) 'produced_on': producedOn,
+      if (quantityLeft != null) 'quantity_left': quantityLeft,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalLotsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? variantId,
+    Value<String>? producedOn,
+    Value<int>? quantityLeft,
+    Value<int>? rowid,
+  }) {
+    return LocalLotsCompanion(
+      id: id ?? this.id,
+      variantId: variantId ?? this.variantId,
+      producedOn: producedOn ?? this.producedOn,
+      quantityLeft: quantityLeft ?? this.quantityLeft,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (variantId.present) {
+      map['variant_id'] = Variable<String>(variantId.value);
+    }
+    if (producedOn.present) {
+      map['produced_on'] = Variable<String>(producedOn.value);
+    }
+    if (quantityLeft.present) {
+      map['quantity_left'] = Variable<int>(quantityLeft.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalLotsCompanion(')
+          ..write('id: $id, ')
+          ..write('variantId: $variantId, ')
+          ..write('producedOn: $producedOn, ')
+          ..write('quantityLeft: $quantityLeft, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -10138,6 +10516,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $LocalCashCountsTable localCashCounts = $LocalCashCountsTable(
     this,
   );
+  late final $LocalLotsTable localLots = $LocalLotsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -10163,6 +10542,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localShifts,
     localCashMovements,
     localCashCounts,
+    localLots,
   ];
 }
 
@@ -11976,6 +12356,7 @@ typedef $$CatalogVariantsTableCreateCompanionBuilder =
       Value<String?> sku,
       Value<String?> barcode,
       required int priceCents,
+      Value<int?> unitsPerTray,
       required int sortOrder,
       required bool isActive,
       Value<int> rowid,
@@ -11988,6 +12369,7 @@ typedef $$CatalogVariantsTableUpdateCompanionBuilder =
       Value<String?> sku,
       Value<String?> barcode,
       Value<int> priceCents,
+      Value<int?> unitsPerTray,
       Value<int> sortOrder,
       Value<bool> isActive,
       Value<int> rowid,
@@ -12029,6 +12411,11 @@ class $$CatalogVariantsTableFilterComposer
 
   ColumnFilters<int> get priceCents => $composableBuilder(
     column: $table.priceCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get unitsPerTray => $composableBuilder(
+    column: $table.unitsPerTray,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12082,6 +12469,11 @@ class $$CatalogVariantsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get unitsPerTray => $composableBuilder(
+    column: $table.unitsPerTray,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get sortOrder => $composableBuilder(
     column: $table.sortOrder,
     builder: (column) => ColumnOrderings(column),
@@ -12119,6 +12511,11 @@ class $$CatalogVariantsTableAnnotationComposer
 
   GeneratedColumn<int> get priceCents => $composableBuilder(
     column: $table.priceCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get unitsPerTray => $composableBuilder(
+    column: $table.unitsPerTray,
     builder: (column) => column,
   );
 
@@ -12172,6 +12569,7 @@ class $$CatalogVariantsTableTableManager
                 Value<String?> sku = const Value.absent(),
                 Value<String?> barcode = const Value.absent(),
                 Value<int> priceCents = const Value.absent(),
+                Value<int?> unitsPerTray = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -12182,6 +12580,7 @@ class $$CatalogVariantsTableTableManager
                 sku: sku,
                 barcode: barcode,
                 priceCents: priceCents,
+                unitsPerTray: unitsPerTray,
                 sortOrder: sortOrder,
                 isActive: isActive,
                 rowid: rowid,
@@ -12194,6 +12593,7 @@ class $$CatalogVariantsTableTableManager
                 Value<String?> sku = const Value.absent(),
                 Value<String?> barcode = const Value.absent(),
                 required int priceCents,
+                Value<int?> unitsPerTray = const Value.absent(),
                 required int sortOrder,
                 required bool isActive,
                 Value<int> rowid = const Value.absent(),
@@ -12204,6 +12604,7 @@ class $$CatalogVariantsTableTableManager
                 sku: sku,
                 barcode: barcode,
                 priceCents: priceCents,
+                unitsPerTray: unitsPerTray,
                 sortOrder: sortOrder,
                 isActive: isActive,
                 rowid: rowid,
@@ -15621,6 +16022,192 @@ typedef $$LocalCashCountsTableProcessedTableManager =
       LocalCashCount,
       PrefetchHooks Function()
     >;
+typedef $$LocalLotsTableCreateCompanionBuilder = LocalLotsCompanion Function({
+  required String id,
+  required String variantId,
+  required String producedOn,
+  required int quantityLeft,
+  Value<int> rowid,
+});
+typedef $$LocalLotsTableUpdateCompanionBuilder = LocalLotsCompanion Function({
+  Value<String> id,
+  Value<String> variantId,
+  Value<String> producedOn,
+  Value<int> quantityLeft,
+  Value<int> rowid,
+});
+
+class $$LocalLotsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalLotsTable> {
+  $$LocalLotsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get variantId => $composableBuilder(
+    column: $table.variantId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get producedOn => $composableBuilder(
+    column: $table.producedOn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get quantityLeft => $composableBuilder(
+    column: $table.quantityLeft,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalLotsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalLotsTable> {
+  $$LocalLotsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get variantId => $composableBuilder(
+    column: $table.variantId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get producedOn => $composableBuilder(
+    column: $table.producedOn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get quantityLeft => $composableBuilder(
+    column: $table.quantityLeft,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalLotsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalLotsTable> {
+  $$LocalLotsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get variantId =>
+      $composableBuilder(column: $table.variantId, builder: (column) => column);
+
+  GeneratedColumn<String> get producedOn => $composableBuilder(
+    column: $table.producedOn,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get quantityLeft => $composableBuilder(
+    column: $table.quantityLeft,
+    builder: (column) => column,
+  );
+}
+
+class $$LocalLotsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalLotsTable,
+          LocalLot,
+          $$LocalLotsTableFilterComposer,
+          $$LocalLotsTableOrderingComposer,
+          $$LocalLotsTableAnnotationComposer,
+          $$LocalLotsTableCreateCompanionBuilder,
+          $$LocalLotsTableUpdateCompanionBuilder,
+          (LocalLot, BaseReferences<_$AppDatabase, $LocalLotsTable, LocalLot>),
+          LocalLot,
+          PrefetchHooks Function()
+        > {
+  $$LocalLotsTableTableManager(_$AppDatabase db, $LocalLotsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalLotsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalLotsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalLotsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> variantId = const Value.absent(),
+                Value<String> producedOn = const Value.absent(),
+                Value<int> quantityLeft = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalLotsCompanion(
+                id: id,
+                variantId: variantId,
+                producedOn: producedOn,
+                quantityLeft: quantityLeft,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String variantId,
+                required String producedOn,
+                required int quantityLeft,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalLotsCompanion.insert(
+                id: id,
+                variantId: variantId,
+                producedOn: producedOn,
+                quantityLeft: quantityLeft,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalLotsTable, LocalLot>(table),
+                  BaseReferences<_$AppDatabase, $LocalLotsTable, LocalLot>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalLotsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalLotsTable,
+      LocalLot,
+      $$LocalLotsTableFilterComposer,
+      $$LocalLotsTableOrderingComposer,
+      $$LocalLotsTableAnnotationComposer,
+      $$LocalLotsTableCreateCompanionBuilder,
+      $$LocalLotsTableUpdateCompanionBuilder,
+      (LocalLot, BaseReferences<_$AppDatabase, $LocalLotsTable, LocalLot>),
+      LocalLot,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -15668,4 +16255,6 @@ class $AppDatabaseManager {
       $$LocalCashMovementsTableTableManager(_db, _db.localCashMovements);
   $$LocalCashCountsTableTableManager get localCashCounts =>
       $$LocalCashCountsTableTableManager(_db, _db.localCashCounts);
+  $$LocalLotsTableTableManager get localLots =>
+      $$LocalLotsTableTableManager(_db, _db.localLots);
 }
