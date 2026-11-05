@@ -16,7 +16,7 @@ import 'catalog/catalog_api_client.dart';
 import 'sync/sync_api_client.dart';
 import 'sales/sales_api_client.dart';
 
-/// Bakery POS API `v0.5.0-m5`.
+/// Bakery POS API `v0.5.1-m5`.
 ///
 /// Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync), 3 (sales), 4 (cash shifts, audit and printing) and 5 (stock and day-old bread).
 /// Owned by the architect. Developers must not edit this file; open an issue labelled `contract` instead.
@@ -35,7 +35,7 @@ class RestClient {
   final Dio _dio;
   final String? _baseUrl;
 
-  static String get version => '0.5.0-m5';
+  static String get version => '0.5.1-m5';
 
   SystemApiClient? _system;
   DevicesApiClient? _devices;

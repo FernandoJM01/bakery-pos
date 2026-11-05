@@ -39,6 +39,14 @@ class BackofficeShell extends ConsumerWidget {
           selectedIcon: Icons.bakery_dining,
         ),
       );
+      navItems.add(
+        _NavItem(
+          route: AppRoutes.backofficeDayOld,
+          label: l10n.navDayOld,
+          icon: Icons.history_toggle_off,
+          selectedIcon: Icons.history_toggle_off,
+        ),
+      );
     }
     if (permissions.contains('staff.manage')) {
       navItems.add(
@@ -144,22 +152,33 @@ class BackofficeShell extends ConsumerWidget {
       body: Row(
         children: [
           if (navItems.isNotEmpty)
-            NavigationRail(
-              key: const Key('backoffice-nav-rail'),
-              selectedIndex: selectedIndex == -1 ? null : selectedIndex,
-              onDestinationSelected: (index) {
-                final dest = navItems[index];
-                context.go(dest.route);
-              },
-              labelType: NavigationRailLabelType.all,
-              destinations: [
-                for (final item in navItems)
-                  NavigationRailDestination(
-                    icon: Icon(item.icon),
-                    selectedIcon: Icon(item.selectedIcon),
-                    label: Text(item.label),
+            // The owner has many sections: on a short screen the rail scrolls
+            // instead of overflowing.
+            LayoutBuilder(
+              builder: (context, constraints) => SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: NavigationRail(
+                      key: const Key('backoffice-nav-rail'),
+                      selectedIndex: selectedIndex == -1 ? null : selectedIndex,
+                      onDestinationSelected: (index) {
+                        final dest = navItems[index];
+                        context.go(dest.route);
+                      },
+                      labelType: NavigationRailLabelType.all,
+                      destinations: [
+                        for (final item in navItems)
+                          NavigationRailDestination(
+                            icon: Icon(item.icon),
+                            selectedIcon: Icon(item.selectedIcon),
+                            label: Text(item.label),
+                          ),
+                      ],
+                    ),
                   ),
-              ],
+                ),
+              ),
             ),
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(
@@ -216,6 +235,8 @@ class BackofficeSectionPlaceholder extends StatelessWidget {
           title = l10n.navSales;
         } else if (route == AppRoutes.backofficeShifts) {
           title = l10n.navShifts;
+        } else if (route == AppRoutes.backofficeDayOld) {
+          title = l10n.navDayOld;
         } else if (route == AppRoutes.backofficeStock) {
           title = l10n.stockInventory;
         } else {

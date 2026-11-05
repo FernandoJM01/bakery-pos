@@ -3977,6 +3977,144 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Piezas por charola (opcional)'**
   String get catalogVariantTray;
+
+  /// No description provided for @navDayOld.
+  ///
+  /// In es, this message translates to:
+  /// **'Pan del día anterior'**
+  String get navDayOld;
+
+  /// No description provided for @dayOldTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Reglas del día anterior'**
+  String get dayOldTitle;
+
+  /// No description provided for @dayOldIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada producto puede bajar de precio después de unos días y pasar a merma después. Elige productos, o una categoría completa, y aplica la regla.'**
+  String get dayOldIntro;
+
+  /// No description provided for @dayOldNoRule.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin regla'**
+  String get dayOldNoRule;
+
+  /// No description provided for @dayOldRuleText.
+  ///
+  /// In es, this message translates to:
+  /// **'Al día {after}: {percent} menos'**
+  String dayOldRuleText(String percent, int after);
+
+  /// No description provided for @dayOldRuleWithWaste.
+  ///
+  /// In es, this message translates to:
+  /// **'Al día {after}: {percent} menos · día {waste}: merma'**
+  String dayOldRuleWithWaste(String percent, int after, int waste);
+
+  /// No description provided for @dayOldWasteOnly.
+  ///
+  /// In es, this message translates to:
+  /// **'Día {waste}: merma'**
+  String dayOldWasteOnly(int waste);
+
+  /// No description provided for @dayOldSelected.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} seleccionados'**
+  String dayOldSelected(int count);
+
+  /// No description provided for @dayOldSelectCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Toda la categoría'**
+  String get dayOldSelectCategory;
+
+  /// No description provided for @dayOldApply.
+  ///
+  /// In es, this message translates to:
+  /// **'Aplicar regla'**
+  String get dayOldApply;
+
+  /// No description provided for @dayOldEditTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Regla para {count} productos'**
+  String dayOldEditTitle(int count);
+
+  /// No description provided for @dayOldAfterDays.
+  ///
+  /// In es, this message translates to:
+  /// **'Días para bajar de precio'**
+  String get dayOldAfterDays;
+
+  /// No description provided for @dayOldPercent.
+  ///
+  /// In es, this message translates to:
+  /// **'Descuento (%)'**
+  String get dayOldPercent;
+
+  /// No description provided for @dayOldWasteDays.
+  ///
+  /// In es, this message translates to:
+  /// **'Días para mandar a merma (opcional)'**
+  String get dayOldWasteDays;
+
+  /// No description provided for @dayOldRemove.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar regla'**
+  String get dayOldRemove;
+
+  /// No description provided for @dayOldInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'Los días y el descuento van juntos, y la merma va después del descuento'**
+  String get dayOldInvalid;
+
+  /// No description provided for @dayOldSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Regla guardada. Las cajas la reciben al sincronizar.'**
+  String get dayOldSaved;
+
+  /// No description provided for @dayOldEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay productos todavía'**
+  String get dayOldEmpty;
+
+  /// No description provided for @stockCosts.
+  ///
+  /// In es, this message translates to:
+  /// **'Costos'**
+  String get stockCosts;
+
+  /// No description provided for @stockCostHint.
+  ///
+  /// In es, this message translates to:
+  /// **'El costo por pieza aparece en la merma. Déjalo vacío si aún no lo sabes.'**
+  String get stockCostHint;
+
+  /// No description provided for @stockCostLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Costo de {name}'**
+  String stockCostLabel(String name);
+
+  /// No description provided for @stockCostPrice.
+  ///
+  /// In es, this message translates to:
+  /// **'Precio {price}'**
+  String stockCostPrice(String price);
+
+  /// No description provided for @stockCostSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Costo guardado'**
+  String get stockCostSaved;
 }
 
 class _AppLocalizationsDelegate

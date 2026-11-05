@@ -5,9 +5,9 @@ import {
 } from './permissions';
 
 describe('Permissions & Role-Permission Matrix (Section 6)', () => {
-  it('defines all 26 permission keys from the contract and brief', () => {
-    expect(PERMISSION_KEYS.length).toBe(26);
-    expect(new Set(PERMISSION_KEYS).size).toBe(26);
+  it('defines all 27 permission keys from the contract and brief', () => {
+    expect(PERMISSION_KEYS.length).toBe(27);
+    expect(new Set(PERMISSION_KEYS).size).toBe(27);
   });
 
   it('provides a description for every permission key', () => {
@@ -17,12 +17,12 @@ describe('Permissions & Role-Permission Matrix (Section 6)', () => {
     }
   });
 
-  it('matches the section 6 permission matrix for OWNER (all 26 permissions)', () => {
+  it('matches the section 6 permission matrix for OWNER (all 27 permissions)', () => {
     expect(ROLE_PERMISSIONS.OWNER).toEqual(PERMISSION_KEYS);
-    expect(ROLE_PERMISSIONS.OWNER.length).toBe(26);
+    expect(ROLE_PERMISSIONS.OWNER.length).toBe(27);
   });
 
-  it('matches the section 6 permission matrix for BRANCH_MANAGER (19 permissions)', () => {
+  it('matches the section 6 permission matrix for BRANCH_MANAGER (20 permissions)', () => {
     const expectedManagerPermissions = [
       'sale.create',
       'sale.void_line_before_payment',
@@ -43,9 +43,10 @@ describe('Permissions & Role-Permission Matrix (Section 6)', () => {
       'oven.intake_pickup',
       'oven.board',
       'reports.branch',
+      'catalog.cost',
     ];
 
-    expect(ROLE_PERMISSIONS.BRANCH_MANAGER.length).toBe(19);
+    expect(ROLE_PERMISSIONS.BRANCH_MANAGER.length).toBe(20);
     expect([...ROLE_PERMISSIONS.BRANCH_MANAGER].sort()).toEqual(
       [...expectedManagerPermissions].sort(),
     );

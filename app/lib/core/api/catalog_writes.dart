@@ -5,15 +5,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'api_client_provider.dart';
 import 'generated/models/photo.dart';
+import 'generated/models/day_old_rule.dart';
 import 'generated/models/product.dart';
 import 'generated/models/variant.dart';
+import 'generated/models/variant_cost.dart';
 
-/// The two catalog calls the generated client cannot make:
+/// The catalog calls the generated client cannot make:
 ///
 /// * PATCH with `null`: the client drops nulls (`include_if_null: false`), but
 ///   `null` is how the contract clears `iepsRateId`, `photoId`,
 ///   `description`, the day-old fields, `sku` and `barcode`. These send the
-///   map as given, nulls included.
+///   map as given, nulls included. Day-old rules and costs are cleared with
+///   `null` the same way.
 /// * Photo upload from bytes: the generated `uploadPhoto` needs a `dart:io`
 ///   `File`, which the browser back office does not have.
 class CatalogWrites {
@@ -35,6 +38,37 @@ class CatalogWrites {
       data: changes,
     );
     return Variant.fromJson(res.data!);
+  }
+
+  /// One rule on many products; all three null removes it.
+  Future<List<DayOldRule>> setDayOldRules({
+    required List<String> productIds,
+    required int? afterDays,
+    required int? discountBp,
+    required int? wasteAfterDays,
+  }) async {
+    final res = await _dio.put<Map<String, dynamic>>(
+      '/v1/day-old-rules',
+      data: {
+        'productIds': productIds,
+        'dayOldDiscountAfterDays': afterDays,
+        'dayOldDiscountBp': discountBp,
+        'dayOldWasteAfterDays': wasteAfterDays,
+      },
+    );
+    return [
+      for (final r in (res.data!['items'] as List).cast<Map<String, dynamic>>())
+        DayOldRule.fromJson(r),
+    ];
+  }
+
+  /// Sets a variant's unit cost, or clears it with null.
+  Future<VariantCost> setCost(String variantId, int? costCents) async {
+    final res = await _dio.put<Map<String, dynamic>>(
+      '/v1/costs/$variantId',
+      data: {'costCents': costCents},
+    );
+    return VariantCost.fromJson(res.data!);
   }
 
   Future<Photo> uploadPhoto(Uint8List bytes, String filename) async {

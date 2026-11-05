@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Bakery POS API
-  version: 0.5.0-m5
+  version: 0.5.1-m5
   description: |
     Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync), 3 (sales), 4 (cash shifts, audit and printing) and 5 (stock and day-old bread).
     Owned by the architect. Developers must not edit this file; open an issue labelled `contract` instead.
@@ -815,6 +815,109 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /v1/day-old-rules:
+    get:
+      tags: [catalog]
+      operationId: listDayOldRules
+      summary: Every product with its day-old rule, for managing them together
+      x-permission: catalog.manage
+      responses:
+        '200':
+          description: Products by category, then name
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/DayOldRule' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    put:
+      tags: [catalog]
+      operationId: setDayOldRules
+      summary: Sets one day-old rule on many products at once
+      description: |
+        All three fields null removes the rule. The same checks as a product update apply, and each changed
+        product writes `catalog.product_updated`. Tills receive the rule through the catalog feed.
+      x-permission: catalog.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DayOldRuleSet' }
+      responses:
+        '200':
+          description: The products with their new rule
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/DayOldRule' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/costs:
+    get:
+      tags: [catalog]
+      operationId: listCosts
+      summary: Active variants with price and cost, for branch managers to fill in
+      x-permission: catalog.cost
+      responses:
+        '200':
+          description: Variants by category, product and name
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/VariantCost' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/costs/{variantId}:
+    put:
+      tags: [catalog]
+      operationId: setCost
+      summary: Sets or clears a variant's unit cost; writes `catalog.cost_changed`
+      x-permission: catalog.cost
+      parameters:
+        - $ref: '#/components/parameters/VariantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [costCents]
+              additionalProperties: false
+              properties:
+                costCents:
+                  oneOf:
+                    - { $ref: '#/components/schemas/Cents' }
+                    - { type: 'null' }
+      responses:
+        '200':
+          description: The variant with its cost
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VariantCost' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
   /v1/tax-rates:
     get:
       tags: [catalog]
@@ -1530,6 +1633,7 @@ components:
         - oven.intake_pickup
         - oven.board
         - catalog.manage
+        - catalog.cost
         - staff.manage
         - devices.manage
         - branches.manage
@@ -2820,6 +2924,41 @@ components:
         checkedAt: { type: [string, 'null'], format: date-time }
         rowsChecked: { type: integer }
         mismatches: { type: integer }
+    DayOldRule:
+      type: object
+      required: [productId, categoryId, categoryName, productName, isActive, dayOldDiscountAfterDays, dayOldDiscountBp, dayOldWasteAfterDays]
+      properties:
+        productId: { type: string, format: uuid }
+        categoryId: { type: string, format: uuid }
+        categoryName: { type: string }
+        productName: { type: string }
+        isActive: { type: boolean }
+        dayOldDiscountAfterDays: { $ref: '#/components/schemas/DayOldDays' }
+        dayOldDiscountBp: { type: [integer, 'null'], minimum: 1, maximum: 10000 }
+        dayOldWasteAfterDays: { $ref: '#/components/schemas/DayOldDays' }
+    DayOldRuleSet:
+      type: object
+      required: [productIds, dayOldDiscountAfterDays, dayOldDiscountBp, dayOldWasteAfterDays]
+      additionalProperties: false
+      properties:
+        productIds:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items: { type: string, format: uuid }
+        dayOldDiscountAfterDays: { $ref: '#/components/schemas/DayOldDays' }
+        dayOldDiscountBp: { type: [integer, 'null'], minimum: 1, maximum: 10000 }
+        dayOldWasteAfterDays: { $ref: '#/components/schemas/DayOldDays' }
+    VariantCost:
+      type: object
+      required: [variantId, productName, variantName, categoryName, priceCents, costCents]
+      properties:
+        variantId: { type: string, format: uuid }
+        productName: { type: string }
+        variantName: { type: string }
+        categoryName: { type: string }
+        priceCents: { $ref: '#/components/schemas/Cents' }
+        costCents: { type: [integer, 'null'] }
     SaleStatus:
       type: string
       enum: [COMPLETED, PARTIALLY_REFUNDED, REFUNDED, VOIDED]

@@ -28,9 +28,10 @@ Branches use the `m5/` prefix.
 - **Stock can go negative.** A sale with no lot left to take from writes an event with no lot. On-hand shows below zero, which tells the manager that a production entry is missing. Later production does not repay it automatically; a stock count settles it.
 - **Whole units.** Stock uses integer units, like sales. Trays are entered as trays and stored as units through `units_per_tray` on the product variant.
 - **Age in calendar days at the branch.** A lot's age is the branch's local date today minus its production date. A lot is day-old when age ≥ the product's `dayOldDiscountAfterDays`, and is on the waste list when age ≥ `dayOldWasteAfterDays`. So with 1 day, yesterday's bread is day-old from midnight.
+- **Day-old rules are managed together.** Back office Catálogo > Reglas de día anterior lists every product with its days to discount, percent and days to waste, and sets one rule on many products or a whole category at once (decided 4 Nov 2026). The product form still edits one product.
 - **Day-old price.** `round(price × (10000 − dayOldDiscountBp) / 10000)`, half up, from the effective branch price. It applies automatically and is not a discount: it needs no reason or approval and does not count against the cashier's limit. A cashier discount can still go on top.
 - **Two buttons only when both exist.** A product shows its day-old button only when the till's stock view holds day-old units. The server validates the arithmetic, not whether day-old stock existed, because the till may have been offline.
-- **Cost for the waste report.** There are no recipes yet, so each variant gets an optional `costCents`, typed by the owner. Waste with no cost shows a dash, not $0.00. Recipe costing arrives with ingredients in Phase 2.
+- **Cost for the waste report.** There are no recipes yet, so each variant gets an optional `costCents`. Branch managers enter it under Inventario > Costos (`catalog.cost`, decided 4 Nov 2026); the owner can too. Waste with no cost shows a dash, not $0.00. Recipe costing arrives with ingredients in Phase 2.
 - **Bakers enter on a production station or any till.** `stock.production_entry` is the check, so both device types can do it. Each entry is a sync record, so it works offline.
 - **Waste reasons:** `BURNT`, `EXPIRED`, `DAMAGED`, `UNSOLD`. Waste takes from the oldest lots unless a lot is chosen from the waste list.
 - **Refunds marked "vuelve al inventario"** return units to the lots they came from, newest first; units sold with no lot come back with no lot. Refunds not marked change nothing: the bread is gone.
@@ -104,7 +105,4 @@ Ingredients, recipes and recipe costing (Phase 2), standing orders that reserve 
 
 ## 8. Open for Fernando
 
-- Is "a sale is never blocked by stock" right, or should a till refuse past zero?
-- What are the usual day-old rules: how many days until discounted, at what percent, and how many days until waste?
-- Who types the cost per product, and is cost needed for the pilot?
-- Are the waste reasons right (burnt, expired, damaged, unsold)?
+Answered 4 Nov 2026: sales are never blocked by stock; day-old rules are set by the owner in a rules screen; branch managers enter costs; the waste reasons stay as they are.

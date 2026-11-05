@@ -2206,4 +2206,91 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get catalogVariantTray => 'Piezas por charola (opcional)';
+
+  @override
+  String get navDayOld => 'Pan del día anterior';
+
+  @override
+  String get dayOldTitle => 'Reglas del día anterior';
+
+  @override
+  String get dayOldIntro =>
+      'Cada producto puede bajar de precio después de unos días y pasar a merma después. Elige productos, o una categoría completa, y aplica la regla.';
+
+  @override
+  String get dayOldNoRule => 'Sin regla';
+
+  @override
+  String dayOldRuleText(String percent, int after) {
+    return 'Al día $after: $percent menos';
+  }
+
+  @override
+  String dayOldRuleWithWaste(String percent, int after, int waste) {
+    return 'Al día $after: $percent menos · día $waste: merma';
+  }
+
+  @override
+  String dayOldWasteOnly(int waste) {
+    return 'Día $waste: merma';
+  }
+
+  @override
+  String dayOldSelected(int count) {
+    return '$count seleccionados';
+  }
+
+  @override
+  String get dayOldSelectCategory => 'Toda la categoría';
+
+  @override
+  String get dayOldApply => 'Aplicar regla';
+
+  @override
+  String dayOldEditTitle(int count) {
+    return 'Regla para $count productos';
+  }
+
+  @override
+  String get dayOldAfterDays => 'Días para bajar de precio';
+
+  @override
+  String get dayOldPercent => 'Descuento (%)';
+
+  @override
+  String get dayOldWasteDays => 'Días para mandar a merma (opcional)';
+
+  @override
+  String get dayOldRemove => 'Quitar regla';
+
+  @override
+  String get dayOldInvalid =>
+      'Los días y el descuento van juntos, y la merma va después del descuento';
+
+  @override
+  String get dayOldSaved =>
+      'Regla guardada. Las cajas la reciben al sincronizar.';
+
+  @override
+  String get dayOldEmpty => 'No hay productos todavía';
+
+  @override
+  String get stockCosts => 'Costos';
+
+  @override
+  String get stockCostHint =>
+      'El costo por pieza aparece en la merma. Déjalo vacío si aún no lo sabes.';
+
+  @override
+  String stockCostLabel(String name) {
+    return 'Costo de $name';
+  }
+
+  @override
+  String stockCostPrice(String price) {
+    return 'Precio $price';
+  }
+
+  @override
+  String get stockCostSaved => 'Costo guardado';
 }
