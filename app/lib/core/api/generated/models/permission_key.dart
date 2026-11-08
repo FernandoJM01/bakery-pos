@@ -82,33 +82,37 @@ enum PermissionKey {
   @JsonValue('catalog.manage')
   undefined18('catalog.manage'),
 
+  /// Incorrect name has been replaced. Original name: `catalog.cost`.
+  @JsonValue('catalog.cost')
+  undefined19('catalog.cost'),
+
   /// Incorrect name has been replaced. Original name: `staff.manage`.
   @JsonValue('staff.manage')
-  undefined19('staff.manage'),
+  undefined20('staff.manage'),
 
   /// Incorrect name has been replaced. Original name: `devices.manage`.
   @JsonValue('devices.manage')
-  undefined20('devices.manage'),
+  undefined21('devices.manage'),
 
   /// Incorrect name has been replaced. Original name: `branches.manage`.
   @JsonValue('branches.manage')
-  undefined21('branches.manage'),
+  undefined22('branches.manage'),
 
   /// Incorrect name has been replaced. Original name: `reports.branch`.
   @JsonValue('reports.branch')
-  undefined22('reports.branch'),
+  undefined23('reports.branch'),
 
   /// Incorrect name has been replaced. Original name: `reports.all`.
   @JsonValue('reports.all')
-  undefined23('reports.all'),
+  undefined24('reports.all'),
 
   /// Incorrect name has been replaced. Original name: `audit.view`.
   @JsonValue('audit.view')
-  undefined24('audit.view'),
+  undefined25('audit.view'),
 
   /// Incorrect name has been replaced. Original name: `settings.manage`.
   @JsonValue('settings.manage')
-  undefined25('settings.manage'),
+  undefined26('settings.manage'),
 
   /// Default value for all unparsed values, allows backward compatibility when adding new values on the backend.
   $unknown(null);

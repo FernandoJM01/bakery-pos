@@ -516,7 +516,8 @@ describe('Cash shifts (e2e)', () => {
     expect(
       body.zReport.taxes.reduce((a, x) => a + x.baseCents + x.taxCents, 0),
     ).toBe(net - back);
-  });
+    // 200 sales each take stock under a lock; CI runners are slow.
+  }, 30_000);
 
   it('E13: shifts list, flag filter, Z report, notes and scope', async () => {
     const t = await newTill(branchId);

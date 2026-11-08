@@ -19,6 +19,7 @@ export const PERMISSION_KEYS = [
   'oven.intake_pickup',
   'oven.board',
   'catalog.manage',
+  'catalog.cost',
   'staff.manage',
   'devices.manage',
   'branches.manage',
@@ -56,6 +57,7 @@ export const PERMISSION_DEFINITIONS: Record<PermissionKey, string> = {
   'oven.intake_pickup': 'Check in customer baking requests and record pickup',
   'oven.board': 'View baking board and production queue',
   'catalog.manage': 'Manage products, prices, and categories',
+  'catalog.cost': 'Set the unit cost of products',
   'staff.manage': 'Create, edit, and deactivate staff members',
   'devices.manage': 'Enroll, list, and revoke POS till and production devices',
   'branches.manage': 'Create and manage bakery branches',
@@ -90,6 +92,7 @@ export const ROLE_PERMISSIONS: Record<
     'oven.intake_pickup',
     'oven.board',
     'reports.branch',
+    'catalog.cost',
   ],
   CASHIER: [
     'sale.create',

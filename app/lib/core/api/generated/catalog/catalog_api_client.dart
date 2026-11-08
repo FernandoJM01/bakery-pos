@@ -15,15 +15,21 @@ import '../models/branch_price_set.dart';
 import '../models/category.dart';
 import '../models/category_create.dart';
 import '../models/category_update.dart';
+import '../models/day_old_rule_set.dart';
+import '../models/get_v1_costs_response.dart';
+import '../models/get_v1_day_old_rules_response.dart';
 import '../models/photo.dart';
 import '../models/product.dart';
 import '../models/product_create.dart';
 import '../models/product_page.dart';
 import '../models/product_update.dart';
+import '../models/put_v1_day_old_rules_response.dart';
 import '../models/tax_rate.dart';
 import '../models/tax_rate_create.dart';
 import '../models/tax_rate_update.dart';
+import '../models/v1_costs_variant_id_request_body.dart';
 import '../models/variant.dart';
+import '../models/variant_cost.dart';
 import '../models/variant_create.dart';
 import '../models/variant_update.dart';
 
@@ -32,6 +38,30 @@ part 'catalog_api_client.g.dart';
 @RestApi()
 abstract class CatalogApiClient {
   factory CatalogApiClient(Dio dio, {String? baseUrl}) = _CatalogApiClient;
+
+  /// Every product with its day-old rule, for managing them together
+  @GET('/v1/day-old-rules')
+  Future<GetV1DayOldRulesResponse> listDayOldRules();
+
+  /// Sets one day-old rule on many products at once.
+  ///
+  /// All three fields null removes the rule. The same checks as a product update apply, and each changed.
+  /// product writes `catalog.product_updated`. Tills receive the rule through the catalog feed.
+  @PUT('/v1/day-old-rules')
+  Future<PutV1DayOldRulesResponse> setDayOldRules({
+    @Body() required DayOldRuleSet body,
+  });
+
+  /// Active variants with price and cost, for branch managers to fill in
+  @GET('/v1/costs')
+  Future<GetV1CostsResponse> listCosts();
+
+  /// Sets or clears a variant's unit cost; writes `catalog.cost_changed`
+  @PUT('/v1/costs/{variantId}')
+  Future<VariantCost> setCost({
+    @Path('variantId') required String variantId,
+    @Body() required V1CostsVariantIdRequestBody body,
+  });
 
   /// List tax rates
   @GET('/v1/tax-rates')
