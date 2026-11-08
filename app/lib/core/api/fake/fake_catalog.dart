@@ -74,7 +74,15 @@ class FakeCatalog {
     'stock.wasted',
     'stock.counted',
     'order.prepaid',
+    'oven.received',
+    'oven.status',
+    'oven.picked_up',
   };
+
+  /// Oven service rows, as tests seed them.
+  bool ovenEnabled = false;
+  final List<Map<String, dynamic>> ovenRules = [];
+  final List<Map<String, dynamic>> ovenTickets = [];
 
   /// Report answers, as tests seed them.
   Map<String, dynamic> dashboard = {};
@@ -512,6 +520,48 @@ class FakeCatalog {
         photoIds.add(id);
         return _ok({'id': id, 'width': 800, 'height': 800, 'bytes': 1024}, 201);
 
+      case ('GET', ['oven', 'board']):
+        return _ok({
+          'generatedAt': DateTime.now().toUtc().toIso8601String(),
+          'today': DateTime.now().toIso8601String().substring(0, 10),
+          'enabled': ovenEnabled,
+          'rules': ovenRules,
+          'tickets': ovenTickets,
+        });
+      case ('GET', ['oven', 'fees']):
+        return _ok({
+          'items': ovenRules,
+          'branches': [
+            for (final (i, id) in branchIds.indexed)
+              {
+                'branchId': id,
+                'name': 'Sucursal ${i + 1}',
+                'enabled': ovenEnabled,
+              },
+          ],
+        });
+      case ('POST', ['oven', 'fees']):
+        final r = {
+          'id': _id('0f'),
+          'isActive': true,
+          'sortOrder': 0,
+          'variantId': _id('0e'),
+          'productName': 'Servicio de horno',
+          'ivaBp': 1600,
+          'iepsRateId': null,
+          'iepsBp': 0,
+          ...Map<String, dynamic>.from(body as Map),
+        };
+        r['variantName'] = r['name'];
+        ovenRules.add(r);
+        return _ok(r, 201);
+      case ('PATCH', ['oven', 'fees', final id]):
+        final r = ovenRules.firstWhere((x) => x['id'] == id);
+        r.addAll(Map<String, dynamic>.from(body as Map));
+        return _ok(r);
+      case ('PUT', ['oven', 'branches', final id]):
+        ovenEnabled = (body as Map)['enabled'] as bool;
+        return _ok({'branchId': id, 'enabled': ovenEnabled});
       case ('GET', ['reports', 'dashboard']):
         return _ok(dashboard);
       case ('GET', ['reports', 'sales']):

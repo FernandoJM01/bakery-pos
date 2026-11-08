@@ -217,6 +217,16 @@ describe('Oven service (e2e)', () => {
       .set('Authorization', `Bearer ${ownerToken}`)
       .send({ enabled: true });
     expect(on.status).toBe(200);
+    const fees = await request(server)
+      .get('/v1/oven/fees')
+      .set('Authorization', `Bearer ${ownerToken}`);
+    valid('/v1/oven/fees', 'GET', fees);
+    const body = fees.body as {
+      branches: { branchId: string; enabled: boolean }[];
+    };
+    expect(body.branches.find((b) => b.branchId === branchId)?.enabled).toBe(
+      true,
+    );
   });
 
   it('M8.1: the fee is base plus price per kilo, and a wrong one is refused', async () => {

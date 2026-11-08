@@ -33,6 +33,7 @@ class AppRoutes {
   static const String backofficeShifts = '/backoffice/shifts';
   static const String backofficeStock = '/backoffice/stock';
   static const String backofficeDayOld = '/backoffice/day-old';
+  static const String backofficeOven = '/backoffice/oven';
   static const String backofficeOrders = '/backoffice/orders';
   static const String backofficeReports = '/backoffice/reports';
 }
@@ -57,6 +58,7 @@ const backofficeSectionRoutes = [
   AppRoutes.backofficeShifts,
   AppRoutes.backofficeStock,
   AppRoutes.backofficeDayOld,
+  AppRoutes.backofficeOven,
   AppRoutes.backofficeOrders,
   AppRoutes.backofficeReports,
 ];
@@ -92,6 +94,7 @@ List<String> getPermittedBackofficeRoutes(List<String> permissions) {
   }
   if (permissions.contains('catalog.manage')) {
     permitted.add(AppRoutes.backofficeDayOld);
+    permitted.add(AppRoutes.backofficeOven);
     permitted.add(AppRoutes.backofficeCatalog);
   }
   if (permissions.contains('staff.manage')) {
@@ -425,6 +428,15 @@ GoRouter createAppRouter(
                 BackofficeSectionPlaceholder.forRoute(
                   AppRoutes.backofficeOrders,
                 ),
+          ),
+          GoRoute(
+            path: AppRoutes.backofficeOven,
+            builder: (context, state) =>
+                backofficeSectionBuilder?.call(
+                  context,
+                  AppRoutes.backofficeOven,
+                ) ??
+                BackofficeSectionPlaceholder.forRoute(AppRoutes.backofficeOven),
           ),
           GoRoute(
             path: AppRoutes.backofficeDayOld,

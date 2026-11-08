@@ -2609,4 +2609,192 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get reportsOnHand => 'Existencia al cierre';
+
+  @override
+  String get ovenOff => 'El servicio de horno está apagado en esta sucursal';
+
+  @override
+  String get ovenCounter => 'Mostrador';
+
+  @override
+  String get ovenBoard => 'Horno';
+
+  @override
+  String get ovenNewDish => 'Recibir platillo';
+
+  @override
+  String get ovenReadyToCall => 'Listos para avisar al cliente';
+
+  @override
+  String get ovenNoneReady => 'Ningún platillo listo todavía';
+
+  @override
+  String get ovenWaiting => 'En espera o en el horno';
+
+  @override
+  String get ovenHandOver => 'Entregar';
+
+  @override
+  String ovenChargeAndHandOver(String amount) {
+    return 'Cobrar $amount y entregar';
+  }
+
+  @override
+  String ovenPickedUp(String tag, String name) {
+    return 'Entregado: ficha $tag, $name';
+  }
+
+  @override
+  String get ovenInOven => 'En el horno';
+
+  @override
+  String get ovenReceived => 'Recibido';
+
+  @override
+  String get ovenTagLabel => 'Número de ficha';
+
+  @override
+  String get ovenDescription => 'Platillo y recipiente';
+
+  @override
+  String get ovenWeightKg => 'Peso (kg)';
+
+  @override
+  String ovenRequestedAt(String time) {
+    return 'Lo quiere a las $time';
+  }
+
+  @override
+  String ovenFeeLine(String base, String perKg, String fee) {
+    return '$base + $perKg/kg = $fee';
+  }
+
+  @override
+  String get ovenPayNow => 'Cobrar ahora';
+
+  @override
+  String get ovenIncomplete =>
+      'Escribe ficha, nombre, platillo y peso (hasta 100 kg)';
+
+  @override
+  String get ovenSave => 'Recibir';
+
+  @override
+  String get ovenQueueEmpty => 'No hay platillos en espera';
+
+  @override
+  String get ovenToOven => 'Al horno';
+
+  @override
+  String get ovenMarkReady => 'Listo';
+
+  @override
+  String get ovenClaimTitle => 'Servicio de horno';
+
+  @override
+  String ovenTag(String tag) {
+    return 'Ficha $tag';
+  }
+
+  @override
+  String ovenDishWeight(String name, String kg) {
+    return '$name, $kg kg';
+  }
+
+  @override
+  String ovenRequested(String time) {
+    return 'Para: $time';
+  }
+
+  @override
+  String ovenReadyAt(String time) {
+    return 'Listo a las $time';
+  }
+
+  @override
+  String get ovenFeePaid => 'Pagado';
+
+  @override
+  String get ovenFeeDue => 'Por pagar';
+
+  @override
+  String get ovenSettingsTitle => 'Servicio de horno';
+
+  @override
+  String get ovenSettingsIntro =>
+      'Los clientes traen su platillo para hornearlo. El cobro es una base más un precio por kilo, según el tipo de platillo, y se registra como una venta con su ticket e impuestos.';
+
+  @override
+  String get ovenBranches => 'Sucursales que reciben platillos';
+
+  @override
+  String get ovenFees => 'Tipos de platillo y cobro';
+
+  @override
+  String get ovenFeesEmpty =>
+      'Aún no hay tipos de platillo. Agrega uno, por ejemplo Pavo o Pierna.';
+
+  @override
+  String ovenFeeRuleText(String base, String perKg, String oneKg) {
+    return '$base + $perKg por kilo · 1 kg = $oneKg';
+  }
+
+  @override
+  String get ovenFeeOff => 'Apagado';
+
+  @override
+  String get ovenFeeAdd => 'Agregar tipo de platillo';
+
+  @override
+  String get ovenFeeEdit => 'Cambiar tipo de platillo';
+
+  @override
+  String get ovenFeeName => 'Nombre (por ejemplo Pavo)';
+
+  @override
+  String get ovenFeeBase => 'Cobro base (\$)';
+
+  @override
+  String get ovenFeePerKg => 'Precio por kilo (\$)';
+
+  @override
+  String get ovenFeeIva => 'IVA';
+
+  @override
+  String get ovenFeeActive => 'Disponible en caja';
+
+  @override
+  String ovenFeeExample(String oneKg, String threeKg) {
+    return '1 kg cuesta $oneKg · 3 kg cuestan $threeKg';
+  }
+
+  @override
+  String get ovenFeeIncomplete =>
+      'Escribe nombre, cobro base, precio por kilo e IVA';
+
+  @override
+  String get ovenFeeSaved => 'Tipo de platillo guardado';
+
+  @override
+  String get ovenBadPhone => 'Revisa el teléfono: de 7 a 20 números';
+
+  @override
+  String ovenReceivedTag(String tag, String name) {
+    return 'Recibido: ficha $tag, $name';
+  }
+
+  @override
+  String ovenReadyLine(String description, String time, String phone) {
+    return '$description\nListo a las $time $phone';
+  }
+
+  @override
+  String ovenBoardLine(String name, String kg, String time) {
+    return '$name · $kg kg · para las $time';
+  }
+
+  @override
+  String ovenFeeIvaOption(String name, String percent) {
+    return '$name ($percent)';
+  }
 }

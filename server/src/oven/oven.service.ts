@@ -102,7 +102,18 @@ export class OvenService {
       include: RULE_INCLUDE,
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     });
-    return { items: rows.map(formatRule) };
+    const branches = await this.prisma.branch.findMany({
+      where: { isActive: true },
+      orderBy: { name: 'asc' },
+    });
+    return {
+      items: rows.map(formatRule),
+      branches: branches.map((b) => ({
+        branchId: b.id,
+        name: b.name,
+        enabled: b.ovenEnabled,
+      })),
+    };
   }
 
   /**
@@ -295,6 +306,7 @@ export class OvenService {
     return {
       branches: branches.map((b) => ({
         branchId: b.id,
+        name: b.name,
         enabled: b.ovenEnabled,
       })),
       items: rows

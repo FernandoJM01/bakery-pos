@@ -1523,7 +1523,12 @@ paths:
           description: OK
           content:
             application/json:
-              schema: { type: object, required: [items], properties: { items: { type: array, items: { $ref: '#/components/schemas/OvenFeeRule' } } } }
+              schema:
+                type: object
+                required: [items, branches]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/OvenFeeRule' } }
+                  branches: { type: array, items: { $ref: '#/components/schemas/OvenBranchState' } }
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
@@ -4135,15 +4140,18 @@ components:
       properties:
         branches:
           type: array
-          items:
-            type: object
-            required: [branchId, enabled]
-            properties:
-              branchId: { type: string, format: uuid }
-              enabled: { type: boolean }
+          items: { $ref: '#/components/schemas/OvenBranchState' }
         items:
           type: array
           items: { $ref: '#/components/schemas/OvenTicket' }
+    OvenBranchState:
+      type: object
+      description: Whether a branch takes dishes for the oven (M8.5)
+      required: [branchId, name, enabled]
+      properties:
+        branchId: { type: string, format: uuid }
+        name: { type: string }
+        enabled: { type: boolean }
     OvenReceivedPayload:
       type: object
       description: Payload of `oven.received`. The record `id` is the oven ticket ID. The fee must match the rule (M8.1).

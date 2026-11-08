@@ -11746,6 +11746,1345 @@ class LocalPrepaymentsCompanion extends UpdateCompanion<LocalPrepayment> {
   }
 }
 
+class $LocalOvenRulesTable extends LocalOvenRules
+    with TableInfo<$LocalOvenRulesTable, LocalOvenRule> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalOvenRulesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _baseCentsMeta = const VerificationMeta(
+    'baseCents',
+  );
+  @override
+  late final GeneratedColumn<int> baseCents = GeneratedColumn<int>(
+    'base_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _perKgCentsMeta = const VerificationMeta(
+    'perKgCents',
+  );
+  @override
+  late final GeneratedColumn<int> perKgCents = GeneratedColumn<int>(
+    'per_kg_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _variantIdMeta = const VerificationMeta(
+    'variantId',
+  );
+  @override
+  late final GeneratedColumn<String> variantId = GeneratedColumn<String>(
+    'variant_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _productNameMeta = const VerificationMeta(
+    'productName',
+  );
+  @override
+  late final GeneratedColumn<String> productName = GeneratedColumn<String>(
+    'product_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ivaRateIdMeta = const VerificationMeta(
+    'ivaRateId',
+  );
+  @override
+  late final GeneratedColumn<String> ivaRateId = GeneratedColumn<String>(
+    'iva_rate_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ivaBpMeta = const VerificationMeta('ivaBp');
+  @override
+  late final GeneratedColumn<int> ivaBp = GeneratedColumn<int>(
+    'iva_bp',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _iepsRateIdMeta = const VerificationMeta(
+    'iepsRateId',
+  );
+  @override
+  late final GeneratedColumn<String> iepsRateId = GeneratedColumn<String>(
+    'ieps_rate_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _iepsBpMeta = const VerificationMeta('iepsBp');
+  @override
+  late final GeneratedColumn<int> iepsBp = GeneratedColumn<int>(
+    'ieps_bp',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    baseCents,
+    perKgCents,
+    variantId,
+    productName,
+    ivaRateId,
+    ivaBp,
+    iepsRateId,
+    iepsBp,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_oven_rules';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalOvenRule> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('base_cents')) {
+      context.handle(
+        _baseCentsMeta,
+        baseCents.isAcceptableOrUnknown(data['base_cents']!, _baseCentsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_baseCentsMeta);
+    }
+    if (data.containsKey('per_kg_cents')) {
+      context.handle(
+        _perKgCentsMeta,
+        perKgCents.isAcceptableOrUnknown(
+          data['per_kg_cents']!,
+          _perKgCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_perKgCentsMeta);
+    }
+    if (data.containsKey('variant_id')) {
+      context.handle(
+        _variantIdMeta,
+        variantId.isAcceptableOrUnknown(data['variant_id']!, _variantIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_variantIdMeta);
+    }
+    if (data.containsKey('product_name')) {
+      context.handle(
+        _productNameMeta,
+        productName.isAcceptableOrUnknown(
+          data['product_name']!,
+          _productNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_productNameMeta);
+    }
+    if (data.containsKey('iva_rate_id')) {
+      context.handle(
+        _ivaRateIdMeta,
+        ivaRateId.isAcceptableOrUnknown(data['iva_rate_id']!, _ivaRateIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ivaRateIdMeta);
+    }
+    if (data.containsKey('iva_bp')) {
+      context.handle(
+        _ivaBpMeta,
+        ivaBp.isAcceptableOrUnknown(data['iva_bp']!, _ivaBpMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ivaBpMeta);
+    }
+    if (data.containsKey('ieps_rate_id')) {
+      context.handle(
+        _iepsRateIdMeta,
+        iepsRateId.isAcceptableOrUnknown(
+          data['ieps_rate_id']!,
+          _iepsRateIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('ieps_bp')) {
+      context.handle(
+        _iepsBpMeta,
+        iepsBp.isAcceptableOrUnknown(data['ieps_bp']!, _iepsBpMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_iepsBpMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalOvenRule map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalOvenRule(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      baseCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}base_cents'],
+      )!,
+      perKgCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}per_kg_cents'],
+      )!,
+      variantId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}variant_id'],
+      )!,
+      productName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}product_name'],
+      )!,
+      ivaRateId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}iva_rate_id'],
+      )!,
+      ivaBp: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}iva_bp'],
+      )!,
+      iepsRateId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ieps_rate_id'],
+      ),
+      iepsBp: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ieps_bp'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalOvenRulesTable createAlias(String alias) {
+    return $LocalOvenRulesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalOvenRule extends DataClass implements Insertable<LocalOvenRule> {
+  final String id;
+  final String name;
+  final int baseCents;
+  final int perKgCents;
+  final String variantId;
+  final String productName;
+  final String ivaRateId;
+  final int ivaBp;
+  final String? iepsRateId;
+  final int iepsBp;
+  const LocalOvenRule({
+    required this.id,
+    required this.name,
+    required this.baseCents,
+    required this.perKgCents,
+    required this.variantId,
+    required this.productName,
+    required this.ivaRateId,
+    required this.ivaBp,
+    this.iepsRateId,
+    required this.iepsBp,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['base_cents'] = Variable<int>(baseCents);
+    map['per_kg_cents'] = Variable<int>(perKgCents);
+    map['variant_id'] = Variable<String>(variantId);
+    map['product_name'] = Variable<String>(productName);
+    map['iva_rate_id'] = Variable<String>(ivaRateId);
+    map['iva_bp'] = Variable<int>(ivaBp);
+    if (!nullToAbsent || iepsRateId != null) {
+      map['ieps_rate_id'] = Variable<String>(iepsRateId);
+    }
+    map['ieps_bp'] = Variable<int>(iepsBp);
+    return map;
+  }
+
+  LocalOvenRulesCompanion toCompanion(bool nullToAbsent) {
+    return LocalOvenRulesCompanion(
+      id: Value(id),
+      name: Value(name),
+      baseCents: Value(baseCents),
+      perKgCents: Value(perKgCents),
+      variantId: Value(variantId),
+      productName: Value(productName),
+      ivaRateId: Value(ivaRateId),
+      ivaBp: Value(ivaBp),
+      iepsRateId: iepsRateId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(iepsRateId),
+      iepsBp: Value(iepsBp),
+    );
+  }
+
+  factory LocalOvenRule.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalOvenRule(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      baseCents: serializer.fromJson<int>(json['baseCents']),
+      perKgCents: serializer.fromJson<int>(json['perKgCents']),
+      variantId: serializer.fromJson<String>(json['variantId']),
+      productName: serializer.fromJson<String>(json['productName']),
+      ivaRateId: serializer.fromJson<String>(json['ivaRateId']),
+      ivaBp: serializer.fromJson<int>(json['ivaBp']),
+      iepsRateId: serializer.fromJson<String?>(json['iepsRateId']),
+      iepsBp: serializer.fromJson<int>(json['iepsBp']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'baseCents': serializer.toJson<int>(baseCents),
+      'perKgCents': serializer.toJson<int>(perKgCents),
+      'variantId': serializer.toJson<String>(variantId),
+      'productName': serializer.toJson<String>(productName),
+      'ivaRateId': serializer.toJson<String>(ivaRateId),
+      'ivaBp': serializer.toJson<int>(ivaBp),
+      'iepsRateId': serializer.toJson<String?>(iepsRateId),
+      'iepsBp': serializer.toJson<int>(iepsBp),
+    };
+  }
+
+  LocalOvenRule copyWith({
+    String? id,
+    String? name,
+    int? baseCents,
+    int? perKgCents,
+    String? variantId,
+    String? productName,
+    String? ivaRateId,
+    int? ivaBp,
+    Value<String?> iepsRateId = const Value.absent(),
+    int? iepsBp,
+  }) => LocalOvenRule(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    baseCents: baseCents ?? this.baseCents,
+    perKgCents: perKgCents ?? this.perKgCents,
+    variantId: variantId ?? this.variantId,
+    productName: productName ?? this.productName,
+    ivaRateId: ivaRateId ?? this.ivaRateId,
+    ivaBp: ivaBp ?? this.ivaBp,
+    iepsRateId: iepsRateId.present ? iepsRateId.value : this.iepsRateId,
+    iepsBp: iepsBp ?? this.iepsBp,
+  );
+  LocalOvenRule copyWithCompanion(LocalOvenRulesCompanion data) {
+    return LocalOvenRule(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      baseCents: data.baseCents.present ? data.baseCents.value : this.baseCents,
+      perKgCents: data.perKgCents.present
+          ? data.perKgCents.value
+          : this.perKgCents,
+      variantId: data.variantId.present ? data.variantId.value : this.variantId,
+      productName: data.productName.present
+          ? data.productName.value
+          : this.productName,
+      ivaRateId: data.ivaRateId.present ? data.ivaRateId.value : this.ivaRateId,
+      ivaBp: data.ivaBp.present ? data.ivaBp.value : this.ivaBp,
+      iepsRateId: data.iepsRateId.present
+          ? data.iepsRateId.value
+          : this.iepsRateId,
+      iepsBp: data.iepsBp.present ? data.iepsBp.value : this.iepsBp,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalOvenRule(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('baseCents: $baseCents, ')
+          ..write('perKgCents: $perKgCents, ')
+          ..write('variantId: $variantId, ')
+          ..write('productName: $productName, ')
+          ..write('ivaRateId: $ivaRateId, ')
+          ..write('ivaBp: $ivaBp, ')
+          ..write('iepsRateId: $iepsRateId, ')
+          ..write('iepsBp: $iepsBp')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    baseCents,
+    perKgCents,
+    variantId,
+    productName,
+    ivaRateId,
+    ivaBp,
+    iepsRateId,
+    iepsBp,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalOvenRule &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.baseCents == this.baseCents &&
+          other.perKgCents == this.perKgCents &&
+          other.variantId == this.variantId &&
+          other.productName == this.productName &&
+          other.ivaRateId == this.ivaRateId &&
+          other.ivaBp == this.ivaBp &&
+          other.iepsRateId == this.iepsRateId &&
+          other.iepsBp == this.iepsBp);
+}
+
+class LocalOvenRulesCompanion extends UpdateCompanion<LocalOvenRule> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<int> baseCents;
+  final Value<int> perKgCents;
+  final Value<String> variantId;
+  final Value<String> productName;
+  final Value<String> ivaRateId;
+  final Value<int> ivaBp;
+  final Value<String?> iepsRateId;
+  final Value<int> iepsBp;
+  final Value<int> rowid;
+  const LocalOvenRulesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.baseCents = const Value.absent(),
+    this.perKgCents = const Value.absent(),
+    this.variantId = const Value.absent(),
+    this.productName = const Value.absent(),
+    this.ivaRateId = const Value.absent(),
+    this.ivaBp = const Value.absent(),
+    this.iepsRateId = const Value.absent(),
+    this.iepsBp = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalOvenRulesCompanion.insert({
+    required String id,
+    required String name,
+    required int baseCents,
+    required int perKgCents,
+    required String variantId,
+    required String productName,
+    required String ivaRateId,
+    required int ivaBp,
+    this.iepsRateId = const Value.absent(),
+    required int iepsBp,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       baseCents = Value(baseCents),
+       perKgCents = Value(perKgCents),
+       variantId = Value(variantId),
+       productName = Value(productName),
+       ivaRateId = Value(ivaRateId),
+       ivaBp = Value(ivaBp),
+       iepsBp = Value(iepsBp);
+  static Insertable<LocalOvenRule> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<int>? baseCents,
+    Expression<int>? perKgCents,
+    Expression<String>? variantId,
+    Expression<String>? productName,
+    Expression<String>? ivaRateId,
+    Expression<int>? ivaBp,
+    Expression<String>? iepsRateId,
+    Expression<int>? iepsBp,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (baseCents != null) 'base_cents': baseCents,
+      if (perKgCents != null) 'per_kg_cents': perKgCents,
+      if (variantId != null) 'variant_id': variantId,
+      if (productName != null) 'product_name': productName,
+      if (ivaRateId != null) 'iva_rate_id': ivaRateId,
+      if (ivaBp != null) 'iva_bp': ivaBp,
+      if (iepsRateId != null) 'ieps_rate_id': iepsRateId,
+      if (iepsBp != null) 'ieps_bp': iepsBp,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalOvenRulesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<int>? baseCents,
+    Value<int>? perKgCents,
+    Value<String>? variantId,
+    Value<String>? productName,
+    Value<String>? ivaRateId,
+    Value<int>? ivaBp,
+    Value<String?>? iepsRateId,
+    Value<int>? iepsBp,
+    Value<int>? rowid,
+  }) {
+    return LocalOvenRulesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      baseCents: baseCents ?? this.baseCents,
+      perKgCents: perKgCents ?? this.perKgCents,
+      variantId: variantId ?? this.variantId,
+      productName: productName ?? this.productName,
+      ivaRateId: ivaRateId ?? this.ivaRateId,
+      ivaBp: ivaBp ?? this.ivaBp,
+      iepsRateId: iepsRateId ?? this.iepsRateId,
+      iepsBp: iepsBp ?? this.iepsBp,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (baseCents.present) {
+      map['base_cents'] = Variable<int>(baseCents.value);
+    }
+    if (perKgCents.present) {
+      map['per_kg_cents'] = Variable<int>(perKgCents.value);
+    }
+    if (variantId.present) {
+      map['variant_id'] = Variable<String>(variantId.value);
+    }
+    if (productName.present) {
+      map['product_name'] = Variable<String>(productName.value);
+    }
+    if (ivaRateId.present) {
+      map['iva_rate_id'] = Variable<String>(ivaRateId.value);
+    }
+    if (ivaBp.present) {
+      map['iva_bp'] = Variable<int>(ivaBp.value);
+    }
+    if (iepsRateId.present) {
+      map['ieps_rate_id'] = Variable<String>(iepsRateId.value);
+    }
+    if (iepsBp.present) {
+      map['ieps_bp'] = Variable<int>(iepsBp.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalOvenRulesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('baseCents: $baseCents, ')
+          ..write('perKgCents: $perKgCents, ')
+          ..write('variantId: $variantId, ')
+          ..write('productName: $productName, ')
+          ..write('ivaRateId: $ivaRateId, ')
+          ..write('ivaBp: $ivaBp, ')
+          ..write('iepsRateId: $iepsRateId, ')
+          ..write('iepsBp: $iepsBp, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalOvenTicketsTable extends LocalOvenTickets
+    with TableInfo<$LocalOvenTicketsTable, LocalOvenTicket> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalOvenTicketsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _tagMeta = const VerificationMeta('tag');
+  @override
+  late final GeneratedColumn<String> tag = GeneratedColumn<String>(
+    'tag',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _customerNameMeta = const VerificationMeta(
+    'customerName',
+  );
+  @override
+  late final GeneratedColumn<String> customerName = GeneratedColumn<String>(
+    'customer_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _phoneMeta = const VerificationMeta('phone');
+  @override
+  late final GeneratedColumn<String> phone = GeneratedColumn<String>(
+    'phone',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ruleIdMeta = const VerificationMeta('ruleId');
+  @override
+  late final GeneratedColumn<String> ruleId = GeneratedColumn<String>(
+    'rule_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _weightGramsMeta = const VerificationMeta(
+    'weightGrams',
+  );
+  @override
+  late final GeneratedColumn<int> weightGrams = GeneratedColumn<int>(
+    'weight_grams',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _feeCentsMeta = const VerificationMeta(
+    'feeCents',
+  );
+  @override
+  late final GeneratedColumn<int> feeCents = GeneratedColumn<int>(
+    'fee_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _requestedAtMeta = const VerificationMeta(
+    'requestedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> requestedAt = GeneratedColumn<DateTime>(
+    'requested_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _readyAtMeta = const VerificationMeta(
+    'readyAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> readyAt = GeneratedColumn<DateTime>(
+    'ready_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _paidMeta = const VerificationMeta('paid');
+  @override
+  late final GeneratedColumn<bool> paid = GeneratedColumn<bool>(
+    'paid',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("paid" IN (0, 1))',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    tag,
+    customerName,
+    phone,
+    description,
+    ruleId,
+    weightGrams,
+    feeCents,
+    requestedAt,
+    status,
+    readyAt,
+    paid,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_oven_tickets';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalOvenTicket> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('tag')) {
+      context.handle(
+        _tagMeta,
+        tag.isAcceptableOrUnknown(data['tag']!, _tagMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tagMeta);
+    }
+    if (data.containsKey('customer_name')) {
+      context.handle(
+        _customerNameMeta,
+        customerName.isAcceptableOrUnknown(
+          data['customer_name']!,
+          _customerNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_customerNameMeta);
+    }
+    if (data.containsKey('phone')) {
+      context.handle(
+        _phoneMeta,
+        phone.isAcceptableOrUnknown(data['phone']!, _phoneMeta),
+      );
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_descriptionMeta);
+    }
+    if (data.containsKey('rule_id')) {
+      context.handle(
+        _ruleIdMeta,
+        ruleId.isAcceptableOrUnknown(data['rule_id']!, _ruleIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ruleIdMeta);
+    }
+    if (data.containsKey('weight_grams')) {
+      context.handle(
+        _weightGramsMeta,
+        weightGrams.isAcceptableOrUnknown(
+          data['weight_grams']!,
+          _weightGramsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_weightGramsMeta);
+    }
+    if (data.containsKey('fee_cents')) {
+      context.handle(
+        _feeCentsMeta,
+        feeCents.isAcceptableOrUnknown(data['fee_cents']!, _feeCentsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_feeCentsMeta);
+    }
+    if (data.containsKey('requested_at')) {
+      context.handle(
+        _requestedAtMeta,
+        requestedAt.isAcceptableOrUnknown(
+          data['requested_at']!,
+          _requestedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_requestedAtMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('ready_at')) {
+      context.handle(
+        _readyAtMeta,
+        readyAt.isAcceptableOrUnknown(data['ready_at']!, _readyAtMeta),
+      );
+    }
+    if (data.containsKey('paid')) {
+      context.handle(
+        _paidMeta,
+        paid.isAcceptableOrUnknown(data['paid']!, _paidMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_paidMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalOvenTicket map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalOvenTicket(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      tag: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tag'],
+      )!,
+      customerName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}customer_name'],
+      )!,
+      phone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}phone'],
+      ),
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      ruleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rule_id'],
+      )!,
+      weightGrams: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}weight_grams'],
+      )!,
+      feeCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}fee_cents'],
+      )!,
+      requestedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}requested_at'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      readyAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}ready_at'],
+      ),
+      paid: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}paid'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalOvenTicketsTable createAlias(String alias) {
+    return $LocalOvenTicketsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalOvenTicket extends DataClass implements Insertable<LocalOvenTicket> {
+  final String id;
+  final String tag;
+  final String customerName;
+  final String? phone;
+  final String description;
+  final String ruleId;
+  final int weightGrams;
+  final int feeCents;
+  final DateTime requestedAt;
+
+  /// `RECEIVED`, `IN_OVEN`, `READY` or `PICKED_UP`.
+  final String status;
+  final DateTime? readyAt;
+  final bool paid;
+  const LocalOvenTicket({
+    required this.id,
+    required this.tag,
+    required this.customerName,
+    this.phone,
+    required this.description,
+    required this.ruleId,
+    required this.weightGrams,
+    required this.feeCents,
+    required this.requestedAt,
+    required this.status,
+    this.readyAt,
+    required this.paid,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['tag'] = Variable<String>(tag);
+    map['customer_name'] = Variable<String>(customerName);
+    if (!nullToAbsent || phone != null) {
+      map['phone'] = Variable<String>(phone);
+    }
+    map['description'] = Variable<String>(description);
+    map['rule_id'] = Variable<String>(ruleId);
+    map['weight_grams'] = Variable<int>(weightGrams);
+    map['fee_cents'] = Variable<int>(feeCents);
+    map['requested_at'] = Variable<DateTime>(requestedAt);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || readyAt != null) {
+      map['ready_at'] = Variable<DateTime>(readyAt);
+    }
+    map['paid'] = Variable<bool>(paid);
+    return map;
+  }
+
+  LocalOvenTicketsCompanion toCompanion(bool nullToAbsent) {
+    return LocalOvenTicketsCompanion(
+      id: Value(id),
+      tag: Value(tag),
+      customerName: Value(customerName),
+      phone: phone == null && nullToAbsent
+          ? const Value.absent()
+          : Value(phone),
+      description: Value(description),
+      ruleId: Value(ruleId),
+      weightGrams: Value(weightGrams),
+      feeCents: Value(feeCents),
+      requestedAt: Value(requestedAt),
+      status: Value(status),
+      readyAt: readyAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(readyAt),
+      paid: Value(paid),
+    );
+  }
+
+  factory LocalOvenTicket.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalOvenTicket(
+      id: serializer.fromJson<String>(json['id']),
+      tag: serializer.fromJson<String>(json['tag']),
+      customerName: serializer.fromJson<String>(json['customerName']),
+      phone: serializer.fromJson<String?>(json['phone']),
+      description: serializer.fromJson<String>(json['description']),
+      ruleId: serializer.fromJson<String>(json['ruleId']),
+      weightGrams: serializer.fromJson<int>(json['weightGrams']),
+      feeCents: serializer.fromJson<int>(json['feeCents']),
+      requestedAt: serializer.fromJson<DateTime>(json['requestedAt']),
+      status: serializer.fromJson<String>(json['status']),
+      readyAt: serializer.fromJson<DateTime?>(json['readyAt']),
+      paid: serializer.fromJson<bool>(json['paid']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'tag': serializer.toJson<String>(tag),
+      'customerName': serializer.toJson<String>(customerName),
+      'phone': serializer.toJson<String?>(phone),
+      'description': serializer.toJson<String>(description),
+      'ruleId': serializer.toJson<String>(ruleId),
+      'weightGrams': serializer.toJson<int>(weightGrams),
+      'feeCents': serializer.toJson<int>(feeCents),
+      'requestedAt': serializer.toJson<DateTime>(requestedAt),
+      'status': serializer.toJson<String>(status),
+      'readyAt': serializer.toJson<DateTime?>(readyAt),
+      'paid': serializer.toJson<bool>(paid),
+    };
+  }
+
+  LocalOvenTicket copyWith({
+    String? id,
+    String? tag,
+    String? customerName,
+    Value<String?> phone = const Value.absent(),
+    String? description,
+    String? ruleId,
+    int? weightGrams,
+    int? feeCents,
+    DateTime? requestedAt,
+    String? status,
+    Value<DateTime?> readyAt = const Value.absent(),
+    bool? paid,
+  }) => LocalOvenTicket(
+    id: id ?? this.id,
+    tag: tag ?? this.tag,
+    customerName: customerName ?? this.customerName,
+    phone: phone.present ? phone.value : this.phone,
+    description: description ?? this.description,
+    ruleId: ruleId ?? this.ruleId,
+    weightGrams: weightGrams ?? this.weightGrams,
+    feeCents: feeCents ?? this.feeCents,
+    requestedAt: requestedAt ?? this.requestedAt,
+    status: status ?? this.status,
+    readyAt: readyAt.present ? readyAt.value : this.readyAt,
+    paid: paid ?? this.paid,
+  );
+  LocalOvenTicket copyWithCompanion(LocalOvenTicketsCompanion data) {
+    return LocalOvenTicket(
+      id: data.id.present ? data.id.value : this.id,
+      tag: data.tag.present ? data.tag.value : this.tag,
+      customerName: data.customerName.present
+          ? data.customerName.value
+          : this.customerName,
+      phone: data.phone.present ? data.phone.value : this.phone,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      ruleId: data.ruleId.present ? data.ruleId.value : this.ruleId,
+      weightGrams: data.weightGrams.present
+          ? data.weightGrams.value
+          : this.weightGrams,
+      feeCents: data.feeCents.present ? data.feeCents.value : this.feeCents,
+      requestedAt: data.requestedAt.present
+          ? data.requestedAt.value
+          : this.requestedAt,
+      status: data.status.present ? data.status.value : this.status,
+      readyAt: data.readyAt.present ? data.readyAt.value : this.readyAt,
+      paid: data.paid.present ? data.paid.value : this.paid,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalOvenTicket(')
+          ..write('id: $id, ')
+          ..write('tag: $tag, ')
+          ..write('customerName: $customerName, ')
+          ..write('phone: $phone, ')
+          ..write('description: $description, ')
+          ..write('ruleId: $ruleId, ')
+          ..write('weightGrams: $weightGrams, ')
+          ..write('feeCents: $feeCents, ')
+          ..write('requestedAt: $requestedAt, ')
+          ..write('status: $status, ')
+          ..write('readyAt: $readyAt, ')
+          ..write('paid: $paid')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    tag,
+    customerName,
+    phone,
+    description,
+    ruleId,
+    weightGrams,
+    feeCents,
+    requestedAt,
+    status,
+    readyAt,
+    paid,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalOvenTicket &&
+          other.id == this.id &&
+          other.tag == this.tag &&
+          other.customerName == this.customerName &&
+          other.phone == this.phone &&
+          other.description == this.description &&
+          other.ruleId == this.ruleId &&
+          other.weightGrams == this.weightGrams &&
+          other.feeCents == this.feeCents &&
+          other.requestedAt == this.requestedAt &&
+          other.status == this.status &&
+          other.readyAt == this.readyAt &&
+          other.paid == this.paid);
+}
+
+class LocalOvenTicketsCompanion extends UpdateCompanion<LocalOvenTicket> {
+  final Value<String> id;
+  final Value<String> tag;
+  final Value<String> customerName;
+  final Value<String?> phone;
+  final Value<String> description;
+  final Value<String> ruleId;
+  final Value<int> weightGrams;
+  final Value<int> feeCents;
+  final Value<DateTime> requestedAt;
+  final Value<String> status;
+  final Value<DateTime?> readyAt;
+  final Value<bool> paid;
+  final Value<int> rowid;
+  const LocalOvenTicketsCompanion({
+    this.id = const Value.absent(),
+    this.tag = const Value.absent(),
+    this.customerName = const Value.absent(),
+    this.phone = const Value.absent(),
+    this.description = const Value.absent(),
+    this.ruleId = const Value.absent(),
+    this.weightGrams = const Value.absent(),
+    this.feeCents = const Value.absent(),
+    this.requestedAt = const Value.absent(),
+    this.status = const Value.absent(),
+    this.readyAt = const Value.absent(),
+    this.paid = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalOvenTicketsCompanion.insert({
+    required String id,
+    required String tag,
+    required String customerName,
+    this.phone = const Value.absent(),
+    required String description,
+    required String ruleId,
+    required int weightGrams,
+    required int feeCents,
+    required DateTime requestedAt,
+    required String status,
+    this.readyAt = const Value.absent(),
+    required bool paid,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       tag = Value(tag),
+       customerName = Value(customerName),
+       description = Value(description),
+       ruleId = Value(ruleId),
+       weightGrams = Value(weightGrams),
+       feeCents = Value(feeCents),
+       requestedAt = Value(requestedAt),
+       status = Value(status),
+       paid = Value(paid);
+  static Insertable<LocalOvenTicket> custom({
+    Expression<String>? id,
+    Expression<String>? tag,
+    Expression<String>? customerName,
+    Expression<String>? phone,
+    Expression<String>? description,
+    Expression<String>? ruleId,
+    Expression<int>? weightGrams,
+    Expression<int>? feeCents,
+    Expression<DateTime>? requestedAt,
+    Expression<String>? status,
+    Expression<DateTime>? readyAt,
+    Expression<bool>? paid,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (tag != null) 'tag': tag,
+      if (customerName != null) 'customer_name': customerName,
+      if (phone != null) 'phone': phone,
+      if (description != null) 'description': description,
+      if (ruleId != null) 'rule_id': ruleId,
+      if (weightGrams != null) 'weight_grams': weightGrams,
+      if (feeCents != null) 'fee_cents': feeCents,
+      if (requestedAt != null) 'requested_at': requestedAt,
+      if (status != null) 'status': status,
+      if (readyAt != null) 'ready_at': readyAt,
+      if (paid != null) 'paid': paid,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalOvenTicketsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? tag,
+    Value<String>? customerName,
+    Value<String?>? phone,
+    Value<String>? description,
+    Value<String>? ruleId,
+    Value<int>? weightGrams,
+    Value<int>? feeCents,
+    Value<DateTime>? requestedAt,
+    Value<String>? status,
+    Value<DateTime?>? readyAt,
+    Value<bool>? paid,
+    Value<int>? rowid,
+  }) {
+    return LocalOvenTicketsCompanion(
+      id: id ?? this.id,
+      tag: tag ?? this.tag,
+      customerName: customerName ?? this.customerName,
+      phone: phone ?? this.phone,
+      description: description ?? this.description,
+      ruleId: ruleId ?? this.ruleId,
+      weightGrams: weightGrams ?? this.weightGrams,
+      feeCents: feeCents ?? this.feeCents,
+      requestedAt: requestedAt ?? this.requestedAt,
+      status: status ?? this.status,
+      readyAt: readyAt ?? this.readyAt,
+      paid: paid ?? this.paid,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (tag.present) {
+      map['tag'] = Variable<String>(tag.value);
+    }
+    if (customerName.present) {
+      map['customer_name'] = Variable<String>(customerName.value);
+    }
+    if (phone.present) {
+      map['phone'] = Variable<String>(phone.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (ruleId.present) {
+      map['rule_id'] = Variable<String>(ruleId.value);
+    }
+    if (weightGrams.present) {
+      map['weight_grams'] = Variable<int>(weightGrams.value);
+    }
+    if (feeCents.present) {
+      map['fee_cents'] = Variable<int>(feeCents.value);
+    }
+    if (requestedAt.present) {
+      map['requested_at'] = Variable<DateTime>(requestedAt.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (readyAt.present) {
+      map['ready_at'] = Variable<DateTime>(readyAt.value);
+    }
+    if (paid.present) {
+      map['paid'] = Variable<bool>(paid.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalOvenTicketsCompanion(')
+          ..write('id: $id, ')
+          ..write('tag: $tag, ')
+          ..write('customerName: $customerName, ')
+          ..write('phone: $phone, ')
+          ..write('description: $description, ')
+          ..write('ruleId: $ruleId, ')
+          ..write('weightGrams: $weightGrams, ')
+          ..write('feeCents: $feeCents, ')
+          ..write('requestedAt: $requestedAt, ')
+          ..write('status: $status, ')
+          ..write('readyAt: $readyAt, ')
+          ..write('paid: $paid, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -11796,6 +13135,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $LocalPrepaymentsTable localPrepayments = $LocalPrepaymentsTable(
     this,
   );
+  late final $LocalOvenRulesTable localOvenRules = $LocalOvenRulesTable(this);
+  late final $LocalOvenTicketsTable localOvenTickets = $LocalOvenTicketsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -11824,6 +13167,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localLots,
     localOrderTickets,
     localPrepayments,
+    localOvenRules,
+    localOvenTickets,
   ];
 }
 
@@ -18140,6 +19485,674 @@ typedef $$LocalPrepaymentsTableProcessedTableManager =
       LocalPrepayment,
       PrefetchHooks Function()
     >;
+typedef $$LocalOvenRulesTableCreateCompanionBuilder =
+    LocalOvenRulesCompanion Function({
+      required String id,
+      required String name,
+      required int baseCents,
+      required int perKgCents,
+      required String variantId,
+      required String productName,
+      required String ivaRateId,
+      required int ivaBp,
+      Value<String?> iepsRateId,
+      required int iepsBp,
+      Value<int> rowid,
+    });
+typedef $$LocalOvenRulesTableUpdateCompanionBuilder =
+    LocalOvenRulesCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<int> baseCents,
+      Value<int> perKgCents,
+      Value<String> variantId,
+      Value<String> productName,
+      Value<String> ivaRateId,
+      Value<int> ivaBp,
+      Value<String?> iepsRateId,
+      Value<int> iepsBp,
+      Value<int> rowid,
+    });
+
+class $$LocalOvenRulesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalOvenRulesTable> {
+  $$LocalOvenRulesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get baseCents => $composableBuilder(
+    column: $table.baseCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get perKgCents => $composableBuilder(
+    column: $table.perKgCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get variantId => $composableBuilder(
+    column: $table.variantId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get productName => $composableBuilder(
+    column: $table.productName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ivaRateId => $composableBuilder(
+    column: $table.ivaRateId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ivaBp => $composableBuilder(
+    column: $table.ivaBp,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get iepsRateId => $composableBuilder(
+    column: $table.iepsRateId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get iepsBp => $composableBuilder(
+    column: $table.iepsBp,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalOvenRulesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalOvenRulesTable> {
+  $$LocalOvenRulesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get baseCents => $composableBuilder(
+    column: $table.baseCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get perKgCents => $composableBuilder(
+    column: $table.perKgCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get variantId => $composableBuilder(
+    column: $table.variantId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get productName => $composableBuilder(
+    column: $table.productName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ivaRateId => $composableBuilder(
+    column: $table.ivaRateId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ivaBp => $composableBuilder(
+    column: $table.ivaBp,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get iepsRateId => $composableBuilder(
+    column: $table.iepsRateId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get iepsBp => $composableBuilder(
+    column: $table.iepsBp,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalOvenRulesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalOvenRulesTable> {
+  $$LocalOvenRulesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<int> get baseCents =>
+      $composableBuilder(column: $table.baseCents, builder: (column) => column);
+
+  GeneratedColumn<int> get perKgCents => $composableBuilder(
+    column: $table.perKgCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get variantId =>
+      $composableBuilder(column: $table.variantId, builder: (column) => column);
+
+  GeneratedColumn<String> get productName => $composableBuilder(
+    column: $table.productName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get ivaRateId =>
+      $composableBuilder(column: $table.ivaRateId, builder: (column) => column);
+
+  GeneratedColumn<int> get ivaBp =>
+      $composableBuilder(column: $table.ivaBp, builder: (column) => column);
+
+  GeneratedColumn<String> get iepsRateId => $composableBuilder(
+    column: $table.iepsRateId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get iepsBp =>
+      $composableBuilder(column: $table.iepsBp, builder: (column) => column);
+}
+
+class $$LocalOvenRulesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalOvenRulesTable,
+          LocalOvenRule,
+          $$LocalOvenRulesTableFilterComposer,
+          $$LocalOvenRulesTableOrderingComposer,
+          $$LocalOvenRulesTableAnnotationComposer,
+          $$LocalOvenRulesTableCreateCompanionBuilder,
+          $$LocalOvenRulesTableUpdateCompanionBuilder,
+          (
+            LocalOvenRule,
+            BaseReferences<_$AppDatabase, $LocalOvenRulesTable, LocalOvenRule>,
+          ),
+          LocalOvenRule,
+          PrefetchHooks Function()
+        > {
+  $$LocalOvenRulesTableTableManager(
+    _$AppDatabase db,
+    $LocalOvenRulesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalOvenRulesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalOvenRulesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalOvenRulesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<int> baseCents = const Value.absent(),
+                Value<int> perKgCents = const Value.absent(),
+                Value<String> variantId = const Value.absent(),
+                Value<String> productName = const Value.absent(),
+                Value<String> ivaRateId = const Value.absent(),
+                Value<int> ivaBp = const Value.absent(),
+                Value<String?> iepsRateId = const Value.absent(),
+                Value<int> iepsBp = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalOvenRulesCompanion(
+                id: id,
+                name: name,
+                baseCents: baseCents,
+                perKgCents: perKgCents,
+                variantId: variantId,
+                productName: productName,
+                ivaRateId: ivaRateId,
+                ivaBp: ivaBp,
+                iepsRateId: iepsRateId,
+                iepsBp: iepsBp,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                required int baseCents,
+                required int perKgCents,
+                required String variantId,
+                required String productName,
+                required String ivaRateId,
+                required int ivaBp,
+                Value<String?> iepsRateId = const Value.absent(),
+                required int iepsBp,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalOvenRulesCompanion.insert(
+                id: id,
+                name: name,
+                baseCents: baseCents,
+                perKgCents: perKgCents,
+                variantId: variantId,
+                productName: productName,
+                ivaRateId: ivaRateId,
+                ivaBp: ivaBp,
+                iepsRateId: iepsRateId,
+                iepsBp: iepsBp,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalOvenRulesTable, LocalOvenRule>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalOvenRulesTable,
+                    LocalOvenRule
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalOvenRulesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalOvenRulesTable,
+      LocalOvenRule,
+      $$LocalOvenRulesTableFilterComposer,
+      $$LocalOvenRulesTableOrderingComposer,
+      $$LocalOvenRulesTableAnnotationComposer,
+      $$LocalOvenRulesTableCreateCompanionBuilder,
+      $$LocalOvenRulesTableUpdateCompanionBuilder,
+      (
+        LocalOvenRule,
+        BaseReferences<_$AppDatabase, $LocalOvenRulesTable, LocalOvenRule>,
+      ),
+      LocalOvenRule,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalOvenTicketsTableCreateCompanionBuilder =
+    LocalOvenTicketsCompanion Function({
+      required String id,
+      required String tag,
+      required String customerName,
+      Value<String?> phone,
+      required String description,
+      required String ruleId,
+      required int weightGrams,
+      required int feeCents,
+      required DateTime requestedAt,
+      required String status,
+      Value<DateTime?> readyAt,
+      required bool paid,
+      Value<int> rowid,
+    });
+typedef $$LocalOvenTicketsTableUpdateCompanionBuilder =
+    LocalOvenTicketsCompanion Function({
+      Value<String> id,
+      Value<String> tag,
+      Value<String> customerName,
+      Value<String?> phone,
+      Value<String> description,
+      Value<String> ruleId,
+      Value<int> weightGrams,
+      Value<int> feeCents,
+      Value<DateTime> requestedAt,
+      Value<String> status,
+      Value<DateTime?> readyAt,
+      Value<bool> paid,
+      Value<int> rowid,
+    });
+
+class $$LocalOvenTicketsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalOvenTicketsTable> {
+  $$LocalOvenTicketsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tag => $composableBuilder(
+    column: $table.tag,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customerName => $composableBuilder(
+    column: $table.customerName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get phone => $composableBuilder(
+    column: $table.phone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ruleId => $composableBuilder(
+    column: $table.ruleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get weightGrams => $composableBuilder(
+    column: $table.weightGrams,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get feeCents => $composableBuilder(
+    column: $table.feeCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get requestedAt => $composableBuilder(
+    column: $table.requestedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get readyAt => $composableBuilder(
+    column: $table.readyAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get paid => $composableBuilder(
+    column: $table.paid,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalOvenTicketsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalOvenTicketsTable> {
+  $$LocalOvenTicketsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tag => $composableBuilder(
+    column: $table.tag,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customerName => $composableBuilder(
+    column: $table.customerName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get phone => $composableBuilder(
+    column: $table.phone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ruleId => $composableBuilder(
+    column: $table.ruleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get weightGrams => $composableBuilder(
+    column: $table.weightGrams,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get feeCents => $composableBuilder(
+    column: $table.feeCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get requestedAt => $composableBuilder(
+    column: $table.requestedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get readyAt => $composableBuilder(
+    column: $table.readyAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get paid => $composableBuilder(
+    column: $table.paid,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalOvenTicketsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalOvenTicketsTable> {
+  $$LocalOvenTicketsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get tag =>
+      $composableBuilder(column: $table.tag, builder: (column) => column);
+
+  GeneratedColumn<String> get customerName => $composableBuilder(
+    column: $table.customerName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get phone =>
+      $composableBuilder(column: $table.phone, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get ruleId =>
+      $composableBuilder(column: $table.ruleId, builder: (column) => column);
+
+  GeneratedColumn<int> get weightGrams => $composableBuilder(
+    column: $table.weightGrams,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get feeCents =>
+      $composableBuilder(column: $table.feeCents, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get requestedAt => $composableBuilder(
+    column: $table.requestedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get readyAt =>
+      $composableBuilder(column: $table.readyAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get paid =>
+      $composableBuilder(column: $table.paid, builder: (column) => column);
+}
+
+class $$LocalOvenTicketsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalOvenTicketsTable,
+          LocalOvenTicket,
+          $$LocalOvenTicketsTableFilterComposer,
+          $$LocalOvenTicketsTableOrderingComposer,
+          $$LocalOvenTicketsTableAnnotationComposer,
+          $$LocalOvenTicketsTableCreateCompanionBuilder,
+          $$LocalOvenTicketsTableUpdateCompanionBuilder,
+          (
+            LocalOvenTicket,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalOvenTicketsTable,
+              LocalOvenTicket
+            >,
+          ),
+          LocalOvenTicket,
+          PrefetchHooks Function()
+        > {
+  $$LocalOvenTicketsTableTableManager(
+    _$AppDatabase db,
+    $LocalOvenTicketsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalOvenTicketsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalOvenTicketsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalOvenTicketsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> tag = const Value.absent(),
+                Value<String> customerName = const Value.absent(),
+                Value<String?> phone = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<String> ruleId = const Value.absent(),
+                Value<int> weightGrams = const Value.absent(),
+                Value<int> feeCents = const Value.absent(),
+                Value<DateTime> requestedAt = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime?> readyAt = const Value.absent(),
+                Value<bool> paid = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalOvenTicketsCompanion(
+                id: id,
+                tag: tag,
+                customerName: customerName,
+                phone: phone,
+                description: description,
+                ruleId: ruleId,
+                weightGrams: weightGrams,
+                feeCents: feeCents,
+                requestedAt: requestedAt,
+                status: status,
+                readyAt: readyAt,
+                paid: paid,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String tag,
+                required String customerName,
+                Value<String?> phone = const Value.absent(),
+                required String description,
+                required String ruleId,
+                required int weightGrams,
+                required int feeCents,
+                required DateTime requestedAt,
+                required String status,
+                Value<DateTime?> readyAt = const Value.absent(),
+                required bool paid,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalOvenTicketsCompanion.insert(
+                id: id,
+                tag: tag,
+                customerName: customerName,
+                phone: phone,
+                description: description,
+                ruleId: ruleId,
+                weightGrams: weightGrams,
+                feeCents: feeCents,
+                requestedAt: requestedAt,
+                status: status,
+                readyAt: readyAt,
+                paid: paid,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalOvenTicketsTable, LocalOvenTicket>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalOvenTicketsTable,
+                    LocalOvenTicket
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalOvenTicketsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalOvenTicketsTable,
+      LocalOvenTicket,
+      $$LocalOvenTicketsTableFilterComposer,
+      $$LocalOvenTicketsTableOrderingComposer,
+      $$LocalOvenTicketsTableAnnotationComposer,
+      $$LocalOvenTicketsTableCreateCompanionBuilder,
+      $$LocalOvenTicketsTableUpdateCompanionBuilder,
+      (
+        LocalOvenTicket,
+        BaseReferences<_$AppDatabase, $LocalOvenTicketsTable, LocalOvenTicket>,
+      ),
+      LocalOvenTicket,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -18193,4 +20206,8 @@ class $AppDatabaseManager {
       $$LocalOrderTicketsTableTableManager(_db, _db.localOrderTickets);
   $$LocalPrepaymentsTableTableManager get localPrepayments =>
       $$LocalPrepaymentsTableTableManager(_db, _db.localPrepayments);
+  $$LocalOvenRulesTableTableManager get localOvenRules =>
+      $$LocalOvenRulesTableTableManager(_db, _db.localOvenRules);
+  $$LocalOvenTicketsTableTableManager get localOvenTickets =>
+      $$LocalOvenTicketsTableTableManager(_db, _db.localOvenTickets);
 }

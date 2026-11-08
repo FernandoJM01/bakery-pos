@@ -87,5 +87,9 @@ const _$AuditActionEnumMap = {
   AuditAction.undefined50: 'order.prepaid',
   AuditAction.undefined51: 'order.picked_up',
   AuditAction.undefined52: 'order.missed',
+  AuditAction.undefined53: 'oven.fee_changed',
+  AuditAction.undefined54: 'oven.branch_changed',
+  AuditAction.undefined55: 'oven.received',
+  AuditAction.undefined56: 'oven.picked_up',
   AuditAction.$unknown: r'$unknown',
 };

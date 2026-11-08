@@ -98,6 +98,8 @@ class OfflineApprovalEntries extends Table {
     LocalLots,
     LocalOrderTickets,
     LocalPrepayments,
+    LocalOvenRules,
+    LocalOvenTickets,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -106,7 +108,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -171,6 +173,10 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(localSales, localSales.orderTicketId);
         }
         if (from >= 7) await m.addColumn(localRefunds, localRefunds.cash);
+      }
+      if (from < 11) {
+        await m.createTable(localOvenRules);
+        await m.createTable(localOvenTickets);
       }
     },
   );

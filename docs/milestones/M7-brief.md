@@ -2,7 +2,7 @@
 
 Status: draft for Fernando, 8 Nov 2026 · Architect and builder: Claude · Plan: [Phase 1 Implementation Plan](https://claude.ai/code/artifact/f7a32ce4-8b1b-427f-89c0-bf6379cbcb5f) (modules M9 and M8) · Sprint 7
 
-This milestone gives the owner the numbers. A dashboard shows the day against the same weekday last week, by hour, the last 14 days, the best sellers and what needs a look: a cash difference, waste, customers who owe. Reports group sales by day, hour, branch, till, cashier, product or tax rate, and show stock and customer balances. Every report exports to Excel and CSV for the accountant. The Christmas oven service follows in its own PR.
+This milestone gives the owner the numbers. A dashboard shows the day against the same weekday last week, by hour, the last 14 days, the best sellers and what needs a look: a cash difference, waste, customers who owe. Reports group sales by day, hour, branch, till, cashier, product or tax rate, and show stock and customer balances. Every report exports to Excel and CSV for the accountant. The Christmas oven service is in section 4.
 
 Everything in the M1 to M6 briefs still applies.
 
@@ -34,7 +34,35 @@ Back office **Reportes**, with tabs for the summary dashboard, sales, stock and 
 | H6 | The dashboard shows the day against the same weekday last week, by hour and by product | M9 |
 | H7 | A manager asking for another branch gets 403; a range over 400 days gets 400 | M9 |
 
-## 4. Open for Fernando
+## 4. Oven service (M8)
+
+At Christmas, customers bring their own dish (a turkey, a leg of pork) to bake in the bakery's oven. Fernando decided on 8 Nov 2026 that the fee depends on the dish type and the weight.
+
+### 4.1 Decisions (each changeable)
+
+- **Fee = base + price per kilo × weight.** Each dish type (Pavo, Pierna, Lechón) has its own base and price per kilo, set in back office Horno. Pavo at $80.00 + $40.00/kg costs $120.00 for 1 kg and $208.00 for 3.2 kg. Rounding is half up to the centavo, the same on the till and the server.
+- **The fee is a sale.** Each dish type is a hidden service product with its own IVA rate. Its sale has a folio, a receipt, tax by rate, shift cash and the Z report like any sale, and it takes no stock. The customer pays once, either at drop-off or at pickup.
+- **Each branch turns the service on or off.** It starts off. A till of a branch without the service refuses dishes, and so does the server.
+- **The tag is the number on the claim slip** the customer keeps. The slip prints with the name, phone, dish, weight, requested time and whether the fee is paid.
+- **Offline like a sale.** Drop-off, the bakers' steps and pickup are till records (`oven.received`, `oven.status`, `oven.picked_up`). A step never goes back; the furthest one stands. A dish picked up twice keeps the first pickup.
+- **Who.** Cashiers and managers take and hand over dishes (`oven.intake_pickup`). Bakers and managers move them through the oven (`oven.board`). Owners and branch managers set the fees (`catalog.manage`). Turning a branch on or off needs `branches.manage`.
+
+### 4.2 Screens
+
+Till **Horno**: a *Mostrador* tab to receive a dish (tag, name, phone, dish and container, dish type, weight in kg, time wanted, pay now or later) and hand over the ready ones, charging when unpaid; and a *Horno* tab for the bakers with the queue by time wanted and the buttons *Al horno* and *Listo*. Back office **Horno**: the branches with the service and the dish types with their fees.
+
+### 4.3 Acceptance
+
+| ID | Test | Trace |
+| --- | --- | --- |
+| H8 | Pavo at $80.00 + $40.00/kg for 3.2 kg is $208.00 on the till and the server, and any other fee is refused | M8.1 |
+| H9 | Paid at drop-off, the dish hands over without charging; unpaid, pickup charges it; a fee sale pays only one dish | M8.1, M8.3 |
+| H10 | The fee appears on the receipt, tax by rate, shift cash and the Z report, and takes no stock | M8.1 |
+| H11 | A step never goes back, and the counter sees a dish as ready once the baker marks it | M8.2 |
+| H12 | A branch with the service off refuses dishes on the till and the server | M8.5 |
+| H13 | Manual: on a tablet, receive, bake and hand over three dishes, one paid at drop-off | M8 |
+
+## 5. Open for Fernando
 
 - What else should the dashboard show first thing in the morning?
 - Does the accountant want any report in a particular layout?
