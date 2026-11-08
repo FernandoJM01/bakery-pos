@@ -40,6 +40,7 @@ describe('DevicesService', () => {
     name: 'Sucursal Centro',
     address: 'Av Juárez 100',
     timezone: 'America/Mexico_City',
+    ovenEnabled: false,
     isActive: true,
     createdAt: new Date('2026-10-21T00:00:00Z'),
     updatedAt: new Date('2026-10-21T00:00:00Z'),

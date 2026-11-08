@@ -1691,5 +1691,194 @@
   "reportsProduced": "Producido",
   "reportsSold": "Vendido",
   "reportsWasteCost": "Costo de merma",
-  "reportsOnHand": "Existencia al cierre"
+  "reportsOnHand": "Existencia al cierre",
+  "ovenOff": "El servicio de horno está apagado en esta sucursal",
+  "ovenCounter": "Mostrador",
+  "ovenBoard": "Horno",
+  "ovenNewDish": "Recibir platillo",
+  "ovenReadyToCall": "Listos para avisar al cliente",
+  "ovenNoneReady": "Ningún platillo listo todavía",
+  "ovenWaiting": "En espera o en el horno",
+  "ovenHandOver": "Entregar",
+  "ovenChargeAndHandOver": "Cobrar {amount} y entregar",
+  "@ovenChargeAndHandOver": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "ovenPickedUp": "Entregado: ficha {tag}, {name}",
+  "@ovenPickedUp": {
+    "placeholders": {
+      "tag": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ovenInOven": "En el horno",
+  "ovenReceived": "Recibido",
+  "ovenTagLabel": "Número de ficha",
+  "ovenDescription": "Platillo y recipiente",
+  "ovenWeightKg": "Peso (kg)",
+  "ovenRequestedAt": "Lo quiere a las {time}",
+  "@ovenRequestedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "ovenFeeLine": "{base} + {perKg}/kg = {fee}",
+  "@ovenFeeLine": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "perKg": {
+        "type": "String"
+      },
+      "fee": {
+        "type": "String"
+      }
+    }
+  },
+  "ovenPayNow": "Cobrar ahora",
+  "ovenIncomplete": "Escribe ficha, nombre, platillo y peso (hasta 100 kg)",
+  "ovenSave": "Recibir",
+  "ovenQueueEmpty": "No hay platillos en espera",
+  "ovenToOven": "Al horno",
+  "ovenMarkReady": "Listo",
+  "ovenClaimTitle": "Servicio de horno",
+  "ovenTag": "Ficha {tag}",
+  "@ovenTag": {
+    "placeholders": {
+      "tag": {
+        "type": "String"
+      }
+    }
+  },
+  "ovenDishWeight": "{name}, {kg} kg",
+  "@ovenDishWeight": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "ovenRequested": "Para: {time}",
+  "@ovenRequested": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "ovenReadyAt": "Listo a las {time}",
+  "@ovenReadyAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "ovenFeePaid": "Pagado",
+  "ovenFeeDue": "Por pagar",
+  "ovenSettingsTitle": "Servicio de horno",
+  "ovenSettingsIntro": "Los clientes traen su platillo para hornearlo. El cobro es una base más un precio por kilo, según el tipo de platillo, y se registra como una venta con su ticket e impuestos.",
+  "ovenBranches": "Sucursales que reciben platillos",
+  "ovenFees": "Tipos de platillo y cobro",
+  "ovenFeesEmpty": "Aún no hay tipos de platillo. Agrega uno, por ejemplo Pavo o Pierna.",
+  "ovenFeeRuleText": "{base} + {perKg} por kilo · 1 kg = {oneKg}",
+  "@ovenFeeRuleText": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "perKg": {
+        "type": "String"
+      },
+      "oneKg": {
+        "type": "String"
+      }
+    }
+  },
+  "ovenFeeOff": "Apagado",
+  "ovenFeeAdd": "Agregar tipo de platillo",
+  "ovenFeeEdit": "Cambiar tipo de platillo",
+  "ovenFeeName": "Nombre (por ejemplo Pavo)",
+  "ovenFeeBase": "Cobro base ($)",
+  "ovenFeePerKg": "Precio por kilo ($)",
+  "ovenFeeIva": "IVA",
+  "ovenFeeActive": "Disponible en caja",
+  "ovenFeeExample": "1 kg cuesta {oneKg} · 3 kg cuestan {threeKg}",
+  "@ovenFeeExample": {
+    "placeholders": {
+      "oneKg": {
+        "type": "String"
+      },
+      "threeKg": {
+        "type": "String"
+      }
+    }
+  },
+  "ovenFeeIncomplete": "Escribe nombre, cobro base, precio por kilo e IVA",
+  "ovenFeeSaved": "Tipo de platillo guardado",
+  "ovenBadPhone": "Revisa el teléfono: de 7 a 20 números",
+  "ovenReceivedTag": "Recibido: ficha {tag}, {name}",
+  "@ovenReceivedTag": {
+    "placeholders": {
+      "tag": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ovenReadyLine": "{description}\nListo a las {time} {phone}",
+  "@ovenReadyLine": {
+    "placeholders": {
+      "description": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      },
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "ovenBoardLine": "{name} · {kg} kg · para las {time}",
+  "@ovenBoardLine": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "kg": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "ovenFeeIvaOption": "{name} ({percent})",
+  "@ovenFeeIvaOption": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  }
 }

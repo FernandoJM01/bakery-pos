@@ -69,7 +69,7 @@ void main() {
           .first
           .values
           .first;
-      expect(userVerAfter, 10);
+      expect(userVerAfter, 11);
 
       await appDb.close();
     });
@@ -123,7 +123,7 @@ void main() {
           .first
           .values
           .first;
-      expect(userVer, 10);
+      expect(userVer, 11);
 
       await appDb.close();
     });
@@ -201,7 +201,7 @@ void main() {
           reason: table,
         );
       }
-      expect(sqliteDb.select('PRAGMA user_version;').first.values.first, 10);
+      expect(sqliteDb.select('PRAGMA user_version;').first.values.first, 11);
       await appDb.close();
     });
 

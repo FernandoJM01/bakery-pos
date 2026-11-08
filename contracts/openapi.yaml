@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
   title: Bakery POS API
-  version: 0.7.0-m7
+  version: 0.8.0-m7
   description: |
-    Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync), 3 (sales), 4 (cash shifts, audit and printing), 5 (stock and day-old bread), 6 (customers and orders) and 7 (reports).
+    Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync), 3 (sales), 4 (cash shifts, audit and printing), 5 (stock and day-old bread), 6 (customers and orders) and 7 (reports and the oven service).
     Owned by the architect. Developers must not edit this file; open an issue labelled `contract` instead.
 
     Conventions:
@@ -36,6 +36,7 @@ tags:
   - name: stock
   - name: orders
   - name: reports
+  - name: oven
     description: Sales and refunds made on tills, received through sync (M3)
 
 paths:
@@ -1494,6 +1495,145 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /v1/oven/board:
+    get:
+      tags: [oven]
+      operationId: getOvenBoard
+      summary: "The device's branch: whether the service is on, the fees, and dishes not picked up or picked up today"
+      security:
+        - deviceToken: []
+      x-public: true
+      x-device: required
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OvenBoard' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /v1/oven/fees:
+    get:
+      tags: [oven]
+      operationId: listOvenFees
+      summary: Dish types and what baking each costs
+      x-permission: catalog.manage
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, branches]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/OvenFeeRule' } }
+                  branches: { type: array, items: { $ref: '#/components/schemas/OvenBranchState' } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [oven]
+      operationId: createOvenFee
+      summary: Adds a dish type; its fee is sold as a hidden service product
+      x-permission: catalog.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OvenFeeRuleCreate' }
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OvenFeeRule' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/oven/fees/{ruleId}:
+    patch:
+      tags: [oven]
+      operationId: updateOvenFee
+      summary: Changes a dish type's name, fee or order, or turns it off
+      x-permission: catalog.manage
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OvenFeeRuleUpdate' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OvenFeeRule' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/oven/branches/{branchId}:
+    put:
+      tags: [oven]
+      operationId: setOvenBranch
+      summary: Turns the oven service on or off for a branch (M8.5)
+      x-permission: branches.manage
+      parameters:
+        - name: branchId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [enabled], additionalProperties: false, properties: { enabled: { type: boolean } } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: object, required: [branchId, enabled], properties: { branchId: { type: string, format: uuid }, enabled: { type: boolean } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/oven/tickets:
+    get:
+      tags: [oven]
+      operationId: listOvenTickets
+      summary: Dishes by requested day, for the back office (M9.3)
+      x-permission: reports.branch
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/LocalDate' }
+        - name: to
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/LocalDate' }
+        - name: branchId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OvenTicketList' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
   /v1/tax-rates:
     get:
       tags: [catalog]
@@ -2539,6 +2679,10 @@ components:
         - order.prepaid
         - order.picked_up
         - order.missed
+        - oven.fee_changed
+        - oven.branch_changed
+        - oven.received
+        - oven.picked_up
     AuditEntry:
       type: object
       required: [id, occurredAt, action]
@@ -2851,9 +2995,11 @@ components:
         `cash.movement` (payload `CashMovementPayload`), `shift.closed` (payload `ShiftClosedPayload`), `stock.produced`
         (payload `StockProducedPayload`, record `id` = lot ID), `stock.wasted` (payload `StockWastedPayload`) and `stock.counted`
         (payload `StockCountedPayload`) and `order.prepaid`
-        (payload `OrderPrepaidPayload`, record `id` = prepaid entry ID). The server accepts any string and quarantines
+        (payload `OrderPrepaidPayload`, record `id` = prepaid entry ID), `oven.received`
+        (payload `OvenReceivedPayload`, record `id` = oven ticket ID), `oven.status` (payload `OvenStatusPayload`) and
+        `oven.picked_up` (payload `OvenPickedUpPayload`). The server accepts any string and quarantines
         unknown types with `SYNC_UNKNOWN_TYPE`, so an older server never rejects a whole batch.
-      examples: [audit.offline_event, sale.completed, sale.refunded, shift.opened, cash.movement, shift.closed, stock.produced, stock.wasted, stock.counted, order.prepaid]
+      examples: [audit.offline_event, sale.completed, sale.refunded, shift.opened, cash.movement, shift.closed, stock.produced, stock.wasted, stock.counted, order.prepaid, oven.received, oven.status, oven.picked_up]
     SyncRecord:
       type: object
       required: [id, type, occurredAt, payload]
@@ -3915,6 +4061,131 @@ components:
               name: { type: string }
               netCents: { type: integer }
               saleCount: { type: integer }
+    OvenFeeRule:
+      type: object
+      required: [id, name, baseCents, perKgCents, isActive, sortOrder, variantId, productName, variantName, ivaRateId, ivaBp, iepsRateId, iepsBp]
+      description: A dish type. The fee is `baseCents + round(perKgCents × weightGrams / 1000)`, sold with the variant below (M8).
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        baseCents: { $ref: '#/components/schemas/AnyCents' }
+        perKgCents: { $ref: '#/components/schemas/AnyCents' }
+        isActive: { type: boolean }
+        sortOrder: { type: integer }
+        variantId: { type: string, format: uuid }
+        productName: { type: string }
+        variantName: { type: string }
+        ivaRateId: { type: string, format: uuid }
+        ivaBp: { $ref: '#/components/schemas/BasisPoints' }
+        iepsRateId: { type: [string, 'null'], format: uuid }
+        iepsBp: { $ref: '#/components/schemas/BasisPoints' }
+    OvenFeeRuleCreate:
+      type: object
+      required: [name, baseCents, perKgCents, ivaRateId]
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 60 }
+        baseCents: { type: integer, minimum: 0, maximum: 10000000 }
+        perKgCents: { type: integer, minimum: 0, maximum: 10000000 }
+        ivaRateId: { type: string, format: uuid }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+    OvenFeeRuleUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 60 }
+        baseCents: { type: integer, minimum: 0, maximum: 10000000 }
+        perKgCents: { type: integer, minimum: 0, maximum: 10000000 }
+        isActive: { type: boolean }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+    OvenStatus:
+      type: string
+      enum: [RECEIVED, IN_OVEN, READY, PICKED_UP]
+    OvenTicket:
+      type: object
+      required: [id, branchId, tag, customerName, phone, description, ruleId, weightGrams, feeCents, requestedAt, status, receivedAt, inOvenAt, readyAt, pickedUpAt, paid]
+      properties:
+        id: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        tag: { type: string }
+        customerName: { type: string }
+        phone: { type: [string, 'null'] }
+        description: { type: string }
+        ruleId: { type: string, format: uuid }
+        weightGrams: { type: integer }
+        feeCents: { $ref: '#/components/schemas/AnyCents' }
+        requestedAt: { type: string, format: date-time }
+        status: { $ref: '#/components/schemas/OvenStatus' }
+        receivedAt: { type: string, format: date-time }
+        inOvenAt: { type: [string, 'null'], format: date-time }
+        readyAt: { type: [string, 'null'], format: date-time, description: 'The actual ready time, for the customer (M8.3)' }
+        pickedUpAt: { type: [string, 'null'], format: date-time }
+        paid: { type: boolean }
+    OvenBoard:
+      type: object
+      required: [generatedAt, today, enabled, rules, tickets]
+      properties:
+        generatedAt: { type: string, format: date-time }
+        today: { $ref: '#/components/schemas/LocalDate' }
+        enabled: { type: boolean }
+        rules:
+          type: array
+          items: { $ref: '#/components/schemas/OvenFeeRule' }
+        tickets:
+          type: array
+          items: { $ref: '#/components/schemas/OvenTicket' }
+    OvenTicketList:
+      type: object
+      required: [branches, items]
+      properties:
+        branches:
+          type: array
+          items: { $ref: '#/components/schemas/OvenBranchState' }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OvenTicket' }
+    OvenBranchState:
+      type: object
+      description: Whether a branch takes dishes for the oven (M8.5)
+      required: [branchId, name, enabled]
+      properties:
+        branchId: { type: string, format: uuid }
+        name: { type: string }
+        enabled: { type: boolean }
+    OvenReceivedPayload:
+      type: object
+      description: Payload of `oven.received`. The record `id` is the oven ticket ID. The fee must match the rule (M8.1).
+      required: [tag, customerName, description, ruleId, weightGrams, feeCents, requestedAt, staffId]
+      additionalProperties: false
+      properties:
+        tag: { type: string, minLength: 1, maxLength: 10 }
+        customerName: { type: string, minLength: 1, maxLength: 120 }
+        phone: { type: [string, 'null'], pattern: '^[0-9+ ]{7,20}$' }
+        description: { type: string, minLength: 1, maxLength: 200 }
+        ruleId: { type: string, format: uuid }
+        weightGrams: { type: integer, minimum: 1, maximum: 100000 }
+        feeCents: { $ref: '#/components/schemas/AnyCents' }
+        requestedAt: { type: string, format: date-time }
+        staffId: { type: string, format: uuid }
+        feeSaleId: { type: [string, 'null'], format: uuid, description: 'The fee sale, when paid at drop-off' }
+    OvenStatusPayload:
+      type: object
+      description: Payload of `oven.status`. A step never goes back; the furthest one stands.
+      required: [ticketId, status, staffId]
+      additionalProperties: false
+      properties:
+        ticketId: { type: string, format: uuid }
+        status: { type: string, enum: [IN_OVEN, READY] }
+        staffId: { type: string, format: uuid }
+    OvenPickedUpPayload:
+      type: object
+      description: Payload of `oven.picked_up`. The fee is paid exactly once, at drop-off or here.
+      required: [ticketId, staffId]
+      additionalProperties: false
+      properties:
+        ticketId: { type: string, format: uuid }
+        staffId: { type: string, format: uuid }
+        feeSaleId: { type: [string, 'null'], format: uuid, description: 'The fee sale, when paid at pickup' }
     SaleStatus:
       type: string
       enum: [COMPLETED, PARTIALLY_REFUNDED, REFUNDED, VOIDED]

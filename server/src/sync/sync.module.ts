@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../prisma/prisma.module';
 import { OrderSyncService } from '../orders/order-sync.service';
+import { OvenSyncService } from '../oven/oven-sync.service';
 import { SaleSyncService } from '../sales/sale-sync.service';
 import { ShiftSyncService } from '../shifts/shift-sync.service';
 import { StockLedgerService } from '../stock/stock-ledger.service';
@@ -21,6 +22,7 @@ import { SyncPushService } from './sync-push.service';
     StockLedgerService,
     StockSyncService,
     OrderSyncService,
+    OvenSyncService,
     QuarantineService,
   ],
 })

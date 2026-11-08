@@ -12,6 +12,7 @@ import '../../../core/api/generated/models/sync_result_status.dart';
 import '../../../core/api/generated/sync/sync_api_client.dart';
 import '../../../core/storage/local_database.dart';
 import '../../orders/data/orders_repository.dart';
+import '../../oven/data/oven_repository.dart';
 import '../../stock/data/stock_repository.dart';
 import '../../till_catalog/data/till_catalog_repository.dart';
 
@@ -28,10 +29,12 @@ class SyncWorker extends ChangeNotifier {
     required this.catalog,
     this.stock,
     this.orders,
+    this.oven,
     DateTime Function()? clock,
     this.onCatalogUpdated,
     this.onStockUpdated,
     this.onOrdersUpdated,
+    this.onOvenUpdated,
   }) : _clock = clock ?? DateTime.now;
 
   final AppDatabase db;
@@ -43,6 +46,8 @@ class SyncWorker extends ChangeNotifier {
   final VoidCallback? onStockUpdated;
   final OrdersRepository? orders;
   final VoidCallback? onOrdersUpdated;
+  final OvenRepository? oven;
+  final VoidCallback? onOvenUpdated;
 
   static const interval = Duration(seconds: 15);
   static const _backoff = [
@@ -111,6 +116,8 @@ class SyncWorker extends ChangeNotifier {
       onStockUpdated?.call();
       await orders?.pull();
       onOrdersUpdated?.call();
+      await oven?.pull();
+      onOvenUpdated?.call();
       _failures = 0;
       _lastSuccessAt = _clock();
       return true;
@@ -199,6 +206,8 @@ final syncWorkerProvider = Provider<SyncWorker>((ref) {
     onStockUpdated: () => ref.invalidate(stockViewProvider),
     orders: ref.watch(ordersRepositoryProvider),
     onOrdersUpdated: () => ref.invalidate(todayTicketsProvider),
+    oven: ref.watch(ovenRepositoryProvider),
+    onOvenUpdated: () => ref.invalidate(ovenDishesProvider),
   );
   ref.onDispose(worker.dispose);
   return worker;

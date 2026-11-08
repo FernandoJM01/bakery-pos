@@ -218,6 +218,22 @@ enum AuditAction {
   @JsonValue('order.missed')
   undefined52('order.missed'),
 
+  /// Incorrect name has been replaced. Original name: `oven.fee_changed`.
+  @JsonValue('oven.fee_changed')
+  undefined53('oven.fee_changed'),
+
+  /// Incorrect name has been replaced. Original name: `oven.branch_changed`.
+  @JsonValue('oven.branch_changed')
+  undefined54('oven.branch_changed'),
+
+  /// Incorrect name has been replaced. Original name: `oven.received`.
+  @JsonValue('oven.received')
+  undefined55('oven.received'),
+
+  /// Incorrect name has been replaced. Original name: `oven.picked_up`.
+  @JsonValue('oven.picked_up')
+  undefined56('oven.picked_up'),
+
   /// Default value for all unparsed values, allows backward compatibility when adding new values on the backend.
   $unknown(null);
 

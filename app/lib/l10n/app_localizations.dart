@@ -4679,6 +4679,318 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Existencia al cierre'**
   String get reportsOnHand;
+
+  /// No description provided for @ovenOff.
+  ///
+  /// In es, this message translates to:
+  /// **'El servicio de horno está apagado en esta sucursal'**
+  String get ovenOff;
+
+  /// No description provided for @ovenCounter.
+  ///
+  /// In es, this message translates to:
+  /// **'Mostrador'**
+  String get ovenCounter;
+
+  /// No description provided for @ovenBoard.
+  ///
+  /// In es, this message translates to:
+  /// **'Horno'**
+  String get ovenBoard;
+
+  /// No description provided for @ovenNewDish.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibir platillo'**
+  String get ovenNewDish;
+
+  /// No description provided for @ovenReadyToCall.
+  ///
+  /// In es, this message translates to:
+  /// **'Listos para avisar al cliente'**
+  String get ovenReadyToCall;
+
+  /// No description provided for @ovenNoneReady.
+  ///
+  /// In es, this message translates to:
+  /// **'Ningún platillo listo todavía'**
+  String get ovenNoneReady;
+
+  /// No description provided for @ovenWaiting.
+  ///
+  /// In es, this message translates to:
+  /// **'En espera o en el horno'**
+  String get ovenWaiting;
+
+  /// No description provided for @ovenHandOver.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregar'**
+  String get ovenHandOver;
+
+  /// No description provided for @ovenChargeAndHandOver.
+  ///
+  /// In es, this message translates to:
+  /// **'Cobrar {amount} y entregar'**
+  String ovenChargeAndHandOver(String amount);
+
+  /// No description provided for @ovenPickedUp.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregado: ficha {tag}, {name}'**
+  String ovenPickedUp(String tag, String name);
+
+  /// No description provided for @ovenInOven.
+  ///
+  /// In es, this message translates to:
+  /// **'En el horno'**
+  String get ovenInOven;
+
+  /// No description provided for @ovenReceived.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibido'**
+  String get ovenReceived;
+
+  /// No description provided for @ovenTagLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Número de ficha'**
+  String get ovenTagLabel;
+
+  /// No description provided for @ovenDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Platillo y recipiente'**
+  String get ovenDescription;
+
+  /// No description provided for @ovenWeightKg.
+  ///
+  /// In es, this message translates to:
+  /// **'Peso (kg)'**
+  String get ovenWeightKg;
+
+  /// No description provided for @ovenRequestedAt.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo quiere a las {time}'**
+  String ovenRequestedAt(String time);
+
+  /// No description provided for @ovenFeeLine.
+  ///
+  /// In es, this message translates to:
+  /// **'{base} + {perKg}/kg = {fee}'**
+  String ovenFeeLine(String base, String perKg, String fee);
+
+  /// No description provided for @ovenPayNow.
+  ///
+  /// In es, this message translates to:
+  /// **'Cobrar ahora'**
+  String get ovenPayNow;
+
+  /// No description provided for @ovenIncomplete.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe ficha, nombre, platillo y peso (hasta 100 kg)'**
+  String get ovenIncomplete;
+
+  /// No description provided for @ovenSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibir'**
+  String get ovenSave;
+
+  /// No description provided for @ovenQueueEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay platillos en espera'**
+  String get ovenQueueEmpty;
+
+  /// No description provided for @ovenToOven.
+  ///
+  /// In es, this message translates to:
+  /// **'Al horno'**
+  String get ovenToOven;
+
+  /// No description provided for @ovenMarkReady.
+  ///
+  /// In es, this message translates to:
+  /// **'Listo'**
+  String get ovenMarkReady;
+
+  /// No description provided for @ovenClaimTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Servicio de horno'**
+  String get ovenClaimTitle;
+
+  /// No description provided for @ovenTag.
+  ///
+  /// In es, this message translates to:
+  /// **'Ficha {tag}'**
+  String ovenTag(String tag);
+
+  /// No description provided for @ovenDishWeight.
+  ///
+  /// In es, this message translates to:
+  /// **'{name}, {kg} kg'**
+  String ovenDishWeight(String name, String kg);
+
+  /// No description provided for @ovenRequested.
+  ///
+  /// In es, this message translates to:
+  /// **'Para: {time}'**
+  String ovenRequested(String time);
+
+  /// No description provided for @ovenReadyAt.
+  ///
+  /// In es, this message translates to:
+  /// **'Listo a las {time}'**
+  String ovenReadyAt(String time);
+
+  /// No description provided for @ovenFeePaid.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagado'**
+  String get ovenFeePaid;
+
+  /// No description provided for @ovenFeeDue.
+  ///
+  /// In es, this message translates to:
+  /// **'Por pagar'**
+  String get ovenFeeDue;
+
+  /// No description provided for @ovenSettingsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Servicio de horno'**
+  String get ovenSettingsTitle;
+
+  /// No description provided for @ovenSettingsIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Los clientes traen su platillo para hornearlo. El cobro es una base más un precio por kilo, según el tipo de platillo, y se registra como una venta con su ticket e impuestos.'**
+  String get ovenSettingsIntro;
+
+  /// No description provided for @ovenBranches.
+  ///
+  /// In es, this message translates to:
+  /// **'Sucursales que reciben platillos'**
+  String get ovenBranches;
+
+  /// No description provided for @ovenFees.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipos de platillo y cobro'**
+  String get ovenFees;
+
+  /// No description provided for @ovenFeesEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay tipos de platillo. Agrega uno, por ejemplo Pavo o Pierna.'**
+  String get ovenFeesEmpty;
+
+  /// No description provided for @ovenFeeRuleText.
+  ///
+  /// In es, this message translates to:
+  /// **'{base} + {perKg} por kilo · 1 kg = {oneKg}'**
+  String ovenFeeRuleText(String base, String perKg, String oneKg);
+
+  /// No description provided for @ovenFeeOff.
+  ///
+  /// In es, this message translates to:
+  /// **'Apagado'**
+  String get ovenFeeOff;
+
+  /// No description provided for @ovenFeeAdd.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar tipo de platillo'**
+  String get ovenFeeAdd;
+
+  /// No description provided for @ovenFeeEdit.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar tipo de platillo'**
+  String get ovenFeeEdit;
+
+  /// No description provided for @ovenFeeName.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre (por ejemplo Pavo)'**
+  String get ovenFeeName;
+
+  /// No description provided for @ovenFeeBase.
+  ///
+  /// In es, this message translates to:
+  /// **'Cobro base (\$)'**
+  String get ovenFeeBase;
+
+  /// No description provided for @ovenFeePerKg.
+  ///
+  /// In es, this message translates to:
+  /// **'Precio por kilo (\$)'**
+  String get ovenFeePerKg;
+
+  /// No description provided for @ovenFeeIva.
+  ///
+  /// In es, this message translates to:
+  /// **'IVA'**
+  String get ovenFeeIva;
+
+  /// No description provided for @ovenFeeActive.
+  ///
+  /// In es, this message translates to:
+  /// **'Disponible en caja'**
+  String get ovenFeeActive;
+
+  /// No description provided for @ovenFeeExample.
+  ///
+  /// In es, this message translates to:
+  /// **'1 kg cuesta {oneKg} · 3 kg cuestan {threeKg}'**
+  String ovenFeeExample(String oneKg, String threeKg);
+
+  /// No description provided for @ovenFeeIncomplete.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe nombre, cobro base, precio por kilo e IVA'**
+  String get ovenFeeIncomplete;
+
+  /// No description provided for @ovenFeeSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo de platillo guardado'**
+  String get ovenFeeSaved;
+
+  /// No description provided for @ovenBadPhone.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisa el teléfono: de 7 a 20 números'**
+  String get ovenBadPhone;
+
+  /// No description provided for @ovenReceivedTag.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibido: ficha {tag}, {name}'**
+  String ovenReceivedTag(String tag, String name);
+
+  /// No description provided for @ovenReadyLine.
+  ///
+  /// In es, this message translates to:
+  /// **'{description}\nListo a las {time} {phone}'**
+  String ovenReadyLine(String description, String time, String phone);
+
+  /// No description provided for @ovenBoardLine.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} · {kg} kg · para las {time}'**
+  String ovenBoardLine(String name, String kg, String time);
+
+  /// No description provided for @ovenFeeIvaOption.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} ({percent})'**
+  String ovenFeeIvaOption(String name, String percent);
 }
 
 class _AppLocalizationsDelegate

@@ -8,7 +8,9 @@
 /// `cash.movement` (payload `CashMovementPayload`), `shift.closed` (payload `ShiftClosedPayload`), `stock.produced`.
 /// (payload `StockProducedPayload`, record `id` = lot ID), `stock.wasted` (payload `StockWastedPayload`) and `stock.counted`.
 /// (payload `StockCountedPayload`) and `order.prepaid`.
-/// (payload `OrderPrepaidPayload`, record `id` = prepaid entry ID). The server accepts any string and quarantines.
+/// (payload `OrderPrepaidPayload`, record `id` = prepaid entry ID), `oven.received`.
+/// (payload `OvenReceivedPayload`, record `id` = oven ticket ID), `oven.status` (payload `OvenStatusPayload`) and.
+/// `oven.picked_up` (payload `OvenPickedUpPayload`). The server accepts any string and quarantines.
 /// unknown types with `SYNC_UNKNOWN_TYPE`, so an older server never rejects a whole batch.
 ///
 typedef SyncRecordType = String;

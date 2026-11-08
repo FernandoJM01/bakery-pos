@@ -14,6 +14,7 @@ import '../domain/session_lock_manager.dart';
 import '../domain/till_auth_state.dart';
 import '../../cash/presentation/cash_screen.dart';
 import '../../orders/presentation/orders_screen.dart';
+import '../../oven/presentation/oven_screen.dart';
 import '../../stock/presentation/production_screen.dart';
 import '../../sync/data/sync_worker.dart';
 import '../../sync/presentation/sync_indicator.dart';
@@ -455,10 +456,7 @@ class TillSectionPlaceholder extends ConsumerWidget {
       case AppRoutes.tillOrders:
         return const OrdersScreen(key: Key('section-orders'));
       case AppRoutes.tillOven:
-        return const TillSectionPlaceholder(
-          key: Key('section-oven'),
-          section: TillSection.oven,
-        );
+        return const OvenScreen(key: Key('section-oven'));
       case AppRoutes.tillReports:
         return const TillSectionPlaceholder(
           key: Key('section-reports'),

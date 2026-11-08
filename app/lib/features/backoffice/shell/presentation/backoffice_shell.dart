@@ -47,6 +47,14 @@ class BackofficeShell extends ConsumerWidget {
           selectedIcon: Icons.history_toggle_off,
         ),
       );
+      navItems.add(
+        _NavItem(
+          route: AppRoutes.backofficeOven,
+          label: l10n.navOven,
+          icon: Icons.outdoor_grill_outlined,
+          selectedIcon: Icons.outdoor_grill,
+        ),
+      );
     }
     if (permissions.contains('staff.manage')) {
       navItems.add(
@@ -259,6 +267,8 @@ class BackofficeSectionPlaceholder extends StatelessWidget {
           title = l10n.navOrders;
         } else if (route == AppRoutes.backofficeDayOld) {
           title = l10n.navDayOld;
+        } else if (route == AppRoutes.backofficeOven) {
+          title = l10n.navOven;
         } else if (route == AppRoutes.backofficeStock) {
           title = l10n.stockInventory;
         } else {
