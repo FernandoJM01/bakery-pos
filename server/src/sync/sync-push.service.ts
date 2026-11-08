@@ -4,6 +4,7 @@ import { v7 as uuidv7 } from 'uuid';
 import { ClockService } from '../common/clock.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { OrderSyncService } from '../orders/order-sync.service';
+import { OvenSyncService } from '../oven/oven-sync.service';
 import { SaleSyncService } from '../sales/sale-sync.service';
 import { ShiftSyncService } from '../shifts/shift-sync.service';
 import { StockSyncService } from '../stock/stock-sync.service';
@@ -46,6 +47,7 @@ export class SyncPushService {
     private readonly shifts: ShiftSyncService,
     private readonly stock: StockSyncService,
     private readonly orderSync: OrderSyncService,
+    private readonly oven: OvenSyncService,
   ) {}
 
   async push(device: Device, records: SyncRecordDto[]) {
@@ -146,6 +148,12 @@ export class SyncPushService {
         return this.sales.planCompleted(device, record);
       case 'sale.refunded':
         return this.sales.planRefunded(device, record);
+      case 'oven.received':
+        return this.oven.planReceived(device, record);
+      case 'oven.status':
+        return this.oven.planStatus(device, record);
+      case 'oven.picked_up':
+        return this.oven.planPickedUp(device, record);
       case 'order.prepaid':
         return this.orderSync.planPrepaid(device, record);
       case 'stock.produced':

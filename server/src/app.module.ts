@@ -22,6 +22,7 @@ import { SyncModule } from './sync/sync.module';
 import { SalesModule } from './sales/sales.module';
 import { ShiftsModule } from './shifts/shifts.module';
 import { OrdersModule } from './orders/orders.module';
+import { OvenModule } from './oven/oven.module';
 import { ReportsModule } from './reports/reports.module';
 import { StockModule } from './stock/stock.module';
 
@@ -85,6 +86,7 @@ import { StockModule } from './stock/stock.module';
     StockModule,
     OrdersModule,
     ReportsModule,
+    OvenModule,
     HealthModule,
   ],
   providers: [

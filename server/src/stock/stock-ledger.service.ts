@@ -152,7 +152,17 @@ export class StockLedgerService {
       a.variantId.localeCompare(b.variantId),
     );
     const today = localDay(sale.occurredAt, sale.timeZone);
+    // An oven fee is a service, not bread: it takes no stock.
+    const services = new Set(
+      (
+        await tx.ovenFeeRule.findMany({
+          where: { variantId: { in: lines.map((l) => l.variantId) } },
+          select: { variantId: true },
+        })
+      ).map((r) => r.variantId),
+    );
     for (const l of lines) {
+      if (services.has(l.variantId)) continue;
       await this.lock(tx, sale.branchId, l.variantId);
       let agedOnOrBefore: string | null = null;
       if (l.dayOld) {
