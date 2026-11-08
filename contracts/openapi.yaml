@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
   title: Bakery POS API
-  version: 0.6.0-m6
+  version: 0.7.0-m7
   description: |
-    Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync), 3 (sales), 4 (cash shifts, audit and printing), 5 (stock and day-old bread) and 6 (customers and orders).
+    Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync), 3 (sales), 4 (cash shifts, audit and printing), 5 (stock and day-old bread), 6 (customers and orders) and 7 (reports).
     Owned by the architect. Developers must not edit this file; open an issue labelled `contract` instead.
 
     Conventions:
@@ -35,6 +35,7 @@ tags:
   - name: shifts
   - name: stock
   - name: orders
+  - name: reports
     description: Sales and refunds made on tills, received through sync (M3)
 
 paths:
@@ -1268,6 +1269,230 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/reports/dashboard:
+    get:
+      tags: [reports]
+      operationId: getDashboard
+      summary: "The owner's day at a glance, against the same weekday last week"
+      description: |
+        Defaults to today at the first branch. Owners (`reports.all`) see every branch; others see their own.
+      x-permission: reports.branch
+      parameters:
+        - name: date
+          in: query
+          schema: { $ref: '#/components/schemas/LocalDate' }
+        - name: branchId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Dashboard' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/reports/sales:
+    get:
+      tags: [reports]
+      operationId: getSalesReport
+      summary: Sales grouped by day, hour, branch, till, cashier, product or tax rate
+      description: |
+        Days and hours are the branch's own. Sales and refunds count on the day each happened, as on the Z report, so the two agree (M9.1). At most 400 days.
+      x-permission: reports.branch
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/LocalDate' }
+        - name: to
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/LocalDate' }
+        - name: branchId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: groupBy
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/SalesGroup' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalesReport' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/reports/sales/export:
+    get:
+      tags: [reports]
+      operationId: exportSalesReport
+      summary: The sales report as CSV or Excel
+      description: Pesos with two decimals; CSV is UTF-8 with a BOM so Excel reads the accents (M9.4).
+      x-permission: reports.branch
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/LocalDate' }
+        - name: to
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/LocalDate' }
+        - name: branchId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: groupBy
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/SalesGroup' }
+        - name: format
+          in: query
+          required: true
+          schema: { type: string, enum: [csv, xlsx] }
+      responses:
+        '200':
+          description: The file
+          content:
+            text/csv:
+              schema: { type: string, format: binary }
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema: { type: string, format: binary }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/reports/stock:
+    get:
+      tags: [reports]
+      operationId: getStockReport
+      summary: Per product and branch, what was produced, sold, day-old sold, wasted and left (M9.2)
+      x-permission: reports.branch
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/LocalDate' }
+        - name: to
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/LocalDate' }
+        - name: branchId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StockReport' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/reports/stock/export:
+    get:
+      tags: [reports]
+      operationId: exportStockReport
+      summary: The stock report as CSV or Excel
+      description: Pesos with two decimals; CSV is UTF-8 with a BOM so Excel reads the accents (M9.4).
+      x-permission: reports.branch
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/LocalDate' }
+        - name: to
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/LocalDate' }
+        - name: branchId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: format
+          in: query
+          required: true
+          schema: { type: string, enum: [csv, xlsx] }
+      responses:
+        '200':
+          description: The file
+          content:
+            text/csv:
+              schema: { type: string, format: binary }
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema: { type: string, format: binary }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/reports/orders:
+    get:
+      tags: [reports]
+      operationId: getOrdersReport
+      summary: Order tickets by day and status, and every customer balance (M9.3)
+      x-permission: reports.branch
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/LocalDate' }
+        - name: to
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/LocalDate' }
+        - name: branchId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrdersReport' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/reports/orders/export:
+    get:
+      tags: [reports]
+      operationId: exportBalances
+      summary: Customer balances as CSV or Excel
+      description: Pesos with two decimals; CSV is UTF-8 with a BOM so Excel reads the accents (M9.4).
+      x-permission: reports.branch
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/LocalDate' }
+        - name: to
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/LocalDate' }
+        - name: branchId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: format
+          in: query
+          required: true
+          schema: { type: string, enum: [csv, xlsx] }
+      responses:
+        '200':
+          description: The file
+          content:
+            text/csv:
+              schema: { type: string, format: binary }
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema: { type: string, format: binary }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
 
   /v1/tax-rates:
     get:
@@ -3548,6 +3773,148 @@ components:
           allOf: [{ $ref: '#/components/schemas/AnyCents' }]
           minimum: 1
         staffId: { type: string, format: uuid }
+    SalesGroup:
+      type: string
+      enum: [day, hour, branch, device, cashier, product, taxRate]
+    SalesReportRow:
+      type: object
+      required: [key, label, saleCount, quantity, grossCents, discountCents, netCents, cashCents, prepaidCents, refundCents, baseCents, taxCents]
+      properties:
+        key: { type: string, description: 'A day, an hour (00-23), an id, or a tax rate such as IVA:1600' }
+        label: { type: string }
+        saleCount: { type: integer }
+        quantity: { type: [integer, 'null'], description: 'Units, for products only' }
+        grossCents: { type: integer }
+        discountCents: { type: integer }
+        netCents: { type: integer, description: 'What the sales came to, before refunds' }
+        cashCents: { type: integer }
+        prepaidCents: { type: integer, description: 'Order pickups paid from a balance' }
+        refundCents: { type: integer }
+        baseCents: { type: [integer, 'null'], description: 'Tax rows only, net of refunds' }
+        taxCents: { type: [integer, 'null'], description: 'Tax rows only, net of refunds' }
+    SalesReport:
+      type: object
+      required: [from, to, groupBy, items, totals]
+      properties:
+        from: { $ref: '#/components/schemas/LocalDate' }
+        to: { $ref: '#/components/schemas/LocalDate' }
+        groupBy: { $ref: '#/components/schemas/SalesGroup' }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/SalesReportRow' }
+        totals: { $ref: '#/components/schemas/SalesReportRow' }
+    StockReportRow:
+      type: object
+      required: [branchId, branchName, variantId, productName, variantName, produced, sold, dayOldSold, returned, wasted, transferredIn, transferredOut, adjusted, onHand, wasteCostCents]
+      properties:
+        branchId: { type: string, format: uuid }
+        branchName: { type: string }
+        variantId: { type: string, format: uuid }
+        productName: { type: string }
+        variantName: { type: string }
+        produced: { type: integer }
+        sold: { type: integer }
+        dayOldSold: { type: integer }
+        returned: { type: integer }
+        wasted: { type: integer }
+        transferredIn: { type: integer }
+        transferredOut: { type: integer }
+        adjusted: { type: integer }
+        onHand: { type: integer, description: 'At the end of the last day' }
+        wasteCostCents: { type: [integer, 'null'] }
+    StockReport:
+      type: object
+      required: [from, to, items]
+      properties:
+        from: { $ref: '#/components/schemas/LocalDate' }
+        to: { $ref: '#/components/schemas/LocalDate' }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/StockReportRow' }
+    OrdersReport:
+      type: object
+      required: [from, to, tickets, balances]
+      properties:
+        from: { $ref: '#/components/schemas/LocalDate' }
+        to: { $ref: '#/components/schemas/LocalDate' }
+        tickets:
+          type: array
+          items:
+            type: object
+            required: [date, status, count, totalCents]
+            properties:
+              date: { $ref: '#/components/schemas/LocalDate' }
+              status: { $ref: '#/components/schemas/TicketStatus' }
+              count: { type: integer }
+              totalCents: { type: integer }
+        balances:
+          type: array
+          description: Lowest first, so who owes comes first
+          items:
+            type: object
+            required: [customerId, name, phone, balanceCents]
+            properties:
+              customerId: { type: string, format: uuid }
+              name: { type: string }
+              phone: { type: [string, 'null'] }
+              balanceCents: { type: integer }
+    Dashboard:
+      type: object
+      required: [date, compareDate, netCents, saleCount, averageTicketCents, refundCents, compareNetCents, compareSaleCount, wasteCostCents, wasteUnits, flaggedShifts, prepaidCollectedCents, customersOwing, hours, topProducts, days, branches]
+      properties:
+        date: { $ref: '#/components/schemas/LocalDate' }
+        compareDate: { $ref: '#/components/schemas/LocalDate' }
+        netCents: { type: integer, description: 'Sales minus refunds' }
+        saleCount: { type: integer }
+        averageTicketCents: { type: integer }
+        refundCents: { type: integer }
+        compareNetCents: { type: integer }
+        compareSaleCount: { type: integer }
+        wasteCostCents: { type: integer }
+        wasteUnits: { type: integer }
+        flaggedShifts: { type: integer }
+        prepaidCollectedCents: { type: integer }
+        customersOwing: { type: integer }
+        hours:
+          type: array
+          items:
+            type: object
+            required: [hour, netCents, saleCount]
+            properties:
+              hour: { type: integer, minimum: 0, maximum: 23 }
+              netCents: { type: integer }
+              saleCount: { type: integer }
+        topProducts:
+          type: array
+          maxItems: 5
+          items:
+            type: object
+            required: [variantId, label, quantity, netCents]
+            properties:
+              variantId: { type: string, format: uuid }
+              label: { type: string }
+              quantity: { type: integer }
+              netCents: { type: integer }
+        days:
+          type: array
+          description: The 14 days ending on `date`, days with sales only
+          items:
+            type: object
+            required: [date, netCents, saleCount]
+            properties:
+              date: { $ref: '#/components/schemas/LocalDate' }
+              netCents: { type: integer }
+              saleCount: { type: integer }
+        branches:
+          type: array
+          items:
+            type: object
+            required: [branchId, name, netCents, saleCount]
+            properties:
+              branchId: { type: string, format: uuid }
+              name: { type: string }
+              netCents: { type: integer }
+              saleCount: { type: integer }
     SaleStatus:
       type: string
       enum: [COMPLETED, PARTIALLY_REFUNDED, REFUNDED, VOIDED]

@@ -91,6 +91,14 @@ class BackofficeShell extends ConsumerWidget {
     if (permissions.contains('reports.branch')) {
       navItems.add(
         _NavItem(
+          route: AppRoutes.backofficeReports,
+          label: l10n.navReports,
+          icon: Icons.insights_outlined,
+          selectedIcon: Icons.insights,
+        ),
+      );
+      navItems.add(
+        _NavItem(
           route: AppRoutes.backofficeSales,
           label: l10n.navSales,
           icon: Icons.receipt_long_outlined,
@@ -245,6 +253,8 @@ class BackofficeSectionPlaceholder extends StatelessWidget {
           title = l10n.navSales;
         } else if (route == AppRoutes.backofficeShifts) {
           title = l10n.navShifts;
+        } else if (route == AppRoutes.backofficeReports) {
+          title = l10n.navReports;
         } else if (route == AppRoutes.backofficeOrders) {
           title = l10n.navOrders;
         } else if (route == AppRoutes.backofficeDayOld) {

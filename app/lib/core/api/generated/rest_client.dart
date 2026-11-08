@@ -14,12 +14,13 @@ import 'shifts/shifts_api_client.dart';
 import 'stock/stock_api_client.dart';
 import 'catalog/catalog_api_client.dart';
 import 'orders/orders_api_client.dart';
+import 'reports/reports_api_client.dart';
 import 'sync/sync_api_client.dart';
 import 'sales/sales_api_client.dart';
 
-/// Bakery POS API `v0.6.0-m6`.
+/// Bakery POS API `v0.7.0-m7`.
 ///
-/// Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync), 3 (sales), 4 (cash shifts, audit and printing), 5 (stock and day-old bread) and 6 (customers and orders).
+/// Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync), 3 (sales), 4 (cash shifts, audit and printing), 5 (stock and day-old bread), 6 (customers and orders) and 7 (reports).
 /// Owned by the architect. Developers must not edit this file; open an issue labelled `contract` instead.
 ///
 /// Conventions:.
@@ -36,7 +37,7 @@ class RestClient {
   final Dio _dio;
   final String? _baseUrl;
 
-  static String get version => '0.6.0-m6';
+  static String get version => '0.7.0-m7';
 
   SystemApiClient? _system;
   DevicesApiClient? _devices;
@@ -48,6 +49,7 @@ class RestClient {
   StockApiClient? _stock;
   CatalogApiClient? _catalog;
   OrdersApiClient? _orders;
+  ReportsApiClient? _reports;
   SyncApiClient? _sync;
   SalesApiClient? _sales;
 
@@ -79,6 +81,9 @@ class RestClient {
 
   OrdersApiClient get orders =>
       _orders ??= OrdersApiClient(_dio, baseUrl: _baseUrl);
+
+  ReportsApiClient get reports =>
+      _reports ??= ReportsApiClient(_dio, baseUrl: _baseUrl);
 
   SyncApiClient get sync => _sync ??= SyncApiClient(_dio, baseUrl: _baseUrl);
 

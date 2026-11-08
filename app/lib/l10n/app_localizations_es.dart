@@ -2477,4 +2477,136 @@ class AppLocalizationsEs extends AppLocalizations {
   String ordersScheduleStatus(String schedule, String status) {
     return '$schedule · $status';
   }
+
+  @override
+  String get reportsDashboard => 'Resumen';
+
+  @override
+  String get reportsSales => 'Ventas';
+
+  @override
+  String get reportsStock => 'Inventario';
+
+  @override
+  String get reportsBalances => 'Saldos de clientes';
+
+  @override
+  String reportsRange(String from, String to) {
+    return '$from a $to';
+  }
+
+  @override
+  String reportsExported(String name) {
+    return 'Archivo listo: $name';
+  }
+
+  @override
+  String get reportsNoCompare => 'Sin datos de la semana pasada';
+
+  @override
+  String reportsVsLastWeek(String change) {
+    return '$change contra el mismo día de la semana pasada';
+  }
+
+  @override
+  String reportsDayOf(String date) {
+    return 'Día $date';
+  }
+
+  @override
+  String get reportsNetSales => 'Venta neta';
+
+  @override
+  String get reportsTickets => 'Tickets';
+
+  @override
+  String get reportsAverageTicket => 'Ticket promedio';
+
+  @override
+  String get reportsRefunds => 'Devoluciones';
+
+  @override
+  String get reportsWaste => 'Merma';
+
+  @override
+  String reportsUnits(int count) {
+    return '$count piezas';
+  }
+
+  @override
+  String get reportsPrepaid => 'Anticipos cobrados';
+
+  @override
+  String get reportsFlaggedShifts => 'Cortes con diferencia';
+
+  @override
+  String get reportsCustomersOwing => 'Clientes con saldo en contra';
+
+  @override
+  String get reportsByHour => 'Venta por hora';
+
+  @override
+  String get reportsLast14Days => 'Últimos 14 días';
+
+  @override
+  String get reportsTopProducts => 'Más vendidos';
+
+  @override
+  String get reportsByBranch => 'Por sucursal';
+
+  @override
+  String reportsTicketsCount(int count) {
+    return '$count tickets';
+  }
+
+  @override
+  String get reportsExportExcel => 'Excel';
+
+  @override
+  String get reportsExportCsv => 'CSV';
+
+  @override
+  String get reportsByDay => 'Día';
+
+  @override
+  String get reportsHour => 'Hora';
+
+  @override
+  String get reportsTill => 'Caja';
+
+  @override
+  String get reportsCashier => 'Cajero';
+
+  @override
+  String get reportsProduct => 'Producto';
+
+  @override
+  String get reportsTaxRate => 'Impuesto';
+
+  @override
+  String get reportsGroupBy => 'Agrupar por';
+
+  @override
+  String get reportsBase => 'Base';
+
+  @override
+  String get reportsTax => 'Impuesto';
+
+  @override
+  String get reportsNet => 'Vendido';
+
+  @override
+  String get reportsTotal => 'Total';
+
+  @override
+  String get reportsProduced => 'Producido';
+
+  @override
+  String get reportsSold => 'Vendido';
+
+  @override
+  String get reportsWasteCost => 'Costo de merma';
+
+  @override
+  String get reportsOnHand => 'Existencia al cierre';
 }
