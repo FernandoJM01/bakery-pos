@@ -3,6 +3,7 @@ import { Device, Prisma, SyncInboxStatus } from '@prisma/client';
 import { v7 as uuidv7 } from 'uuid';
 import { ClockService } from '../common/clock.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { OrderSyncService } from '../orders/order-sync.service';
 import { SaleSyncService } from '../sales/sale-sync.service';
 import { ShiftSyncService } from '../shifts/shift-sync.service';
 import { StockSyncService } from '../stock/stock-sync.service';
@@ -44,6 +45,7 @@ export class SyncPushService {
     private readonly sales: SaleSyncService,
     private readonly shifts: ShiftSyncService,
     private readonly stock: StockSyncService,
+    private readonly orderSync: OrderSyncService,
   ) {}
 
   async push(device: Device, records: SyncRecordDto[]) {
@@ -144,6 +146,8 @@ export class SyncPushService {
         return this.sales.planCompleted(device, record);
       case 'sale.refunded':
         return this.sales.planRefunded(device, record);
+      case 'order.prepaid':
+        return this.orderSync.planPrepaid(device, record);
       case 'stock.produced':
         return this.stock.planProduced(device, record);
       case 'stock.wasted':

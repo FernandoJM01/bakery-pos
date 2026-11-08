@@ -37,6 +37,7 @@ export function computeZReport(
   sales: readonly ZSale[],
   refunds: readonly ZRefund[],
   movements: readonly ZMovement[],
+  prepaidCollectedCents = 0,
 ) {
   const taxes = new Map<string, TaxByRate>();
   const add = (
@@ -85,7 +86,7 @@ export function computeZReport(
     refundCents: total(byKind('REFUND'), (r) => r.totalCents),
     voidCount: byKind('VOID').length,
     voidCents: total(byKind('VOID'), (r) => r.totalCents),
-    prepaidCollectedCents: 0,
+    prepaidCollectedCents,
     cashInCents: total(
       movements.filter((m) => m.kind === 'IN'),
       (m) => m.amountCents,

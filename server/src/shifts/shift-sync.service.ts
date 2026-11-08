@@ -4,6 +4,7 @@ import {
   CashMovementKind,
   Device,
   DeviceType,
+  PaymentMethod,
   Prisma,
   ShiftStatus,
 } from '@prisma/client';
@@ -247,13 +248,21 @@ export class ShiftSyncService {
     });
     if (usedZ > 0) return rejected(`Z number ${p.zNumber} was already used`);
 
+    const prepaid = await tx.prepaidEntry.findMany({
+      where: { shiftId: shift.id, kind: 'PAYMENT' },
+      select: { amountCents: true },
+    });
     const [payments, refunds, movements] = await Promise.all([
+      // Only cash moves the drawer: a pickup paid from a balance does not.
       tx.payment.findMany({
-        where: { sale: { shiftId: shift.id } },
+        where: { sale: { shiftId: shift.id }, method: PaymentMethod.CASH },
         select: { amountCents: true },
       }),
       tx.refund.findMany({
-        where: { shiftId: shift.id },
+        where: {
+          shiftId: shift.id,
+          sale: { payments: { some: { method: PaymentMethod.CASH } } },
+        },
         select: { totalCents: true },
       }),
       tx.cashMovement.findMany({
@@ -270,6 +279,7 @@ export class ShiftSyncService {
         cashInCents: amountsOf(CashMovementKind.IN),
         cashOutCents: amountsOf(CashMovementKind.OUT),
         refundsCents: refunds.map((r) => r.totalCents),
+        prepaymentsCents: prepaid.map((x) => x.amountCents),
       },
       p.countedCents,
       SALE_SETTINGS.cashVarianceFlagCents,

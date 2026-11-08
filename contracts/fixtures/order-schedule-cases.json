@@ -1,0 +1,286 @@
+{
+  "description": "Shared cases for the order schedule in M6 brief section 4.1 (acceptance test G2). Weekdays are a bit set: Monday = 1, Tuesday = 2 ... Sunday = 64. 2 Nov 2026 is a Monday.",
+  "cases": [
+    {
+      "name": "30 bolillos Monday to Friday",
+      "order": {
+        "kind": "STANDING",
+        "weekdays": 31,
+        "startDate": "2026-11-02",
+        "endDate": null,
+        "status": "ACTIVE",
+        "pausedFrom": null,
+        "pausedUntil": null,
+        "skips": []
+      },
+      "days": [
+        "2026-11-01",
+        "2026-11-02",
+        "2026-11-06",
+        "2026-11-07",
+        "2026-11-08",
+        "2026-11-09",
+        "2026-11-16",
+        "2026-12-31"
+      ],
+      "expected": [
+        "2026-11-02",
+        "2026-11-06",
+        "2026-11-09",
+        "2026-11-16",
+        "2026-12-31"
+      ]
+    },
+    {
+      "name": "Weekends only",
+      "order": {
+        "kind": "STANDING",
+        "weekdays": 96,
+        "startDate": "2026-11-02",
+        "endDate": null,
+        "status": "ACTIVE",
+        "pausedFrom": null,
+        "pausedUntil": null,
+        "skips": []
+      },
+      "days": [
+        "2026-11-01",
+        "2026-11-02",
+        "2026-11-06",
+        "2026-11-07",
+        "2026-11-08",
+        "2026-11-09",
+        "2026-11-16",
+        "2026-12-31"
+      ],
+      "expected": [
+        "2026-11-07",
+        "2026-11-08"
+      ]
+    },
+    {
+      "name": "Ends on a date",
+      "order": {
+        "kind": "STANDING",
+        "weekdays": 31,
+        "startDate": "2026-11-02",
+        "endDate": "2026-11-09",
+        "status": "ACTIVE",
+        "pausedFrom": null,
+        "pausedUntil": null,
+        "skips": []
+      },
+      "days": [
+        "2026-11-01",
+        "2026-11-02",
+        "2026-11-06",
+        "2026-11-07",
+        "2026-11-08",
+        "2026-11-09",
+        "2026-11-16",
+        "2026-12-31"
+      ],
+      "expected": [
+        "2026-11-02",
+        "2026-11-06",
+        "2026-11-09"
+      ]
+    },
+    {
+      "name": "Starts later",
+      "order": {
+        "kind": "STANDING",
+        "weekdays": 31,
+        "startDate": "2026-11-09",
+        "endDate": null,
+        "status": "ACTIVE",
+        "pausedFrom": null,
+        "pausedUntil": null,
+        "skips": []
+      },
+      "days": [
+        "2026-11-01",
+        "2026-11-02",
+        "2026-11-06",
+        "2026-11-07",
+        "2026-11-08",
+        "2026-11-09",
+        "2026-11-16",
+        "2026-12-31"
+      ],
+      "expected": [
+        "2026-11-09",
+        "2026-11-16",
+        "2026-12-31"
+      ]
+    },
+    {
+      "name": "Skipped day",
+      "order": {
+        "kind": "STANDING",
+        "weekdays": 31,
+        "startDate": "2026-11-02",
+        "endDate": null,
+        "status": "ACTIVE",
+        "pausedFrom": null,
+        "pausedUntil": null,
+        "skips": [
+          "2026-11-06"
+        ]
+      },
+      "days": [
+        "2026-11-01",
+        "2026-11-02",
+        "2026-11-06",
+        "2026-11-07",
+        "2026-11-08",
+        "2026-11-09",
+        "2026-11-16",
+        "2026-12-31"
+      ],
+      "expected": [
+        "2026-11-02",
+        "2026-11-09",
+        "2026-11-16",
+        "2026-12-31"
+      ]
+    },
+    {
+      "name": "Paused for a week",
+      "order": {
+        "kind": "STANDING",
+        "weekdays": 31,
+        "startDate": "2026-11-02",
+        "endDate": null,
+        "status": "ACTIVE",
+        "pausedFrom": "2026-11-06",
+        "pausedUntil": "2026-11-13",
+        "skips": []
+      },
+      "days": [
+        "2026-11-01",
+        "2026-11-02",
+        "2026-11-06",
+        "2026-11-07",
+        "2026-11-08",
+        "2026-11-09",
+        "2026-11-16",
+        "2026-12-31"
+      ],
+      "expected": [
+        "2026-11-02",
+        "2026-11-16",
+        "2026-12-31"
+      ]
+    },
+    {
+      "name": "Paused with no end",
+      "order": {
+        "kind": "STANDING",
+        "weekdays": 31,
+        "startDate": "2026-11-02",
+        "endDate": null,
+        "status": "PAUSED",
+        "pausedFrom": "2026-11-09",
+        "pausedUntil": null,
+        "skips": []
+      },
+      "days": [
+        "2026-11-01",
+        "2026-11-02",
+        "2026-11-06",
+        "2026-11-07",
+        "2026-11-08",
+        "2026-11-09",
+        "2026-11-16",
+        "2026-12-31"
+      ],
+      "expected": [
+        "2026-11-02",
+        "2026-11-06"
+      ]
+    },
+    {
+      "name": "Ended order is never due",
+      "order": {
+        "kind": "STANDING",
+        "weekdays": 31,
+        "startDate": "2026-11-02",
+        "endDate": null,
+        "status": "ENDED",
+        "pausedFrom": null,
+        "pausedUntil": null,
+        "skips": []
+      },
+      "days": [
+        "2026-11-01",
+        "2026-11-02",
+        "2026-11-06",
+        "2026-11-07",
+        "2026-11-08",
+        "2026-11-09",
+        "2026-11-16",
+        "2026-12-31"
+      ],
+      "expected": []
+    },
+    {
+      "name": "Cake for Saturday",
+      "order": {
+        "kind": "ONE_OFF",
+        "weekdays": 0,
+        "startDate": "2026-11-07",
+        "endDate": "2026-11-07",
+        "status": "ACTIVE",
+        "pausedFrom": null,
+        "pausedUntil": null,
+        "skips": []
+      },
+      "days": [
+        "2026-11-01",
+        "2026-11-02",
+        "2026-11-06",
+        "2026-11-07",
+        "2026-11-08",
+        "2026-11-09",
+        "2026-11-16",
+        "2026-12-31"
+      ],
+      "expected": [
+        "2026-11-07"
+      ]
+    },
+    {
+      "name": "Every day",
+      "order": {
+        "kind": "STANDING",
+        "weekdays": 127,
+        "startDate": "2026-11-02",
+        "endDate": null,
+        "status": "ACTIVE",
+        "pausedFrom": null,
+        "pausedUntil": null,
+        "skips": []
+      },
+      "days": [
+        "2026-11-01",
+        "2026-11-02",
+        "2026-11-06",
+        "2026-11-07",
+        "2026-11-08",
+        "2026-11-09",
+        "2026-11-16",
+        "2026-12-31"
+      ],
+      "expected": [
+        "2026-11-02",
+        "2026-11-06",
+        "2026-11-07",
+        "2026-11-08",
+        "2026-11-09",
+        "2026-11-16",
+        "2026-12-31"
+      ]
+    }
+  ]
+}

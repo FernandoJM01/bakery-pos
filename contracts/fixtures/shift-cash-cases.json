@@ -1,5 +1,5 @@
 {
-  "description": "Shared cases for expected cash in M4 brief section 4.3 (acceptance test E3). Both server and app tests must reproduce every row.",
+  "description": "Shared cases for expected cash in M4 brief section 4.3, with prepayments from M6 brief section 2 (acceptance tests E3 and G4). saleAmountsCents and refundsCents are CASH only. Both server and app tests must reproduce every row.",
   "cases": [
     {
       "name": "Balanced shift, float only",
@@ -14,7 +14,8 @@
         "expectedCents": 100000,
         "varianceCents": 0,
         "flagged": false
-      }
+      },
+      "prepaymentsCents": []
     },
     {
       "name": "Sales with exact count",
@@ -33,7 +34,8 @@
         "expectedCents": 118750,
         "varianceCents": 0,
         "flagged": false
-      }
+      },
+      "prepaymentsCents": []
     },
     {
       "name": "Movements and a refund",
@@ -58,7 +60,8 @@
         "expectedCents": 157800,
         "varianceCents": 0,
         "flagged": false
-      }
+      },
+      "prepaymentsCents": []
     },
     {
       "name": "Short by exactly the limit: not flagged",
@@ -75,7 +78,8 @@
         "expectedCents": 110000,
         "varianceCents": -5000,
         "flagged": false
-      }
+      },
+      "prepaymentsCents": []
     },
     {
       "name": "Short by one centavo past the limit: flagged",
@@ -92,7 +96,8 @@
         "expectedCents": 110000,
         "varianceCents": -5001,
         "flagged": true
-      }
+      },
+      "prepaymentsCents": []
     },
     {
       "name": "Over by exactly the limit: not flagged",
@@ -109,7 +114,8 @@
         "expectedCents": 110000,
         "varianceCents": 5000,
         "flagged": false
-      }
+      },
+      "prepaymentsCents": []
     },
     {
       "name": "Over by one centavo past the limit: flagged",
@@ -126,7 +132,8 @@
         "expectedCents": 110000,
         "varianceCents": 5001,
         "flagged": true
-      }
+      },
+      "prepaymentsCents": []
     },
     {
       "name": "Refunds beyond sales from another till's sale",
@@ -143,7 +150,8 @@
         "expectedCents": -10000,
         "varianceCents": 10000,
         "flagged": true
-      }
+      },
+      "prepaymentsCents": []
     },
     {
       "name": "Bank drop empties the drawer, expected can reach zero",
@@ -162,7 +170,8 @@
         "expectedCents": 0,
         "varianceCents": 0,
         "flagged": false
-      }
+      },
+      "prepaymentsCents": []
     },
     {
       "name": "Zero-total sale changes nothing",
@@ -179,7 +188,8 @@
         "expectedCents": 100000,
         "varianceCents": 0,
         "flagged": false
-      }
+      },
+      "prepaymentsCents": []
     },
     {
       "name": "Custom limit",
@@ -196,6 +206,30 @@
         "expectedCents": 1000,
         "varianceCents": -100,
         "flagged": true
+      },
+      "prepaymentsCents": []
+    },
+    {
+      "name": "Prepaid orders count as cash in the drawer",
+      "floatCents": 100000,
+      "saleAmountsCents": [
+        5000
+      ],
+      "cashInCents": [],
+      "cashOutCents": [],
+      "refundsCents": [
+        1000
+      ],
+      "prepaymentsCents": [
+        30000,
+        12000
+      ],
+      "countedCents": 146000,
+      "cashVarianceFlagCents": 5000,
+      "expected": {
+        "expectedCents": 146000,
+        "varianceCents": 0,
+        "flagged": false
       }
     }
   ]

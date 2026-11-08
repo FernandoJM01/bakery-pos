@@ -157,8 +157,8 @@ export class VoidedLineInputDto {
 
 /** `PaymentInput` */
 export class PaymentInputDto {
-  @IsIn(['CASH'])
-  method!: 'CASH';
+  @IsIn(['CASH', 'PREPAID'])
+  method!: 'CASH' | 'PREPAID';
 
   @Cents() amountCents!: number;
   @Cents() tenderedCents!: number;
@@ -180,6 +180,11 @@ export class SaleCompletedPayloadDto {
 
   @IsUUID()
   shiftId!: string;
+
+  /** A pickup: the order ticket this sale hands over (M6 brief 4.4). */
+  @IsOptional()
+  @IsUUID()
+  orderTicketId?: string | null;
 
   @IsArray()
   @ArrayMinSize(1)

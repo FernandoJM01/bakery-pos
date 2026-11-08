@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
   title: Bakery POS API
-  version: 0.5.1-m5
+  version: 0.6.0-m6
   description: |
-    Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync), 3 (sales), 4 (cash shifts, audit and printing) and 5 (stock and day-old bread).
+    Contract for Milestones 1 (foundation, access, roles, devices), 2 (catalog and sync), 3 (sales), 4 (cash shifts, audit and printing), 5 (stock and day-old bread) and 6 (customers and orders).
     Owned by the architect. Developers must not edit this file; open an issue labelled `contract` instead.
 
     Conventions:
@@ -34,6 +34,7 @@ tags:
   - name: sales
   - name: shifts
   - name: stock
+  - name: orders
     description: Sales and refunds made on tills, received through sync (M3)
 
 paths:
@@ -917,6 +918,356 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/customers:
+    get:
+      tags: [orders]
+      operationId: listCustomers
+      summary: Customers by name, or found by part of the name or the phone
+      x-permission: orders.pickup
+      parameters:
+        - name: q
+          in: query
+          schema: { type: string, maxLength: 60 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: object, required: [items], properties: { items: { type: array, items: { $ref: '#/components/schemas/Customer' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [orders]
+      operationId: createCustomer
+      summary: Creates a customer; writes `customer.created`
+      x-permission: orders.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerCreate' }
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/customers/{customerId}:
+    get:
+      tags: [orders]
+      operationId: getCustomer
+      summary: A customer with balance, orders and recent balance entries
+      x-permission: orders.pickup
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerDetail' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [orders]
+      operationId: updateCustomer
+      summary: Changes a customer; writes `customer.updated`
+      x-permission: orders.manage
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerUpdate' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/orders:
+    get:
+      tags: [orders]
+      operationId: listOrders
+      summary: Standing orders and pre-orders in the callers branches
+      x-permission: orders.pickup
+      parameters:
+        - name: customerId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: branchId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: object, required: [items], properties: { items: { type: array, items: { $ref: '#/components/schemas/CustomerOrder' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [orders]
+      operationId: createOrder
+      summary: Creates an order and its tickets; writes `order.created`
+      x-permission: orders.manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OrderCreate' }
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerOrder' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/orders/tickets:
+    get:
+      tags: [orders]
+      operationId: listBranchTickets
+      summary: Order tickets of the device's branch, from yesterday to the last day kept, for offline pickup
+      security:
+        - deviceToken: []
+      x-public: true
+      x-device: required
+      responses:
+        '200':
+          description: By due date and pickup time
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BranchTickets' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /v1/orders/pick-list:
+    get:
+      tags: [orders]
+      operationId: getPickList
+      summary: Totals per product for the baker and the tickets for the counter, for one day (M7.4)
+      x-permission: orders.pickup
+      parameters:
+        - name: branchId
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+        - name: date
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/LocalDate' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PickList' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /v1/orders/{orderId}:
+    get:
+      tags: [orders]
+      operationId: getOrder
+      summary: An order
+      x-permission: orders.pickup
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerOrder' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [orders]
+      operationId: updateOrder
+      summary: Changes an order; tickets not picked up are rebuilt (G9)
+      x-permission: orders.manage
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OrderUpdate' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerOrder' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/orders/{orderId}/skips:
+    post:
+      tags: [orders]
+      operationId: skipOrderDate
+      summary: Skips one date; its ticket, if pending, is skipped
+      x-permission: orders.manage
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [date], additionalProperties: false, properties: { date: { $ref: '#/components/schemas/LocalDate' } } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerOrder' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/orders/{orderId}/skips/{date}:
+    delete:
+      tags: [orders]
+      operationId: unskipOrderDate
+      summary: Brings a skipped date back
+      x-permission: orders.manage
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: date
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/LocalDate' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerOrder' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/orders/{orderId}/pause:
+    post:
+      tags: [orders]
+      operationId: pauseOrder
+      summary: Pauses between two dates, or from a date with no end
+      x-permission: orders.manage
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [from], additionalProperties: false, properties: { from: { $ref: '#/components/schemas/LocalDate' }, until: { oneOf: [ { $ref: '#/components/schemas/LocalDate' }, { type: 'null' } ] } } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerOrder' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/orders/{orderId}/resume:
+    post:
+      tags: [orders]
+      operationId: resumeOrder
+      summary: Ends a pause
+      x-permission: orders.manage
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerOrder' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /v1/orders/{orderId}/end:
+    post:
+      tags: [orders]
+      operationId: endOrder
+      summary: Ends an order; no more tickets are made
+      x-permission: orders.manage
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerOrder' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
 
   /v1/tax-rates:
     get:
@@ -1954,6 +2305,15 @@ components:
         - stock.transfer_mismatch
         - stock.count_adjusted
         - stock.ledger_mismatch
+        - customer.created
+        - customer.updated
+        - order.created
+        - order.updated
+        - order.paused
+        - order.skipped
+        - order.prepaid
+        - order.picked_up
+        - order.missed
     AuditEntry:
       type: object
       required: [id, occurredAt, action]
@@ -2265,9 +2625,10 @@ components:
         `SaleRefundedPayload`, record `id` = refund ID), `shift.opened` (payload `ShiftOpenedPayload`, record `id` = shift ID),
         `cash.movement` (payload `CashMovementPayload`), `shift.closed` (payload `ShiftClosedPayload`), `stock.produced`
         (payload `StockProducedPayload`, record `id` = lot ID), `stock.wasted` (payload `StockWastedPayload`) and `stock.counted`
-        (payload `StockCountedPayload`). The server accepts any string and quarantines
+        (payload `StockCountedPayload`) and `order.prepaid`
+        (payload `OrderPrepaidPayload`, record `id` = prepaid entry ID). The server accepts any string and quarantines
         unknown types with `SYNC_UNKNOWN_TYPE`, so an older server never rejects a whole batch.
-      examples: [audit.offline_event, sale.completed, sale.refunded, shift.opened, cash.movement, shift.closed, stock.produced, stock.wasted, stock.counted]
+      examples: [audit.offline_event, sale.completed, sale.refunded, shift.opened, cash.movement, shift.closed, stock.produced, stock.wasted, stock.counted, order.prepaid]
     SyncRecord:
       type: object
       required: [id, type, occurredAt, payload]
@@ -2420,7 +2781,8 @@ components:
           description: Required when the discount's share is above `discountLimitBp`; must hold `sale.discount_over_limit`
     PaymentMethod:
       type: string
-      enum: [CASH]
+      description: '`PREPAID` is a pickup paid from the customer''s balance; tendered and change are 0 (M6 brief 2).'
+      enum: [CASH, PREPAID]
     SaleLineInput:
       type: object
       required: [lineNo, variantId, productName, variantName, quantity, unitPriceCents, dayOld, fullPriceCents, ivaRateId, ivaBp, iepsBp, grossCents, lineDiscountCents, orderDiscountCents, netCents, baseCents, iepsCents, ivaCents]
@@ -2482,6 +2844,10 @@ components:
         folioNumber: { type: integer, minimum: 1, maximum: 999999 }
         cashierStaffId: { type: string, format: uuid }
         shiftId: { type: string, format: uuid, description: 'The open shift of this device (M4.1)' }
+        orderTicketId:
+          type: [string, 'null']
+          format: uuid
+          description: The order ticket a `PREPAID` sale hands over; null for any other sale (M6 brief 4.4)
         lines:
           type: array
           minItems: 1
@@ -2959,6 +3325,229 @@ components:
         categoryName: { type: string }
         priceCents: { $ref: '#/components/schemas/Cents' }
         costCents: { type: [integer, 'null'] }
+    Weekdays:
+      type: integer
+      minimum: 0
+      maximum: 127
+      description: Bit set, Monday = 1, Tuesday = 2 ... Sunday = 64. 31 is Monday to Friday. 0 for a pre-order.
+    PickupTime:
+      type: string
+      pattern: '^([01]\d|2[0-3]):[0-5]\d$'
+      examples: ['07:30']
+    Customer:
+      type: object
+      required: [id, name, phone, rfc, notes, isActive, balanceCents]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        phone: { type: [string, 'null'] }
+        rfc: { type: [string, 'null'] }
+        notes: { type: [string, 'null'] }
+        isActive: { type: boolean }
+        balanceCents: { type: integer, description: 'Prepaid balance; negative when the customer owes' }
+    CustomerCreate:
+      type: object
+      required: [name]
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        phone: { type: [string, 'null'], pattern: '^[0-9+ ]{7,20}$' }
+        rfc: { type: [string, 'null'], pattern: '^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$' }
+        notes: { type: [string, 'null'], maxLength: 500 }
+    CustomerUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        phone: { type: [string, 'null'], pattern: '^[0-9+ ]{7,20}$' }
+        rfc: { type: [string, 'null'], pattern: '^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$' }
+        notes: { type: [string, 'null'], maxLength: 500 }
+        isActive: { type: boolean }
+    PrepaidKind:
+      type: string
+      enum: [PAYMENT, PICKUP, MISSED, ADJUSTMENT]
+    PrepaidEntry:
+      type: object
+      required: [id, kind, amountCents, ticketId, occurredAt]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { $ref: '#/components/schemas/PrepaidKind' }
+        amountCents: { type: integer, description: 'Signed' }
+        ticketId: { type: [string, 'null'], format: uuid }
+        occurredAt: { type: string, format: date-time }
+    CustomerDetail:
+      allOf:
+        - { $ref: '#/components/schemas/Customer' }
+        - type: object
+          required: [orders, entries]
+          properties:
+            orders:
+              type: array
+              items: { $ref: '#/components/schemas/CustomerOrder' }
+            entries:
+              type: array
+              description: The last 100, newest first
+              items: { $ref: '#/components/schemas/PrepaidEntry' }
+    OrderKind:
+      type: string
+      enum: [STANDING, ONE_OFF]
+    OrderStatus:
+      type: string
+      enum: [ACTIVE, PAUSED, ENDED]
+    MissedRule:
+      type: string
+      enum: [CHARGE, NO_CHARGE]
+    OrderLineInput:
+      type: object
+      required: [variantId, quantity]
+      additionalProperties: false
+      properties:
+        variantId: { type: string, format: uuid }
+        quantity: { type: integer, minimum: 1, maximum: 9999 }
+    OrderUpdate:
+      type: object
+      required: [weekdays, startDate, pickupTime, missedRule, lines]
+      additionalProperties: false
+      properties:
+        weekdays: { $ref: '#/components/schemas/Weekdays' }
+        startDate: { $ref: '#/components/schemas/LocalDate' }
+        endDate:
+          oneOf:
+            - { $ref: '#/components/schemas/LocalDate' }
+            - { type: 'null' }
+        pickupTime: { $ref: '#/components/schemas/PickupTime' }
+        missedRule: { $ref: '#/components/schemas/MissedRule' }
+        note: { type: [string, 'null'], maxLength: 500 }
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items: { $ref: '#/components/schemas/OrderLineInput' }
+    OrderCreate:
+      allOf:
+        - { $ref: '#/components/schemas/OrderUpdate' }
+        - type: object
+          required: [customerId, branchId, kind]
+          properties:
+            customerId: { type: string, format: uuid }
+            branchId: { type: string, format: uuid }
+            kind: { $ref: '#/components/schemas/OrderKind' }
+    CustomerOrder:
+      type: object
+      required: [id, customerId, customerName, branchId, kind, weekdays, startDate, endDate, pickupTime, missedRule, status, pausedFrom, pausedUntil, note, lines, skips]
+      properties:
+        id: { type: string, format: uuid }
+        customerId: { type: string, format: uuid }
+        customerName: { type: string }
+        branchId: { type: string, format: uuid }
+        kind: { $ref: '#/components/schemas/OrderKind' }
+        weekdays: { $ref: '#/components/schemas/Weekdays' }
+        startDate: { $ref: '#/components/schemas/LocalDate' }
+        endDate:
+          oneOf:
+            - { $ref: '#/components/schemas/LocalDate' }
+            - { type: 'null' }
+        pickupTime: { $ref: '#/components/schemas/PickupTime' }
+        missedRule: { $ref: '#/components/schemas/MissedRule' }
+        status: { $ref: '#/components/schemas/OrderStatus' }
+        pausedFrom:
+          oneOf:
+            - { $ref: '#/components/schemas/LocalDate' }
+            - { type: 'null' }
+        pausedUntil:
+          oneOf:
+            - { $ref: '#/components/schemas/LocalDate' }
+            - { type: 'null' }
+        note: { type: [string, 'null'] }
+        lines:
+          type: array
+          items:
+            type: object
+            required: [variantId, productName, variantName, quantity]
+            properties:
+              variantId: { type: string, format: uuid }
+              productName: { type: string }
+              variantName: { type: string }
+              quantity: { type: integer }
+        skips:
+          type: array
+          items: { $ref: '#/components/schemas/LocalDate' }
+    TicketStatus:
+      type: string
+      enum: [PENDING, PICKED_UP, MISSED, SKIPPED]
+    OrderTicketLine:
+      type: object
+      required: [lineNo, variantId, productName, variantName, quantity, unitPriceCents, ivaRateId, ivaBp, iepsRateId, iepsBp]
+      properties:
+        lineNo: { type: integer }
+        variantId: { type: string, format: uuid }
+        productName: { type: string }
+        variantName: { type: string }
+        quantity: { type: integer }
+        unitPriceCents: { $ref: '#/components/schemas/Cents' }
+        ivaRateId: { type: string, format: uuid }
+        ivaBp: { $ref: '#/components/schemas/BasisPoints' }
+        iepsRateId: { type: [string, 'null'], format: uuid }
+        iepsBp: { $ref: '#/components/schemas/BasisPoints' }
+    OrderTicket:
+      type: object
+      description: One due day of an order, priced the day it was made. A pickup sale must copy its lines (M6 brief 4.4).
+      required: [id, orderId, branchId, customerId, customerName, customerPhone, balanceCents, dueDate, pickupTime, status, totalCents, saleId, lines]
+      properties:
+        id: { type: string, format: uuid }
+        orderId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        customerId: { type: string, format: uuid }
+        customerName: { type: string }
+        customerPhone: { type: [string, 'null'] }
+        balanceCents: { type: integer, description: 'The customer''s balance when this was read' }
+        dueDate: { $ref: '#/components/schemas/LocalDate' }
+        pickupTime: { $ref: '#/components/schemas/PickupTime' }
+        status: { $ref: '#/components/schemas/TicketStatus' }
+        totalCents: { $ref: '#/components/schemas/AnyCents' }
+        saleId: { type: [string, 'null'], format: uuid }
+        lines:
+          type: array
+          items: { $ref: '#/components/schemas/OrderTicketLine' }
+    BranchTickets:
+      type: object
+      required: [generatedAt, today, items]
+      properties:
+        generatedAt: { type: string, format: date-time }
+        today: { $ref: '#/components/schemas/LocalDate' }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderTicket' }
+    PickList:
+      type: object
+      required: [date, totals, tickets]
+      properties:
+        date: { $ref: '#/components/schemas/LocalDate' }
+        totals:
+          type: array
+          items:
+            type: object
+            required: [variantId, productName, variantName, quantity]
+            properties:
+              variantId: { type: string, format: uuid }
+              productName: { type: string }
+              variantName: { type: string }
+              quantity: { type: integer }
+        tickets:
+          type: array
+          items: { $ref: '#/components/schemas/OrderTicket' }
+    OrderPrepaidPayload:
+      type: object
+      description: Payload of `order.prepaid`. The record `id` is the prepaid entry ID. Cash in the open shift (M6 brief 4.3).
+      required: [customerId, shiftId, amountCents, staffId]
+      additionalProperties: false
+      properties:
+        customerId: { type: string, format: uuid }
+        shiftId: { type: string, format: uuid }
+        amountCents:
+          allOf: [{ $ref: '#/components/schemas/AnyCents' }]
+          minimum: 1
+        staffId: { type: string, format: uuid }
     SaleStatus:
       type: string
       enum: [COMPLETED, PARTIALLY_REFUNDED, REFUNDED, VOIDED]
