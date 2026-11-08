@@ -2293,4 +2293,188 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get stockCostSaved => 'Costo guardado';
+
+  @override
+  String get receiptPaidFromBalance => 'Pagado con saldo del pedido';
+
+  @override
+  String get receiptBalance => 'Saldo';
+
+  @override
+  String get claimTitle => 'Comprobante de anticipo';
+
+  @override
+  String get claimPaid => 'Anticipo';
+
+  @override
+  String get ordersToday => 'Pedidos de hoy';
+
+  @override
+  String get ordersEmpty => 'No hay pedidos para hoy';
+
+  @override
+  String get ordersHandOver => 'Entregar';
+
+  @override
+  String get ordersHandedOver => 'Entregado';
+
+  @override
+  String get ordersPrepay => 'Abonar';
+
+  @override
+  String get ordersPrepayOther => 'Abonar a un cliente';
+
+  @override
+  String get ordersLowBalance => 'Saldo bajo';
+
+  @override
+  String ordersBalance(String amount) {
+    return 'Saldo $amount';
+  }
+
+  @override
+  String ordersLine(String name, int count) {
+    return '$count × $name';
+  }
+
+  @override
+  String ordersPrepayTitle(String name) {
+    return 'Anticipo de $name';
+  }
+
+  @override
+  String get ordersAmount => 'Monto';
+
+  @override
+  String ordersPrepaid(String amount) {
+    return 'Anticipo de $amount registrado';
+  }
+
+  @override
+  String get ordersSearchCustomer => 'Buscar cliente por nombre o teléfono';
+
+  @override
+  String get ordersNeedsServer =>
+      'Se necesita conexión con el servidor para buscar clientes';
+
+  @override
+  String get ordersNoShift =>
+      'Abre un turno para entregar pedidos o recibir anticipos';
+
+  @override
+  String get ordersForToday => 'Para pedidos de hoy';
+
+  @override
+  String get ordersPickupFailed => 'No se pudo registrar la entrega';
+
+  @override
+  String get ordersWeekdayLetters => 'L,M,M,J,V,S,D';
+
+  @override
+  String ordersOneOffOn(String date, String time) {
+    return 'Para el $date a las $time';
+  }
+
+  @override
+  String ordersStandingOn(String days, String time) {
+    return '$days a las $time';
+  }
+
+  @override
+  String get ordersActive => 'Activo';
+
+  @override
+  String get ordersPaused => 'En pausa';
+
+  @override
+  String get ordersEnded => 'Terminado';
+
+  @override
+  String get ordersEntryPayment => 'Anticipo';
+
+  @override
+  String get ordersEntryPickup => 'Entrega';
+
+  @override
+  String get ordersEntryMissed => 'No recogido';
+
+  @override
+  String get ordersEntryAdjustment => 'Devolución al saldo';
+
+  @override
+  String get ordersNewCustomer => 'Nuevo cliente';
+
+  @override
+  String get ordersNoCustomers => 'No hay clientes con esa búsqueda';
+
+  @override
+  String get ordersNameRequired => 'Escribe el nombre del cliente';
+
+  @override
+  String get ordersPhoneInUse => 'Ese teléfono ya es de otro cliente';
+
+  @override
+  String get ordersCustomerName => 'Nombre';
+
+  @override
+  String get ordersCustomerPhone => 'Teléfono (opcional)';
+
+  @override
+  String get ordersSkipDay => 'Saltar un día';
+
+  @override
+  String get ordersResume => 'Reanudar';
+
+  @override
+  String get ordersPause => 'Pausar';
+
+  @override
+  String get ordersEnd => 'Terminar';
+
+  @override
+  String get ordersOrders => 'Pedidos';
+
+  @override
+  String get ordersNewOrder => 'Nuevo pedido';
+
+  @override
+  String get ordersHistory => 'Movimientos del saldo';
+
+  @override
+  String get ordersFormIncomplete => 'Elige días, hora y al menos un producto';
+
+  @override
+  String get ordersStanding => 'Todas las semanas';
+
+  @override
+  String get ordersOneOff => 'Una sola vez';
+
+  @override
+  String ordersStartsOn(String date) {
+    return 'Empieza el $date';
+  }
+
+  @override
+  String ordersDate(String date) {
+    return 'Fecha: $date';
+  }
+
+  @override
+  String get ordersPickupTime => 'Hora de entrega (HH:MM)';
+
+  @override
+  String get ordersChargeMissed => 'Cobrar si no lo recogen';
+
+  @override
+  String get ordersProducts => 'Productos';
+
+  @override
+  String ordersQuantityOf(String name, String price) {
+    return '$name ($price)';
+  }
+
+  @override
+  String ordersScheduleStatus(String schedule, String status) {
+    return '$schedule · $status';
+  }
 }

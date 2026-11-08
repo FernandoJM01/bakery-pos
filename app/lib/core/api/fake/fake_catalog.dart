@@ -73,7 +73,15 @@ class FakeCatalog {
     'stock.produced',
     'stock.wasted',
     'stock.counted',
+    'order.prepaid',
   };
+
+  /// `Customer` and `CustomerOrder` rows, as tests seed them.
+  final List<Map<String, dynamic>> customers = [];
+  final List<Map<String, dynamic>> customerOrders = [];
+
+  /// `OrderTicket` rows, as tests seed them.
+  final List<Map<String, dynamic>> orderTickets = [];
 
   /// Back office stock rows, as tests seed them.
   final List<Map<String, dynamic>> stockLevels = [];
@@ -482,6 +490,89 @@ class FakeCatalog {
         photoIds.add(id);
         return _ok({'id': id, 'width': 800, 'height': 800, 'bytes': 1024}, 201);
 
+      case ('GET', ['customers']):
+        final q = (query['q']?.toString() ?? '').toLowerCase();
+        return _ok({
+          'items': [
+            for (final c in customers)
+              if (q.isEmpty ||
+                  (c['name'] as String).toLowerCase().contains(q) ||
+                  ((c['phone'] as String?) ?? '').contains(q))
+                c,
+          ],
+        });
+      case ('POST', ['customers']):
+        final c = {
+          'id': _id('c0'),
+          'name': (body as Map)['name'],
+          'phone': body['phone'],
+          'rfc': null,
+          'notes': null,
+          'isActive': true,
+          'balanceCents': 0,
+        };
+        customers.add(c);
+        return _ok(c, 201);
+      case ('GET', ['customers', final id]):
+        final c = customers.where((x) => x['id'] == id).firstOrNull;
+        if (c == null) return _err(404, 'NOT_FOUND', 'Customer not found');
+        return _ok({
+          ...c,
+          'orders': [
+            for (final o in customerOrders)
+              if (o['customerId'] == id) o,
+          ],
+          'entries': <Object>[],
+        });
+      case ('POST', ['orders']):
+        final b = Map<String, dynamic>.from(body as Map);
+        final c = customers.firstWhere((x) => x['id'] == b['customerId']);
+        final o = {
+          'id': _id('0d'),
+          'customerName': c['name'],
+          'endDate': null,
+          'status': 'ACTIVE',
+          'pausedFrom': null,
+          'pausedUntil': null,
+          'note': null,
+          'skips': <Object>[],
+          ...b,
+          'lines': [
+            for (final l in (b['lines'] as List).cast<Map>())
+              <String, dynamic>{
+                ...Map<String, dynamic>.from(l),
+                'productName': _find(
+                  products,
+                  _find(variants, l['variantId'] as String)!['productId']
+                      as String,
+                )!['name'],
+                'variantName': 'Pieza',
+              },
+          ],
+        };
+        customerOrders.add(o);
+        return _ok(o, 201);
+      case ('POST', ['orders', final id, final action]):
+        final o = customerOrders.firstWhere((x) => x['id'] == id);
+        switch (action) {
+          case 'pause':
+            o['status'] = 'PAUSED';
+            o['pausedFrom'] = (body as Map)['from'];
+          case 'resume':
+            o['status'] = 'ACTIVE';
+            o['pausedFrom'] = null;
+          case 'end':
+            o['status'] = 'ENDED';
+          case 'skips':
+            (o['skips'] as List).add((body as Map)['date']);
+        }
+        return _ok(o);
+      case ('GET', ['orders', 'tickets']):
+        return _ok({
+          'generatedAt': DateTime.now().toUtc().toIso8601String(),
+          'today': DateTime.now().toIso8601String().substring(0, 10),
+          'items': orderTickets,
+        });
       case ('GET', ['stock', 'levels']):
         return _ok({'items': stockLevels});
       case ('GET', ['stock', 'checks', 'latest']):

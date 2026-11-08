@@ -1467,5 +1467,144 @@
       }
     }
   },
-  "stockCostSaved": "Costo guardado"
+  "stockCostSaved": "Costo guardado",
+  "receiptPaidFromBalance": "Pagado con saldo del pedido",
+  "receiptBalance": "Saldo",
+  "claimTitle": "Comprobante de anticipo",
+  "claimPaid": "Anticipo",
+  "ordersToday": "Pedidos de hoy",
+  "ordersEmpty": "No hay pedidos para hoy",
+  "ordersHandOver": "Entregar",
+  "ordersHandedOver": "Entregado",
+  "ordersPrepay": "Abonar",
+  "ordersPrepayOther": "Abonar a un cliente",
+  "ordersLowBalance": "Saldo bajo",
+  "ordersBalance": "Saldo {amount}",
+  "@ordersBalance": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "ordersLine": "{count} × {name}",
+  "@ordersLine": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ordersPrepayTitle": "Anticipo de {name}",
+  "@ordersPrepayTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ordersAmount": "Monto",
+  "ordersPrepaid": "Anticipo de {amount} registrado",
+  "@ordersPrepaid": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "ordersSearchCustomer": "Buscar cliente por nombre o teléfono",
+  "ordersNeedsServer": "Se necesita conexión con el servidor para buscar clientes",
+  "ordersNoShift": "Abre un turno para entregar pedidos o recibir anticipos",
+  "ordersForToday": "Para pedidos de hoy",
+  "ordersPickupFailed": "No se pudo registrar la entrega",
+  "ordersWeekdayLetters": "L,M,M,J,V,S,D",
+  "ordersOneOffOn": "Para el {date} a las {time}",
+  "@ordersOneOffOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "ordersStandingOn": "{days} a las {time}",
+  "@ordersStandingOn": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "ordersActive": "Activo",
+  "ordersPaused": "En pausa",
+  "ordersEnded": "Terminado",
+  "ordersEntryPayment": "Anticipo",
+  "ordersEntryPickup": "Entrega",
+  "ordersEntryMissed": "No recogido",
+  "ordersEntryAdjustment": "Devolución al saldo",
+  "ordersNewCustomer": "Nuevo cliente",
+  "ordersNoCustomers": "No hay clientes con esa búsqueda",
+  "ordersNameRequired": "Escribe el nombre del cliente",
+  "ordersPhoneInUse": "Ese teléfono ya es de otro cliente",
+  "ordersCustomerName": "Nombre",
+  "ordersCustomerPhone": "Teléfono (opcional)",
+  "ordersSkipDay": "Saltar un día",
+  "ordersResume": "Reanudar",
+  "ordersPause": "Pausar",
+  "ordersEnd": "Terminar",
+  "ordersOrders": "Pedidos",
+  "ordersNewOrder": "Nuevo pedido",
+  "ordersHistory": "Movimientos del saldo",
+  "ordersFormIncomplete": "Elige días, hora y al menos un producto",
+  "ordersStanding": "Todas las semanas",
+  "ordersOneOff": "Una sola vez",
+  "ordersStartsOn": "Empieza el {date}",
+  "@ordersStartsOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "ordersDate": "Fecha: {date}",
+  "@ordersDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "ordersPickupTime": "Hora de entrega (HH:MM)",
+  "ordersChargeMissed": "Cobrar si no lo recogen",
+  "ordersProducts": "Productos",
+  "ordersQuantityOf": "{name} ({price})",
+  "@ordersQuantityOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "ordersScheduleStatus": "{schedule} · {status}",
+  "@ordersScheduleStatus": {
+    "placeholders": {
+      "schedule": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  }
 }

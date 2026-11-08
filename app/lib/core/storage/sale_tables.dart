@@ -10,6 +10,10 @@ class LocalSales extends Table {
 
   /// Null only on sales from before shifts (M4).
   TextColumn get shiftId => text().nullable()();
+
+  /// `CASH`, or `PREPAID` for an order pickup paid from the balance (M6).
+  TextColumn get paymentMethod => text().withDefault(const Constant('CASH'))();
+  TextColumn get orderTicketId => text().nullable()();
   TextColumn get cashierStaffId => text()();
   TextColumn get cashierName => text()();
   DateTimeColumn get occurredAt => dateTime()();
@@ -101,6 +105,10 @@ class LocalRefunds extends Table {
 
   /// The shift of this till that paid the money (M4).
   TextColumn get shiftId => text().nullable()();
+
+  /// False when the money went back to a customer's balance, not the
+  /// drawer: the sale was a pickup (M6).
+  BoolColumn get cash => boolean().withDefault(const Constant(true))();
 
   /// `REFUND` or `VOID`.
   TextColumn get kind => text()();

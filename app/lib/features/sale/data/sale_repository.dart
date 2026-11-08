@@ -44,6 +44,8 @@ class SaleReceipt {
     required this.totals,
     required this.tenderedCents,
     required this.changeCents,
+    this.prepaid = false,
+    this.balanceAfterCents,
   });
 
   final String saleId;
@@ -54,6 +56,25 @@ class SaleReceipt {
   final SaleTotals totals;
   final int tenderedCents;
   final int changeCents;
+
+  /// An order pickup paid from the customer's balance (M6).
+  final bool prepaid;
+
+  /// The balance after the pickup, as this till knows it.
+  final int? balanceAfterCents;
+
+  SaleReceipt withBalance(int cents) => SaleReceipt(
+    saleId: saleId,
+    folio: folio,
+    occurredAt: occurredAt,
+    cashierName: cashierName,
+    ticket: ticket,
+    totals: totals,
+    tenderedCents: tenderedCents,
+    changeCents: changeCents,
+    prepaid: prepaid,
+    balanceAfterCents: cents,
+  );
 }
 
 String formatFolio(String prefix, int number) =>
@@ -89,15 +110,19 @@ class SaleRepository {
     required StaffEntry cashier,
     required int tenderedCents,
     required DateTime now,
+    String? orderTicketId,
   }) async {
     if (ticket.isEmpty) throw StateError('Empty ticket');
     final prefix = await folioPrefix();
     if (prefix == null || prefix.isEmpty) throw const NoFolioPrefixException();
     final totals = ticket.totals;
-    if (tenderedCents < totals.totalCents) {
+    // A pickup is paid from the customer's balance: no cash changes hands.
+    final prepaid = orderTicketId != null;
+    if (prepaid) tenderedCents = 0;
+    if (!prepaid && tenderedCents < totals.totalCents) {
       throw const InsufficientCashException();
     }
-    final change = tenderedCents - totals.totalCents;
+    final change = prepaid ? 0 : tenderedCents - totals.totalCents;
     final saleId = _uuid.v7();
     final at = now.toUtc();
 
@@ -115,6 +140,8 @@ class SaleRepository {
               folio: folio,
               folioNumber: number,
               shiftId: Value(shiftId),
+              paymentMethod: Value(prepaid ? 'PREPAID' : 'CASH'),
+              orderTicketId: Value(orderTicketId),
               cashierStaffId: cashier.id,
               cashierName: cashier.displayName,
               occurredAt: at,
@@ -205,6 +232,7 @@ class SaleRepository {
                 'folioNumber': number,
                 'cashierStaffId': cashier.id,
                 'shiftId': shiftId,
+                'orderTicketId': ?orderTicketId,
                 'lines': lines,
                 'orderDiscount': ticket.orderDiscount?.toJson(),
                 'voidedLines': [for (final v in ticket.voided) v.toJson()],
@@ -213,7 +241,7 @@ class SaleRepository {
                 'totalCents': totals.totalCents,
                 'payments': [
                   {
-                    'method': 'CASH',
+                    'method': prepaid ? 'PREPAID' : 'CASH',
                     'amountCents': totals.totalCents,
                     'tenderedCents': tenderedCents,
                     'changeCents': change,
@@ -241,6 +269,7 @@ class SaleRepository {
         totals: totals,
         tenderedCents: tenderedCents,
         changeCents: change,
+        prepaid: prepaid,
       );
     });
   }

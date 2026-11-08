@@ -33,6 +33,7 @@ class AppRoutes {
   static const String backofficeShifts = '/backoffice/shifts';
   static const String backofficeStock = '/backoffice/stock';
   static const String backofficeDayOld = '/backoffice/day-old';
+  static const String backofficeOrders = '/backoffice/orders';
 }
 
 const tillSectionRoutes = [
@@ -55,6 +56,7 @@ const backofficeSectionRoutes = [
   AppRoutes.backofficeShifts,
   AppRoutes.backofficeStock,
   AppRoutes.backofficeDayOld,
+  AppRoutes.backofficeOrders,
 ];
 
 List<String> getPermittedTillRoutes(List<String> permissions) {
@@ -101,6 +103,9 @@ List<String> getPermittedBackofficeRoutes(List<String> permissions) {
   }
   if (permissions.contains('settings.manage')) {
     permitted.add(AppRoutes.backofficeSync);
+  }
+  if (permissions.contains('orders.manage')) {
+    permitted.add(AppRoutes.backofficeOrders);
   }
   if (permissions.contains('reports.branch')) {
     permitted.add(AppRoutes.backofficeSales);
@@ -394,6 +399,17 @@ GoRouter createAppRouter(
                 ) ??
                 BackofficeSectionPlaceholder.forRoute(
                   AppRoutes.backofficeCatalog,
+                ),
+          ),
+          GoRoute(
+            path: AppRoutes.backofficeOrders,
+            builder: (context, state) =>
+                backofficeSectionBuilder?.call(
+                  context,
+                  AppRoutes.backofficeOrders,
+                ) ??
+                BackofficeSectionPlaceholder.forRoute(
+                  AppRoutes.backofficeOrders,
                 ),
           ),
           GoRoute(

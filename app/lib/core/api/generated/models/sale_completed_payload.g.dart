@@ -25,6 +25,7 @@ SaleCompletedPayload _$SaleCompletedPayloadFromJson(
   payments: (json['payments'] as List<dynamic>)
       .map((e) => PaymentInput.fromJson(e as Map<String, dynamic>))
       .toList(),
+  orderTicketId: json['orderTicketId'] as String?,
   orderDiscount: json['orderDiscount'] == null
       ? null
       : DiscountInput.fromJson(json['orderDiscount'] as Map<String, dynamic>),
@@ -37,6 +38,7 @@ Map<String, dynamic> _$SaleCompletedPayloadToJson(
   'folioNumber': instance.folioNumber,
   'cashierStaffId': instance.cashierStaffId,
   'shiftId': instance.shiftId,
+  'orderTicketId': ?instance.orderTicketId,
   'lines': instance.lines,
   'orderDiscount': ?instance.orderDiscount,
   'voidedLines': instance.voidedLines,

@@ -22,6 +22,7 @@ void main() {
           cashInCents: ints('cashInCents'),
           cashOutCents: ints('cashOutCents'),
           refundsCents: ints('refundsCents'),
+          prepaymentsCents: ints('prepaymentsCents'),
           countedCents: c['countedCents'] as int,
           flagCents: c['cashVarianceFlagCents'] as int,
         );

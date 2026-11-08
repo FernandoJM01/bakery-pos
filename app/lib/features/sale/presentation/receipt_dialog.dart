@@ -162,13 +162,27 @@ class _ReceiptDialogState extends ConsumerState<ReceiptDialog> {
                   style: theme.textTheme.bodySmall,
                 ),
               const Divider(),
-              row(l10n.receiptReceived, formatCents(receipt.tenderedCents)),
-              row(
-                l10n.receiptChange,
-                formatCents(receipt.changeCents),
-                key: const Key('receipt-change'),
-                style: theme.textTheme.titleMedium,
-              ),
+              if (receipt.prepaid) ...[
+                Text(
+                  l10n.receiptPaidFromBalance,
+                  key: const Key('receipt-prepaid'),
+                  style: theme.textTheme.titleMedium,
+                ),
+                if (receipt.balanceAfterCents != null)
+                  row(
+                    l10n.receiptBalance,
+                    formatCents(receipt.balanceAfterCents!),
+                    key: const Key('receipt-balance'),
+                  ),
+              ] else ...[
+                row(l10n.receiptReceived, formatCents(receipt.tenderedCents)),
+                row(
+                  l10n.receiptChange,
+                  formatCents(receipt.changeCents),
+                  key: const Key('receipt-change'),
+                  style: theme.textTheme.titleMedium,
+                ),
+              ],
               if (_printFailed)
                 Padding(
                   padding: const EdgeInsets.only(

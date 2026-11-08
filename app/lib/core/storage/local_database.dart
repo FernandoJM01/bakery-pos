@@ -12,11 +12,13 @@ import 'package:uuid/uuid.dart';
 
 import 'cash_tables.dart';
 import 'catalog_tables.dart';
+import 'order_tables.dart';
 import 'sale_tables.dart';
 import 'secure_storage.dart';
 
 export 'catalog_tables.dart';
 export 'cash_tables.dart';
+export 'order_tables.dart';
 export 'sale_tables.dart';
 
 part 'local_database.g.dart';
@@ -94,6 +96,8 @@ class OfflineApprovalEntries extends Table {
     LocalCashMovements,
     LocalCashCounts,
     LocalLots,
+    LocalOrderTickets,
+    LocalPrepayments,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -102,7 +106,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -157,6 +161,16 @@ class AppDatabase extends _$AppDatabase {
         if (from >= 4) {
           await m.addColumn(catalogVariants, catalogVariants.unitsPerTray);
         }
+      }
+      if (from < 10) {
+        await m.createTable(localOrderTickets);
+        await m.createTable(localPrepayments);
+        // Made by steps 6 and 7 with the columns when coming from before.
+        if (from >= 6) {
+          await m.addColumn(localSales, localSales.paymentMethod);
+          await m.addColumn(localSales, localSales.orderTicketId);
+        }
+        if (from >= 7) await m.addColumn(localRefunds, localRefunds.cash);
       }
     },
   );
