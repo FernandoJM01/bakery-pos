@@ -4439,6 +4439,246 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{schedule} · {status}'**
   String ordersScheduleStatus(String schedule, String status);
+
+  /// No description provided for @reportsDashboard.
+  ///
+  /// In es, this message translates to:
+  /// **'Resumen'**
+  String get reportsDashboard;
+
+  /// No description provided for @reportsSales.
+  ///
+  /// In es, this message translates to:
+  /// **'Ventas'**
+  String get reportsSales;
+
+  /// No description provided for @reportsStock.
+  ///
+  /// In es, this message translates to:
+  /// **'Inventario'**
+  String get reportsStock;
+
+  /// No description provided for @reportsBalances.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldos de clientes'**
+  String get reportsBalances;
+
+  /// No description provided for @reportsRange.
+  ///
+  /// In es, this message translates to:
+  /// **'{from} a {to}'**
+  String reportsRange(String from, String to);
+
+  /// No description provided for @reportsExported.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivo listo: {name}'**
+  String reportsExported(String name);
+
+  /// No description provided for @reportsNoCompare.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin datos de la semana pasada'**
+  String get reportsNoCompare;
+
+  /// No description provided for @reportsVsLastWeek.
+  ///
+  /// In es, this message translates to:
+  /// **'{change} contra el mismo día de la semana pasada'**
+  String reportsVsLastWeek(String change);
+
+  /// No description provided for @reportsDayOf.
+  ///
+  /// In es, this message translates to:
+  /// **'Día {date}'**
+  String reportsDayOf(String date);
+
+  /// No description provided for @reportsNetSales.
+  ///
+  /// In es, this message translates to:
+  /// **'Venta neta'**
+  String get reportsNetSales;
+
+  /// No description provided for @reportsTickets.
+  ///
+  /// In es, this message translates to:
+  /// **'Tickets'**
+  String get reportsTickets;
+
+  /// No description provided for @reportsAverageTicket.
+  ///
+  /// In es, this message translates to:
+  /// **'Ticket promedio'**
+  String get reportsAverageTicket;
+
+  /// No description provided for @reportsRefunds.
+  ///
+  /// In es, this message translates to:
+  /// **'Devoluciones'**
+  String get reportsRefunds;
+
+  /// No description provided for @reportsWaste.
+  ///
+  /// In es, this message translates to:
+  /// **'Merma'**
+  String get reportsWaste;
+
+  /// No description provided for @reportsUnits.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} piezas'**
+  String reportsUnits(int count);
+
+  /// No description provided for @reportsPrepaid.
+  ///
+  /// In es, this message translates to:
+  /// **'Anticipos cobrados'**
+  String get reportsPrepaid;
+
+  /// No description provided for @reportsFlaggedShifts.
+  ///
+  /// In es, this message translates to:
+  /// **'Cortes con diferencia'**
+  String get reportsFlaggedShifts;
+
+  /// No description provided for @reportsCustomersOwing.
+  ///
+  /// In es, this message translates to:
+  /// **'Clientes con saldo en contra'**
+  String get reportsCustomersOwing;
+
+  /// No description provided for @reportsByHour.
+  ///
+  /// In es, this message translates to:
+  /// **'Venta por hora'**
+  String get reportsByHour;
+
+  /// No description provided for @reportsLast14Days.
+  ///
+  /// In es, this message translates to:
+  /// **'Últimos 14 días'**
+  String get reportsLast14Days;
+
+  /// No description provided for @reportsTopProducts.
+  ///
+  /// In es, this message translates to:
+  /// **'Más vendidos'**
+  String get reportsTopProducts;
+
+  /// No description provided for @reportsByBranch.
+  ///
+  /// In es, this message translates to:
+  /// **'Por sucursal'**
+  String get reportsByBranch;
+
+  /// No description provided for @reportsTicketsCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} tickets'**
+  String reportsTicketsCount(int count);
+
+  /// No description provided for @reportsExportExcel.
+  ///
+  /// In es, this message translates to:
+  /// **'Excel'**
+  String get reportsExportExcel;
+
+  /// No description provided for @reportsExportCsv.
+  ///
+  /// In es, this message translates to:
+  /// **'CSV'**
+  String get reportsExportCsv;
+
+  /// No description provided for @reportsByDay.
+  ///
+  /// In es, this message translates to:
+  /// **'Día'**
+  String get reportsByDay;
+
+  /// No description provided for @reportsHour.
+  ///
+  /// In es, this message translates to:
+  /// **'Hora'**
+  String get reportsHour;
+
+  /// No description provided for @reportsTill.
+  ///
+  /// In es, this message translates to:
+  /// **'Caja'**
+  String get reportsTill;
+
+  /// No description provided for @reportsCashier.
+  ///
+  /// In es, this message translates to:
+  /// **'Cajero'**
+  String get reportsCashier;
+
+  /// No description provided for @reportsProduct.
+  ///
+  /// In es, this message translates to:
+  /// **'Producto'**
+  String get reportsProduct;
+
+  /// No description provided for @reportsTaxRate.
+  ///
+  /// In es, this message translates to:
+  /// **'Impuesto'**
+  String get reportsTaxRate;
+
+  /// No description provided for @reportsGroupBy.
+  ///
+  /// In es, this message translates to:
+  /// **'Agrupar por'**
+  String get reportsGroupBy;
+
+  /// No description provided for @reportsBase.
+  ///
+  /// In es, this message translates to:
+  /// **'Base'**
+  String get reportsBase;
+
+  /// No description provided for @reportsTax.
+  ///
+  /// In es, this message translates to:
+  /// **'Impuesto'**
+  String get reportsTax;
+
+  /// No description provided for @reportsNet.
+  ///
+  /// In es, this message translates to:
+  /// **'Vendido'**
+  String get reportsNet;
+
+  /// No description provided for @reportsTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Total'**
+  String get reportsTotal;
+
+  /// No description provided for @reportsProduced.
+  ///
+  /// In es, this message translates to:
+  /// **'Producido'**
+  String get reportsProduced;
+
+  /// No description provided for @reportsSold.
+  ///
+  /// In es, this message translates to:
+  /// **'Vendido'**
+  String get reportsSold;
+
+  /// No description provided for @reportsWasteCost.
+  ///
+  /// In es, this message translates to:
+  /// **'Costo de merma'**
+  String get reportsWasteCost;
+
+  /// No description provided for @reportsOnHand.
+  ///
+  /// In es, this message translates to:
+  /// **'Existencia al cierre'**
+  String get reportsOnHand;
 }
 
 class _AppLocalizationsDelegate

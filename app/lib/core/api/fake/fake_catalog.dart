@@ -76,6 +76,28 @@ class FakeCatalog {
     'order.prepaid',
   };
 
+  /// Report answers, as tests seed them.
+  Map<String, dynamic> dashboard = {};
+  final Map<String, List<Map<String, dynamic>>> salesReport = {};
+
+  Map<String, dynamic> _salesTotals(List<Map<String, dynamic>> rows) {
+    int sum(String k) => rows.fold(0, (a, r) => a + ((r[k] as int?) ?? 0));
+    return {
+      'key': 'total',
+      'label': 'Total',
+      'saleCount': sum('saleCount'),
+      'quantity': null,
+      'grossCents': sum('grossCents'),
+      'discountCents': sum('discountCents'),
+      'netCents': sum('netCents'),
+      'cashCents': sum('cashCents'),
+      'prepaidCents': sum('prepaidCents'),
+      'refundCents': sum('refundCents'),
+      'baseCents': null,
+      'taxCents': null,
+    };
+  }
+
   /// `Customer` and `CustomerOrder` rows, as tests seed them.
   final List<Map<String, dynamic>> customers = [];
   final List<Map<String, dynamic>> customerOrders = [];
@@ -490,6 +512,17 @@ class FakeCatalog {
         photoIds.add(id);
         return _ok({'id': id, 'width': 800, 'height': 800, 'bytes': 1024}, 201);
 
+      case ('GET', ['reports', 'dashboard']):
+        return _ok(dashboard);
+      case ('GET', ['reports', 'sales']):
+        final group = query['groupBy']?.toString() ?? 'day';
+        return _ok({
+          'from': query['from'],
+          'to': query['to'],
+          'groupBy': group,
+          'items': salesReport[group] ?? <Object>[],
+          'totals': _salesTotals(salesReport[group] ?? const []),
+        });
       case ('GET', ['customers']):
         final q = (query['q']?.toString() ?? '').toLowerCase();
         return _ok({

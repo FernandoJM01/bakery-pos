@@ -1606,5 +1606,90 @@
         "type": "String"
       }
     }
-  }
+  },
+  "reportsDashboard": "Resumen",
+  "reportsSales": "Ventas",
+  "reportsStock": "Inventario",
+  "reportsBalances": "Saldos de clientes",
+  "reportsRange": "{from} a {to}",
+  "@reportsRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "reportsExported": "Archivo listo: {name}",
+  "@reportsExported": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reportsNoCompare": "Sin datos de la semana pasada",
+  "reportsVsLastWeek": "{change} contra el mismo día de la semana pasada",
+  "@reportsVsLastWeek": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "reportsDayOf": "Día {date}",
+  "@reportsDayOf": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "reportsNetSales": "Venta neta",
+  "reportsTickets": "Tickets",
+  "reportsAverageTicket": "Ticket promedio",
+  "reportsRefunds": "Devoluciones",
+  "reportsWaste": "Merma",
+  "reportsUnits": "{count} piezas",
+  "@reportsUnits": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reportsPrepaid": "Anticipos cobrados",
+  "reportsFlaggedShifts": "Cortes con diferencia",
+  "reportsCustomersOwing": "Clientes con saldo en contra",
+  "reportsByHour": "Venta por hora",
+  "reportsLast14Days": "Últimos 14 días",
+  "reportsTopProducts": "Más vendidos",
+  "reportsByBranch": "Por sucursal",
+  "reportsTicketsCount": "{count} tickets",
+  "@reportsTicketsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reportsExportExcel": "Excel",
+  "reportsExportCsv": "CSV",
+  "reportsByDay": "Día",
+  "reportsHour": "Hora",
+  "reportsTill": "Caja",
+  "reportsCashier": "Cajero",
+  "reportsProduct": "Producto",
+  "reportsTaxRate": "Impuesto",
+  "reportsGroupBy": "Agrupar por",
+  "reportsBase": "Base",
+  "reportsTax": "Impuesto",
+  "reportsNet": "Vendido",
+  "reportsTotal": "Total",
+  "reportsProduced": "Producido",
+  "reportsSold": "Vendido",
+  "reportsWasteCost": "Costo de merma",
+  "reportsOnHand": "Existencia al cierre"
 }

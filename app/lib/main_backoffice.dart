@@ -13,6 +13,7 @@ import 'features/devices/presentation/devices_screen.dart';
 import 'features/staff/presentation/staff_screen.dart';
 import 'features/day_old_rules/presentation/day_old_rules_screen.dart';
 import 'features/orders_admin/presentation/orders_admin_screen.dart';
+import 'features/reports/presentation/reports_screen.dart';
 import 'features/sales_admin/presentation/sales_admin_screen.dart';
 import 'features/shifts_admin/presentation/shifts_admin_screen.dart';
 import 'features/stock_admin/presentation/stock_admin_screen.dart';
@@ -58,6 +59,9 @@ class BackofficeAppRoot extends ConsumerWidget {
         }
         if (route == AppRoutes.backofficeShifts) {
           return const ShiftsAdminScreen();
+        }
+        if (route == AppRoutes.backofficeReports) {
+          return const ReportsScreen();
         }
         if (route == AppRoutes.backofficeOrders) {
           return const OrdersAdminScreen();
