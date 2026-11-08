@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   Device,
   DeviceType,
+  PaymentMethod,
   Prisma,
   RefundKind,
   SaleStatus,
@@ -30,6 +31,7 @@ import {
   SaleCompletedPayloadDto,
   SaleRefundedPayloadDto,
 } from './dto/sale-sync.dto';
+import { OrderSyncService } from '../orders/order-sync.service';
 import { dayOldPrice } from '../stock/fifo';
 import { StockLedgerService } from '../stock/stock-ledger.service';
 import { SALE_SETTINGS } from './sale-settings';
@@ -57,6 +59,7 @@ export class SaleSyncService {
     private readonly prisma: PrismaService,
     private readonly clock: ClockService,
     private readonly stock: StockLedgerService,
+    private readonly orders: OrderSyncService,
   ) {}
 
   private async branchTimeZone(tx: Prisma.TransactionClient, id: string) {
@@ -219,11 +222,24 @@ export class SaleSyncService {
     if (pay.amountCents !== totals.totalCents) {
       return rejected('Payment amount does not match the total');
     }
-    if (pay.tenderedCents < pay.amountCents) {
-      return rejected('Cash received is less than the total');
-    }
-    if (pay.changeCents !== pay.tenderedCents - pay.amountCents) {
-      return rejected('Change does not match cash received minus total');
+    const ticketId = p.orderTicketId ?? null;
+    if (pay.method === PaymentMethod.PREPAID) {
+      // A pickup is paid from the customer's balance: no cash moves.
+      if (!ticketId) return rejected('A prepaid sale needs orderTicketId');
+      if (pay.tenderedCents !== 0 || pay.changeCents !== 0) {
+        return rejected('A prepaid sale takes no cash');
+      }
+      if (p.orderDiscount) {
+        return rejected('A pickup has no ticket discount');
+      }
+    } else {
+      if (ticketId) return rejected('Only a prepaid sale names a ticket');
+      if (pay.tenderedCents < pay.amountCents) {
+        return rejected('Cash received is less than the total');
+      }
+      if (pay.changeCents !== pay.tenderedCents - pay.amountCents) {
+        return rejected('Change does not match cash received minus total');
+      }
     }
 
     // Discounts over the cashier limit need a manager (brief 4.2 step 7).
@@ -291,6 +307,7 @@ export class SaleSyncService {
       folioNumber: p.folioNumber,
       cashierStaffId: cashier.id,
       shiftId: p.shiftId,
+      orderTicketId: ticketId,
       occurredAt,
       receivedAt,
       grossCents: totals.grossCents,
@@ -361,6 +378,19 @@ export class SaleSyncService {
     return {
       ok: true,
       apply: async (tx) => {
+        let pickup: { customerId: string } | null = null;
+        if (ticketId) {
+          const checked = await this.orders.checkPickup(
+            tx,
+            device,
+            ticketId,
+            occurredAt,
+            p.lines,
+            totals.totalCents,
+          );
+          if (isRejection(checked)) return checked;
+          pickup = checked;
+        }
         await tx.sale.create({ data: sale });
         await tx.saleLine.createMany({ data: lines });
         if (discountRows.length) {
@@ -386,6 +416,18 @@ export class SaleSyncService {
           occurredAt,
           lines: p.lines,
         });
+        if (ticketId && pickup) {
+          await this.orders.recordPickup(
+            tx,
+            device,
+            ticketId,
+            saleId,
+            pickup.customerId,
+            totals.totalCents,
+            cashier.id,
+            occurredAt,
+          );
+        }
       },
     };
   }
@@ -557,6 +599,14 @@ export class SaleSyncService {
         },
       });
     }
+    await this.orders.creditRefund(
+      tx,
+      sale.id,
+      total,
+      p.staffId,
+      occurredAt,
+      device.id,
+    );
     await this.stock.returnForRefund(tx, {
       saleId: sale.id,
       refundId,

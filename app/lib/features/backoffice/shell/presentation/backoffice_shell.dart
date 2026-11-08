@@ -78,6 +78,16 @@ class BackofficeShell extends ConsumerWidget {
         ),
       );
     }
+    if (permissions.contains('orders.manage')) {
+      navItems.add(
+        _NavItem(
+          route: AppRoutes.backofficeOrders,
+          label: l10n.navOrders,
+          icon: Icons.assignment_outlined,
+          selectedIcon: Icons.assignment,
+        ),
+      );
+    }
     if (permissions.contains('reports.branch')) {
       navItems.add(
         _NavItem(
@@ -235,6 +245,8 @@ class BackofficeSectionPlaceholder extends StatelessWidget {
           title = l10n.navSales;
         } else if (route == AppRoutes.backofficeShifts) {
           title = l10n.navShifts;
+        } else if (route == AppRoutes.backofficeOrders) {
+          title = l10n.navOrders;
         } else if (route == AppRoutes.backofficeDayOld) {
           title = l10n.navDayOld;
         } else if (route == AppRoutes.backofficeStock) {

@@ -70,10 +70,14 @@ class RefundableSale {
     required this.status,
     required this.lines,
     required this.madeHere,
+    this.cash = true,
   });
 
   final String id;
   final String folio;
+
+  /// False for a pickup paid from a balance: its refund goes back there.
+  final bool cash;
   final DateTime occurredAt;
   final String status;
   final List<RefundableLine> lines;
@@ -147,6 +151,7 @@ class RefundRepository {
       occurredAt: sale.occurredAt,
       status: sale.status,
       madeHere: true,
+      cash: sale.paymentMethod == 'CASH',
       lines: [
         for (final l in lines)
           RefundableLine(
@@ -168,6 +173,7 @@ class RefundRepository {
     occurredAt: s.occurredAt,
     status: s.status.json ?? s.status.name,
     madeHere: false,
+    cash: s.payments.every((p) => (p.method.json ?? p.method.name) == 'CASH'),
     lines: [
       for (final l in s.lines)
         RefundableLine(
@@ -322,6 +328,7 @@ class RefundRepository {
               saleId: sale.id,
               folio: sale.folio,
               shiftId: Value(shiftId),
+              cash: Value(sale.cash),
               kind: kind.json,
               reason: reason.json,
               note: Value(note),

@@ -22,5 +22,6 @@ Map<String, dynamic> _$PaymentToJson(Payment instance) => <String, dynamic>{
 
 const _$PaymentMethodEnumMap = {
   PaymentMethod.cash: 'CASH',
+  PaymentMethod.prepaid: 'PREPAID',
   PaymentMethod.$unknown: r'$unknown',
 };

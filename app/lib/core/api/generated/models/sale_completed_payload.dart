@@ -29,6 +29,7 @@ class SaleCompletedPayload {
     required this.discountCents,
     required this.totalCents,
     required this.payments,
+    this.orderTicketId,
     this.orderDiscount,
   });
 
@@ -41,6 +42,9 @@ class SaleCompletedPayload {
 
   /// The open shift of this device (M4.1)
   final String shiftId;
+
+  /// The order ticket a `PREPAID` sale hands over; null for any other sale (M6 brief 4.4)
+  final String? orderTicketId;
   final List<SaleLineInput> lines;
   final DiscountInput? orderDiscount;
   final List<VoidedLineInput> voidedLines;

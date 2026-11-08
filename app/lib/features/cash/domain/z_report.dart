@@ -93,8 +93,9 @@ class ZReport {
 ZReport computeZReport(
   List<ZSale> sales,
   List<ZRefund> refunds,
-  List<ZMovement> movements,
-) {
+  List<ZMovement> movements, [
+  int prepaidCollectedCents = 0,
+]) {
   final taxes = <String, TaxByRate>{};
   void add(String kind, int rateBp, int base, int tax) {
     final e = taxes.putIfAbsent('$kind:$rateBp', () => TaxByRate(kind, rateBp));
@@ -138,6 +139,7 @@ ZReport computeZReport(
       return k != 0 ? k : a.rateBp.compareTo(b.rateBp);
     });
   return ZReport(
+    prepaidCollectedCents: prepaidCollectedCents,
     saleCount: sales.length,
     grossCents: total(sales, (s) => s.grossCents),
     discountCents: total(sales, (s) => s.discountCents),

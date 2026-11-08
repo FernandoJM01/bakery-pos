@@ -46,7 +46,8 @@ class CloseResult {
 
 int _sum(Iterable<int> xs) => xs.fold(0, (a, b) => a + b);
 
-/// Expected cash and the difference at close, M4 brief section 4.3. Same
+/// Expected cash and the difference at close, M4 brief section 4.3, with
+/// prepayments from M6; sales and refunds paid from a balance stay out. Same
 /// function as `server/src/shifts/cash-totals.ts`; both reproduce
 /// `contracts/fixtures/shift-cash-cases.json` (E3).
 CloseResult closeResult({
@@ -55,12 +56,14 @@ CloseResult closeResult({
   required List<int> cashInCents,
   required List<int> cashOutCents,
   required List<int> refundsCents,
+  List<int> prepaymentsCents = const [],
   required int countedCents,
   required int flagCents,
 }) {
   final expected =
       floatCents +
       _sum(saleAmountsCents) +
+      _sum(prepaymentsCents) +
       _sum(cashInCents) -
       _sum(cashOutCents) -
       _sum(refundsCents);

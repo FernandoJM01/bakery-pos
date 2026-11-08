@@ -54,6 +54,7 @@ model Branch {
   stockCounts   StockCount[]
   transfersOut  StockTransfer[] @relation("TransferFrom")
   transfersIn   StockTransfer[] @relation("TransferTo")
+  orders        CustomerOrder[]
 
   @@map("branch")
 }
@@ -337,6 +338,7 @@ model ProductVariant {
   stockLots     StockLot[]
   stockEvents   StockEvent[]
   stockWaste    StockWaste[]
+  orderLines    CustomerOrderLine[]
   transferLines StockTransferLine[]
 
   @@index([productId])
@@ -426,6 +428,7 @@ enum DiscountKind {
 
 enum PaymentMethod {
   CASH
+  PREPAID
 }
 
 enum RefundKind {
@@ -441,6 +444,7 @@ model Sale {
   folioNumber    Int        @map("folio_number")
   cashierStaffId String     @map("cashier_staff_id") @db.Uuid
   shiftId        String?    @map("shift_id") @db.Uuid
+  orderTicketId  String?    @unique @map("order_ticket_id") @db.Uuid
   occurredAt     DateTime   @map("occurred_at") @db.Timestamptz(6)
   receivedAt     DateTime   @map("received_at") @db.Timestamptz(6)
   grossCents     Int        @map("gross_cents")
@@ -454,6 +458,7 @@ model Sale {
   branch      Branch           @relation(fields: [branchId], references: [id], onDelete: Restrict)
   cashier     Staff            @relation("SaleCashier", fields: [cashierStaffId], references: [id], onDelete: Restrict)
   shift       CashShift?       @relation(fields: [shiftId], references: [id], onDelete: Restrict)
+  orderTicket OrderTicket?     @relation(fields: [orderTicketId], references: [id], onDelete: Restrict)
   lines       SaleLine[]
   discounts   SaleDiscount[]
   voidedLines SaleVoidedLine[]
@@ -630,6 +635,7 @@ model CashShift {
   notes     CashShiftNote[]
   sales     Sale[]
   refunds   Refund[]
+  prepaid   PrepaidEntry[]
 
   @@unique([deviceId, zNumber])
   @@index([branchId, openedAt])
@@ -822,4 +828,170 @@ model StockCheck {
   mismatches  Int
 
   @@map("stock_check")
+}
+
+enum OrderKind {
+  STANDING
+  ONE_OFF
+}
+
+enum OrderStatus {
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+enum MissedRule {
+  CHARGE
+  NO_CHARGE
+}
+
+enum TicketStatus {
+  PENDING
+  PICKED_UP
+  MISSED
+  SKIPPED
+}
+
+enum PrepaidKind {
+  PAYMENT
+  PICKUP
+  MISSED
+  ADJUSTMENT
+}
+
+model Customer {
+  id        String   @id @db.Uuid
+  name      String   @db.VarChar(120)
+  phone     String?  @unique @db.VarChar(20)
+  rfc       String?  @db.VarChar(13)
+  notes     String?  @db.VarChar(500)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  orders  CustomerOrder[]
+  tickets OrderTicket[]
+  prepaid PrepaidEntry[]
+
+  @@index([name])
+  @@map("customer")
+}
+
+/// A standing order repeats on weekdays; a pre-order has one date (M6).
+model CustomerOrder {
+  id               String      @id @db.Uuid
+  customerId       String      @map("customer_id") @db.Uuid
+  branchId         String      @map("branch_id") @db.Uuid
+  kind             OrderKind
+  /// Bit set, Monday = 1 ... Sunday = 64. Zero for a pre-order.
+  weekdays         Int
+  startDate        DateTime    @map("start_date") @db.Date
+  endDate          DateTime?   @map("end_date") @db.Date
+  pickupTime       String      @map("pickup_time") @db.VarChar(5)
+  missedRule       MissedRule  @default(CHARGE) @map("missed_rule")
+  status           OrderStatus @default(ACTIVE)
+  pausedFrom       DateTime?   @map("paused_from") @db.Date
+  pausedUntil      DateTime?   @map("paused_until") @db.Date
+  note             String?     @db.VarChar(500)
+  createdByStaffId String      @map("created_by_staff_id") @db.Uuid
+  createdAt        DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  customer Customer            @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  branch   Branch              @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  lines    CustomerOrderLine[]
+  skips    OrderSkip[]
+  tickets  OrderTicket[]
+
+  @@index([customerId])
+  @@index([branchId, status])
+  @@map("customer_order")
+}
+
+model CustomerOrderLine {
+  orderId   String @map("order_id") @db.Uuid
+  variantId String @map("variant_id") @db.Uuid
+  quantity  Int
+
+  order   CustomerOrder  @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+
+  @@id([orderId, variantId])
+  @@map("customer_order_line")
+}
+
+model OrderSkip {
+  orderId String   @map("order_id") @db.Uuid
+  date    DateTime @db.Date
+
+  order CustomerOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@id([orderId, date])
+  @@map("order_skip")
+}
+
+/// One due day of an order, priced the day it was made.
+model OrderTicket {
+  id         String       @id @db.Uuid
+  orderId    String       @map("order_id") @db.Uuid
+  branchId   String       @map("branch_id") @db.Uuid
+  customerId String       @map("customer_id") @db.Uuid
+  dueDate    DateTime     @map("due_date") @db.Date
+  pickupTime String       @map("pickup_time") @db.VarChar(5)
+  status     TicketStatus @default(PENDING)
+  totalCents Int          @map("total_cents")
+  saleId     String?      @unique @map("sale_id") @db.Uuid
+  updatedAt  DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  order    CustomerOrder     @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  customer Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  lines    OrderTicketLine[]
+  sale     Sale?
+  prepaid  PrepaidEntry[]
+
+  @@unique([orderId, dueDate])
+  @@index([branchId, dueDate])
+  @@map("order_ticket")
+}
+
+model OrderTicketLine {
+  ticketId       String  @map("ticket_id") @db.Uuid
+  lineNo         Int     @map("line_no")
+  variantId      String  @map("variant_id") @db.Uuid
+  productName    String  @map("product_name") @db.VarChar(120)
+  variantName    String  @map("variant_name") @db.VarChar(120)
+  quantity       Int
+  unitPriceCents Int     @map("unit_price_cents")
+  ivaRateId      String  @map("iva_rate_id") @db.Uuid
+  ivaBp          Int     @map("iva_bp")
+  iepsRateId     String? @map("ieps_rate_id") @db.Uuid
+  iepsBp         Int     @map("ieps_bp")
+
+  ticket OrderTicket @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+
+  @@id([ticketId, lineNo])
+  @@map("order_ticket_line")
+}
+
+/// The customer's prepaid balance is the sum of these. Insert-only (G11).
+model PrepaidEntry {
+  id          String      @id @db.Uuid
+  customerId  String      @map("customer_id") @db.Uuid
+  kind        PrepaidKind
+  amountCents Int         @map("amount_cents")
+  ticketId    String?     @map("ticket_id") @db.Uuid
+  shiftId     String?     @map("shift_id") @db.Uuid
+  deviceId    String?     @map("device_id") @db.Uuid
+  staffId     String?     @map("staff_id") @db.Uuid
+  occurredAt  DateTime    @map("occurred_at") @db.Timestamptz(6)
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  customer Customer     @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  ticket   OrderTicket? @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+  shift    CashShift?   @relation(fields: [shiftId], references: [id], onDelete: Restrict)
+
+  @@index([customerId])
+  @@index([shiftId])
+  @@map("prepaid_entry")
 }

@@ -4115,6 +4115,330 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Costo guardado'**
   String get stockCostSaved;
+
+  /// No description provided for @receiptPaidFromBalance.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagado con saldo del pedido'**
+  String get receiptPaidFromBalance;
+
+  /// No description provided for @receiptBalance.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo'**
+  String get receiptBalance;
+
+  /// No description provided for @claimTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Comprobante de anticipo'**
+  String get claimTitle;
+
+  /// No description provided for @claimPaid.
+  ///
+  /// In es, this message translates to:
+  /// **'Anticipo'**
+  String get claimPaid;
+
+  /// No description provided for @ordersToday.
+  ///
+  /// In es, this message translates to:
+  /// **'Pedidos de hoy'**
+  String get ordersToday;
+
+  /// No description provided for @ordersEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay pedidos para hoy'**
+  String get ordersEmpty;
+
+  /// No description provided for @ordersHandOver.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregar'**
+  String get ordersHandOver;
+
+  /// No description provided for @ordersHandedOver.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregado'**
+  String get ordersHandedOver;
+
+  /// No description provided for @ordersPrepay.
+  ///
+  /// In es, this message translates to:
+  /// **'Abonar'**
+  String get ordersPrepay;
+
+  /// No description provided for @ordersPrepayOther.
+  ///
+  /// In es, this message translates to:
+  /// **'Abonar a un cliente'**
+  String get ordersPrepayOther;
+
+  /// No description provided for @ordersLowBalance.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo bajo'**
+  String get ordersLowBalance;
+
+  /// No description provided for @ordersBalance.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo {amount}'**
+  String ordersBalance(String amount);
+
+  /// No description provided for @ordersLine.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} × {name}'**
+  String ordersLine(String name, int count);
+
+  /// No description provided for @ordersPrepayTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Anticipo de {name}'**
+  String ordersPrepayTitle(String name);
+
+  /// No description provided for @ordersAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto'**
+  String get ordersAmount;
+
+  /// No description provided for @ordersPrepaid.
+  ///
+  /// In es, this message translates to:
+  /// **'Anticipo de {amount} registrado'**
+  String ordersPrepaid(String amount);
+
+  /// No description provided for @ordersSearchCustomer.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar cliente por nombre o teléfono'**
+  String get ordersSearchCustomer;
+
+  /// No description provided for @ordersNeedsServer.
+  ///
+  /// In es, this message translates to:
+  /// **'Se necesita conexión con el servidor para buscar clientes'**
+  String get ordersNeedsServer;
+
+  /// No description provided for @ordersNoShift.
+  ///
+  /// In es, this message translates to:
+  /// **'Abre un turno para entregar pedidos o recibir anticipos'**
+  String get ordersNoShift;
+
+  /// No description provided for @ordersForToday.
+  ///
+  /// In es, this message translates to:
+  /// **'Para pedidos de hoy'**
+  String get ordersForToday;
+
+  /// No description provided for @ordersPickupFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo registrar la entrega'**
+  String get ordersPickupFailed;
+
+  /// No description provided for @ordersWeekdayLetters.
+  ///
+  /// In es, this message translates to:
+  /// **'L,M,M,J,V,S,D'**
+  String get ordersWeekdayLetters;
+
+  /// No description provided for @ordersOneOffOn.
+  ///
+  /// In es, this message translates to:
+  /// **'Para el {date} a las {time}'**
+  String ordersOneOffOn(String date, String time);
+
+  /// No description provided for @ordersStandingOn.
+  ///
+  /// In es, this message translates to:
+  /// **'{days} a las {time}'**
+  String ordersStandingOn(String days, String time);
+
+  /// No description provided for @ordersActive.
+  ///
+  /// In es, this message translates to:
+  /// **'Activo'**
+  String get ordersActive;
+
+  /// No description provided for @ordersPaused.
+  ///
+  /// In es, this message translates to:
+  /// **'En pausa'**
+  String get ordersPaused;
+
+  /// No description provided for @ordersEnded.
+  ///
+  /// In es, this message translates to:
+  /// **'Terminado'**
+  String get ordersEnded;
+
+  /// No description provided for @ordersEntryPayment.
+  ///
+  /// In es, this message translates to:
+  /// **'Anticipo'**
+  String get ordersEntryPayment;
+
+  /// No description provided for @ordersEntryPickup.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrega'**
+  String get ordersEntryPickup;
+
+  /// No description provided for @ordersEntryMissed.
+  ///
+  /// In es, this message translates to:
+  /// **'No recogido'**
+  String get ordersEntryMissed;
+
+  /// No description provided for @ordersEntryAdjustment.
+  ///
+  /// In es, this message translates to:
+  /// **'Devolución al saldo'**
+  String get ordersEntryAdjustment;
+
+  /// No description provided for @ordersNewCustomer.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo cliente'**
+  String get ordersNewCustomer;
+
+  /// No description provided for @ordersNoCustomers.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay clientes con esa búsqueda'**
+  String get ordersNoCustomers;
+
+  /// No description provided for @ordersNameRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe el nombre del cliente'**
+  String get ordersNameRequired;
+
+  /// No description provided for @ordersPhoneInUse.
+  ///
+  /// In es, this message translates to:
+  /// **'Ese teléfono ya es de otro cliente'**
+  String get ordersPhoneInUse;
+
+  /// No description provided for @ordersCustomerName.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre'**
+  String get ordersCustomerName;
+
+  /// No description provided for @ordersCustomerPhone.
+  ///
+  /// In es, this message translates to:
+  /// **'Teléfono (opcional)'**
+  String get ordersCustomerPhone;
+
+  /// No description provided for @ordersSkipDay.
+  ///
+  /// In es, this message translates to:
+  /// **'Saltar un día'**
+  String get ordersSkipDay;
+
+  /// No description provided for @ordersResume.
+  ///
+  /// In es, this message translates to:
+  /// **'Reanudar'**
+  String get ordersResume;
+
+  /// No description provided for @ordersPause.
+  ///
+  /// In es, this message translates to:
+  /// **'Pausar'**
+  String get ordersPause;
+
+  /// No description provided for @ordersEnd.
+  ///
+  /// In es, this message translates to:
+  /// **'Terminar'**
+  String get ordersEnd;
+
+  /// No description provided for @ordersOrders.
+  ///
+  /// In es, this message translates to:
+  /// **'Pedidos'**
+  String get ordersOrders;
+
+  /// No description provided for @ordersNewOrder.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo pedido'**
+  String get ordersNewOrder;
+
+  /// No description provided for @ordersHistory.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimientos del saldo'**
+  String get ordersHistory;
+
+  /// No description provided for @ordersFormIncomplete.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige días, hora y al menos un producto'**
+  String get ordersFormIncomplete;
+
+  /// No description provided for @ordersStanding.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las semanas'**
+  String get ordersStanding;
+
+  /// No description provided for @ordersOneOff.
+  ///
+  /// In es, this message translates to:
+  /// **'Una sola vez'**
+  String get ordersOneOff;
+
+  /// No description provided for @ordersStartsOn.
+  ///
+  /// In es, this message translates to:
+  /// **'Empieza el {date}'**
+  String ordersStartsOn(String date);
+
+  /// No description provided for @ordersDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha: {date}'**
+  String ordersDate(String date);
+
+  /// No description provided for @ordersPickupTime.
+  ///
+  /// In es, this message translates to:
+  /// **'Hora de entrega (HH:MM)'**
+  String get ordersPickupTime;
+
+  /// No description provided for @ordersChargeMissed.
+  ///
+  /// In es, this message translates to:
+  /// **'Cobrar si no lo recogen'**
+  String get ordersChargeMissed;
+
+  /// No description provided for @ordersProducts.
+  ///
+  /// In es, this message translates to:
+  /// **'Productos'**
+  String get ordersProducts;
+
+  /// No description provided for @ordersQuantityOf.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} ({price})'**
+  String ordersQuantityOf(String name, String price);
+
+  /// No description provided for @ordersScheduleStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'{schedule} · {status}'**
+  String ordersScheduleStatus(String schedule, String status);
 }
 
 class _AppLocalizationsDelegate

@@ -200,10 +200,20 @@ class ShiftRepository {
     ];
     return closeResult(
       floatCents: shift.floatCents,
-      saleAmountsCents: [for (final s in sales) s.totalCents],
+      // Only cash moves the drawer: a pickup paid from a balance does not.
+      saleAmountsCents: [
+        for (final s in sales)
+          if (s.paymentMethod == 'CASH') s.totalCents,
+      ],
       cashInCents: amounts(CashKind.cashIn),
       cashOutCents: amounts(CashKind.cashOut),
-      refundsCents: [for (final r in refunds) r.totalCents],
+      refundsCents: [
+        for (final r in refunds)
+          if (r.cash) r.totalCents,
+      ],
+      prepaymentsCents: [
+        for (final p in await _prepayments(shift.id)) p.amountCents,
+      ],
       countedCents: counted,
       flagCents: flag,
     );
@@ -305,6 +315,10 @@ class ShiftRepository {
         );
   }
 
+  Future<List<LocalPrepayment>> _prepayments(String shiftId) => (_db.select(
+    _db.localPrepayments,
+  )..where((p) => p.shiftId.equals(shiftId))).get();
+
   /// The Z report of [shiftId], from the rows this till stored.
   Future<ZReport> zReport(String shiftId) async {
     final sales = await (_db.select(
@@ -352,6 +366,7 @@ class ShiftRepository {
         for (final m in moves)
           ZMovement(kind: m.kind, reason: m.reason, amountCents: m.amountCents),
       ],
+      (await _prepayments(shiftId)).fold(0, (a, p) => a + p.amountCents),
     );
   }
 

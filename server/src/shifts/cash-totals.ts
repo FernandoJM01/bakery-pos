@@ -5,6 +5,8 @@ export interface ExpectedCashInput {
   cashInCents: readonly number[];
   cashOutCents: readonly number[];
   refundsCents: readonly number[];
+  /** Order prepayments taken in this shift (M6 brief 2). */
+  prepaymentsCents?: readonly number[];
 }
 
 export interface CloseResult {
@@ -16,7 +18,8 @@ export interface CloseResult {
 const sum = (xs: readonly number[]) => xs.reduce((a, b) => a + b, 0);
 
 /**
- * Expected cash and the difference at close, M4 brief section 4.3. The app
+ * Expected cash and the difference at close, M4 brief section 4.3, with
+ * prepayments from M6. Sales and refunds paid from a balance are left out. The app
  * has the same function; both reproduce
  * `contracts/fixtures/shift-cash-cases.json` (E3).
  */
@@ -28,6 +31,7 @@ export function closeResult(
   const expectedCents =
     input.floatCents +
     sum(input.saleAmountsCents) +
+    sum(input.prepaymentsCents ?? []) +
     sum(input.cashInCents) -
     sum(input.cashOutCents) -
     sum(input.refundsCents);

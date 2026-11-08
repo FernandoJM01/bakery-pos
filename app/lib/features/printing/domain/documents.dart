@@ -59,11 +59,44 @@ List<PrintLine> receiptDocument(
         ),
       ),
     const PrintLine.rule(),
-    PrintLine(l10n.receiptReceived, right: formatCents(r.tenderedCents)),
-    PrintLine(
-      l10n.receiptChange,
-      right: formatCents(r.changeCents),
-      bold: true,
-    ),
+    if (r.prepaid) ...[
+      PrintLine(l10n.receiptPaidFromBalance, bold: true),
+      if (r.balanceAfterCents != null)
+        PrintLine(
+          l10n.receiptBalance,
+          right: formatCents(r.balanceAfterCents!),
+        ),
+    ] else ...[
+      PrintLine(l10n.receiptReceived, right: formatCents(r.tenderedCents)),
+      PrintLine(
+        l10n.receiptChange,
+        right: formatCents(r.changeCents),
+        bold: true,
+      ),
+    ],
   ];
 }
+
+/// The slip for a prepayment (M6 brief 2): who paid, how much, and the new
+/// balance.
+List<PrintLine> claimDocument(
+  AppLocalizations l10n, {
+  required String? branch,
+  required String customerName,
+  required int amountCents,
+  required int balanceCents,
+  required DateTime at,
+  required String cashierName,
+  required List<String> orderLines,
+}) => [
+  if (branch != null) PrintLine(branch, bold: true, center: true),
+  PrintLine(l10n.claimTitle, bold: true, center: true),
+  PrintLine(formatPrintDate(at), center: true),
+  PrintLine(l10n.receiptCashier(cashierName), center: true),
+  const PrintLine.rule(),
+  PrintLine(customerName, bold: true),
+  for (final l in orderLines) PrintLine(l),
+  const PrintLine.rule(),
+  PrintLine(l10n.claimPaid, right: formatCents(amountCents), bold: true),
+  PrintLine(l10n.receiptBalance, right: formatCents(balanceCents)),
+];

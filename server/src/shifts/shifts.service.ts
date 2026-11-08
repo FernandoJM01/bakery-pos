@@ -196,6 +196,12 @@ export class ShiftsService {
         }),
       })),
       movements,
+      (
+        await this.prisma.prepaidEntry.aggregate({
+          where: { shiftId, kind: 'PAYMENT' },
+          _sum: { amountCents: true },
+        })
+      )._sum.amountCents ?? 0,
     );
   }
 

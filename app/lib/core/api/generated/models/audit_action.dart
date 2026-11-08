@@ -182,6 +182,42 @@ enum AuditAction {
   @JsonValue('stock.ledger_mismatch')
   undefined43('stock.ledger_mismatch'),
 
+  /// Incorrect name has been replaced. Original name: `customer.created`.
+  @JsonValue('customer.created')
+  undefined44('customer.created'),
+
+  /// Incorrect name has been replaced. Original name: `customer.updated`.
+  @JsonValue('customer.updated')
+  undefined45('customer.updated'),
+
+  /// Incorrect name has been replaced. Original name: `order.created`.
+  @JsonValue('order.created')
+  undefined46('order.created'),
+
+  /// Incorrect name has been replaced. Original name: `order.updated`.
+  @JsonValue('order.updated')
+  undefined47('order.updated'),
+
+  /// Incorrect name has been replaced. Original name: `order.paused`.
+  @JsonValue('order.paused')
+  undefined48('order.paused'),
+
+  /// Incorrect name has been replaced. Original name: `order.skipped`.
+  @JsonValue('order.skipped')
+  undefined49('order.skipped'),
+
+  /// Incorrect name has been replaced. Original name: `order.prepaid`.
+  @JsonValue('order.prepaid')
+  undefined50('order.prepaid'),
+
+  /// Incorrect name has been replaced. Original name: `order.picked_up`.
+  @JsonValue('order.picked_up')
+  undefined51('order.picked_up'),
+
+  /// Incorrect name has been replaced. Original name: `order.missed`.
+  @JsonValue('order.missed')
+  undefined52('order.missed'),
+
   /// Default value for all unparsed values, allows backward compatibility when adding new values on the backend.
   $unknown(null);
 
